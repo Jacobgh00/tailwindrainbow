@@ -5,6 +5,9 @@ on:
     branches: [ main ]
   pull_request:
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -12,45 +15,43 @@ concurrency:
 jobs:
   verify:
     name: Verify
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-java@v6
+      - name: Set up Java
+        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
         with:
-          distribution: zulu
-          java-version: 21
+          distribution: temurin
+          java-version: "21"
 
-      - uses: gradle/actions/setup-gradle@v6
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
 
-      # Static analysis first: it is the fastest signal, so a style failure does not
-      # wait behind a platform download.
-      - name: Lint
-        run: ./gradlew ktlintCheck detekt
+      - name: Verify
+        run: ./gradlew ktlintCheck detekt test verifyPlugin --build-cache
 
-      - name: Test
-        run: ./gradlew test
-
-      # Structural validation of the artifact itself — this is what caught an invalid
-      # plugin ID before it could ever be published under it.
-      - name: Verify plugin
-        run: ./gradlew verifyPlugin
-
-      - name: Build plugin
-        run: ./gradlew buildPlugin
-
-      - uses: actions/upload-artifact@v7
-        if: always()
+      - name: Upload plugin distribution
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: plugin-distribution
           path: build/distributions/*.zip
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
 
-      - name: Upload reports
-        uses: actions/upload-artifact@v7
+      - name: Upload failure reports
         if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: reports
+          name: verification-reports
           path: |
             build/reports/tests/**
+            build/test-results/**
             build/reports/detekt/**
             build/reports/ktlint/**
+          if-no-files-found: ignore
+          retention-days: 7

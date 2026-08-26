@@ -1,41 +1,92 @@
 name: Release
 
-# Publishing is never automatic. There is no push, tag, or release trigger: the only way a
-# version reaches JetBrains Marketplace is a human running this from the Actions tab.
-#
-# The `publish` input defaults to false, so a run started by accident signs the plugin and
-# stops. That doubles as the way to prove the signing secrets are correct without uploading
-# anything — worth doing before the first real release.
+run-name: >-
+  ${{ inputs.publish && 'Publish' || 'Sign and verify' }}
+  ${{ github.ref_name }}
+
 on:
   workflow_dispatch:
     inputs:
       publish:
-        description: "Upload to JetBrains Marketplace (leave unchecked to sign only)"
+        description: "Upload to JetBrains Marketplace"
         type: boolean
+        required: true
         default: false
+
+concurrency:
+  group: jetbrains-marketplace-release
+  cancel-in-progress: false
 
 jobs:
   release:
-    name: ${{ inputs.publish && 'Publish' || 'Sign only (dry run)' }}
-    runs-on: ubuntu-latest
+    name: ${{ inputs.publish && 'Publish' || 'Sign and verify' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: jetbrains-marketplace
+
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - uses: actions/setup-java@v6
         with:
           distribution: zulu
           java-version: 21
 
-      - uses: gradle/actions/setup-gradle@v6
+      - name: Set up Java
+        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
+        with:
+          distribution: temurin
+          java-version: "21"
 
-      # Re-run the whole gate rather than trusting the commit was green: a release may be
-      # cut from a ref that never went through a pull request.
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+
+      - name: Validate release
+        id: metadata
+        shell: bash
+        env:
+          PUBLISH_REQUESTED: ${{ inputs.publish }}
+          REF_NAME: ${{ github.ref_name }}
+          REF_TYPE: ${{ github.ref_type }}
+        run: |
+          plugin_version="$(
+            ./gradlew properties \
+              --property version \
+              --quiet \
+              --console=plain |
+              sed -n 's/^version: //p'
+          )"
+          
+           if [[ -z "$plugin_version" ]]; then
+            echo "Could not determine the plugin version."
+            exit 1
+          fi
+          
+          echo "version=$plugin_version" >> "$GITHUB_OUTPUT"
+          
+          if [[ "$PUBLISH_REQUESTED" != "true" ]]; then
+            exit 0
+          fi
+          
+          if [[ "$REF_TYPE" != "tag" ]]; then
+            echo "Publishing requires a Git tag."
+            exit 1
+          fi
+          
+          if [[ "$REF_NAME" != "v$plugin_version" ]]; then
+            echo "Tag '$REF_NAME' does not match plugin version 'v$plugin_version'."
+            exit 1
+          fi
+          
+        # Re-run the complete quality gate for the exact release ref.
       - name: Verify
-        run: ./gradlew ktlintCheck detekt test verifyPlugin
+        id: verify
+        run: ./gradlew ktlintCheck detekt test verifyPlugin --build-cache
 
-      # Runs on every dispatch, publish or not. A malformed certificate or a passphrase that
-      # does not match the key fails here, where it costs nothing.
-      - name: Sign
+      # Always sign and verify the archive, including sign-only runs.
+      - name: Sign and verify signature
+        id: sign
         env:
           CERTIFICATE_CHAIN: ${{ secrets.CERTIFICATE_CHAIN }}
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
@@ -43,6 +94,7 @@ jobs:
         run: ./gradlew signPlugin verifyPluginSignature
 
       - name: Publish to JetBrains Marketplace
+        id: publish
         if: ${{ inputs.publish }}
         env:
           CERTIFICATE_CHAIN: ${{ secrets.CERTIFICATE_CHAIN }}
@@ -51,18 +103,46 @@ jobs:
           PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
         run: ./gradlew publishPlugin
 
-      - uses: actions/upload-artifact@v7
-        if: always()
+      # Also upload when Marketplace publishing fails, provided signing succeeded.
+      - name: Upload signed plugin
+        if: ${{ !cancelled() && steps.sign.outcome == 'success' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: signed-plugin
-          path: build/distributions/*.zip
+          name: signed-plugin-${{ steps.metadata.outputs.version }}
+          path: build/distributions/*-signed.zip
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
 
       - name: Summary
         if: always()
+        shell: bash
+        env:
+          PUBLISH_REQUESTED: ${{ inputs.publish }}
+          REF_NAME: ${{ github.ref_name }}
+          PLUGIN_VERSION: ${{ steps.metadata.outputs.version }}
+          METADATA_OUTCOME: ${{ steps.metadata.outcome }}
+          VERIFY_OUTCOME: ${{ steps.verify.outcome }}
+          SIGN_OUTCOME: ${{ steps.sign.outcome }}
+          PUBLISH_OUTCOME: ${{ steps.publish.outcome }}
         run: |
+          if [[ "$METADATA_OUTCOME" != "success" ]]; then
+            status="Release validation failed"
+          elif [[ "$VERIFY_OUTCOME" != "success" ]]; then
+            status="Verification failed"
+          elif [[ "$SIGN_OUTCOME" != "success" ]]; then
+            status="Signing failed"
+          elif [[ "$PUBLISH_REQUESTED" == "true" && "$PUBLISH_OUTCOME" == "success" ]]; then
+            status="Published"
+          elif [[ "$PUBLISH_REQUESTED" == "true" ]]; then
+            status="Publishing failed"
+          else
+            status="Signed and verified — nothing uploaded"
+          fi
+          
           {
-            echo "### ${{ inputs.publish && 'Published' || 'Signed only — nothing uploaded' }}"
-            echo ""
-            echo "- ref: \`${{ github.ref_name }}\`"
-            echo "- version: \`$(./gradlew properties --property version -q --console=plain | grep '^version:' | cut -d' ' -f2)\`"
+            echo "### $status"
+            echo
+            echo "- ref: \`$REF_NAME\`"
+            echo "- version: \`${PLUGIN_VERSION:-unknown}\`"
           } >> "$GITHUB_STEP_SUMMARY"
