@@ -24,6 +24,16 @@ dependencies {
 
 intellijPlatform {
     buildSearchableOptions = false
+
+    signing {
+        certificateChain = providers.environmentVariable("CERTIFICATE_CHAIN")
+        privateKey = providers.environmentVariable("PRIVATE_KEY")
+        password = providers.environmentVariable("PRIVATE_KEY_PASSWORD")
+    }
+
+    publishing {
+        token = providers.environmentVariable("PUBLISH_TOKEN")
+    }
 }
 
 tasks {
@@ -35,5 +45,9 @@ tasks {
 
     patchPluginXml {
         sinceBuild.set("252")
+        // No upper bound: the plugin uses only stable platform API (one Annotator, one
+        // Configurable). Setting untilBuild would stop it loading on the next IDE release
+        // until a new version shipped, for no benefit.
+        untilBuild.set(provider { null })
     }
 }
