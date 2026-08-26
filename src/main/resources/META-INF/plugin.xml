@@ -17,12 +17,13 @@
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <!-- language="" registers for Language.ANY: the scanner reads raw text, so every
-             file type is eligible and the supported-extension list stays a user setting. -->
-        <annotator language="" implementationClass="dev.tailwindrainbow.intellij.platform.highlighting.TailwindRainbowAnnotator"/>
+        <annotator
+                language=""
+                implementationClass="dev.tailwindrainbow.intellij.adapter.intellij.highlighting.TailwindRainbowAnnotator"/>
+
         <applicationConfigurable
                 parentId="editor"
-                instance="dev.tailwindrainbow.intellij.platform.settings.TailwindRainbowSettingsConfigurable"
+                instance="dev.tailwindrainbow.intellij.adapter.intellij.settings.ui.TailwindRainbowSettingsConfigurable"
                 id="dev.tailwindrainbow.intellij.settings"
                 displayName="Tailwind Rainbow"/>
     </extensions>
