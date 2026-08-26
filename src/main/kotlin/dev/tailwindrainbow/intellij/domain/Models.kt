@@ -8,8 +8,8 @@ data class FontWeight(val value: Int) {
     }
 
     companion object {
-        var NORMAL = FontWeight(400)
-        var BOLD = FontWeight(700)
+        val NORMAL = FontWeight(400)
+        val BOLD = FontWeight(700)
 
         fun of(value: Int): FontWeight = FontWeight(value)
     }

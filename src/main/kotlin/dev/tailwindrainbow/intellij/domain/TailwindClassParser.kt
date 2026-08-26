@@ -46,16 +46,14 @@ class TailwindClassParser(private val themeMatcher: ThemeMatcher) {
             return
         }
 
+        val colonCount = prefixes.size
+        val classEnd = startOffset + parts.sumOf(String::length) + colonCount
         var prefixStart = startOffset
 
         prefixes.forEachIndexed { index, prefix ->
             themeMatcher.matchPrefix(prefix)?.let { match ->
                 val hasFollowingStyledSegment = index < prefixes.lastIndex || baseMatch != null
-                val end = if (hasFollowingStyledSegment) {
-                    prefixStart + prefix.length + 1
-                } else {
-                    startOffset + parts.sumOf(String::length) + prefixes.size
-                }
+                val end = if (hasFollowingStyledSegment) prefixStart + prefix.length + 1 else classEnd
 
                 add(match.toSegment(prefixStart, end, match.segmentKind(SegmentKind.PREFIX)))
             }

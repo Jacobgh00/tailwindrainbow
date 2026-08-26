@@ -10,12 +10,13 @@ import dev.tailwindrainbow.intellij.domain.ScanSettings
 
 @Service(Service.Level.APP)
 @State(name = "TailwindRainbowSettings", storages = [Storage("tailwindRainbow.xml")])
-
 class TailwindRainbowSettings : PersistentStateComponent<TailwindRainbowSettings.StoredState> {
     private val storedState = StoredState()
 
+    @Synchronized
     override fun getState(): StoredState = storedState
 
+    @Synchronized
     override fun loadState(state: StoredState) {
         XmlSerializerUtil.copyBean(state, storedState)
     }

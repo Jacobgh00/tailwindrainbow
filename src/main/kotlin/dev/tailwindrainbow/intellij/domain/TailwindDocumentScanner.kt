@@ -17,6 +17,7 @@ class TailwindDocumentScanner {
 
         val tokens = tokenize(text, hashComments = fileExtension.equals("php", ignoreCase = true))
         val parser = TailwindClassParser(ThemeMatcher(theme, settings.ignoredPrefixModifiers))
+        val patterns = ClassContextPatterns(settings.classIdentifiers)
 
         return buildList {
             if (fileExtension.lowercase() in CSS_EXTENSIONS) {
@@ -24,9 +25,9 @@ class TailwindDocumentScanner {
             }
 
             tokens.filter { it.kind != TokenKind.COMMENT }.forEach { token ->
-                addAll(scanEmbeddedAttributes(token, settings, parser))
+                addAll(scanEmbeddedAttributes(token, patterns, parser))
 
-                if (isClassContext(text, token, settings)) {
+                if (isClassContext(text, token, settings, patterns)) {
                     addAll(parser.parse(token.content, token.contentStart))
                 }
             }
@@ -36,11 +37,10 @@ class TailwindDocumentScanner {
 
     private fun scanEmbeddedAttributes(
         token: DocumentToken,
-        settings: ScanSettings,
+        patterns: ClassContextPatterns,
         parser: TailwindClassParser,
     ): List<HighlightSegment> = buildList {
-        val identifier = settings.classIdentifiers.identifierPattern() ?: return@buildList
-        val attribute = Regex("(?i)$identifier\\s*=\\s*([\"'])")
+        val attribute = patterns.attributeAssignment ?: return@buildList
 
         attribute.findAll(token.content).forEach { match ->
             val quote = match.groupValues[1].single()
@@ -53,24 +53,19 @@ class TailwindDocumentScanner {
         }
     }
 
-    private fun isClassContext(text: String, token: DocumentToken, settings: ScanSettings): Boolean {
+    private fun isClassContext(
+        text: String,
+        token: DocumentToken,
+        settings: ScanSettings,
+        patterns: ClassContextPatterns,
+    ): Boolean {
         val contextStart = (token.start - CONTEXT_WINDOW).coerceAtLeast(0)
         val before = text.substring(contextStart, token.start)
 
-        return isAttributeValue(before, settings.classIdentifiers) ||
-                isAssignedClassValue(before, settings.classIdentifiers) ||
+        return patterns.matchesAttributeValue(before) ||
+                patterns.matchesAssignedClassValue(before) ||
                 isInsideClassFunction(text, token.start, settings.classFunctions) ||
                 isTaggedTemplate(before, token, settings.templateTags)
-    }
-
-    private fun isAttributeValue(before: String, identifiers: Set<String>): Boolean {
-        val identifier = identifiers.identifierPattern() ?: return false
-        return Regex("(?is)$identifier\\s*=\\s*(?:\\{[^{}]*)?$").containsMatchIn(before)
-    }
-
-    private fun isAssignedClassValue(before: String, identifiers: Set<String>): Boolean {
-        val identifier = identifiers.identifierPattern() ?: return false
-        return Regex("(?is)$identifier\\s*(?:(?::[^=]+)?=|:)\\s*$").containsMatchIn(before)
     }
 
     private fun isTaggedTemplate(before: String, token: DocumentToken, tags: Set<String>): Boolean {
@@ -171,6 +166,19 @@ class TailwindDocumentScanner {
         const val EXTENDED_CONTEXT_WINDOW = 2_000
         val CSS_EXTENSIONS = setOf("css", "scss", "sass", "less", "styl", "stylus", "pcss", "postcss")
     }
+}
+
+private class ClassContextPatterns(identifiers: Set<String>) {
+    private val identifierAlternation = identifiers.identifierPattern()
+
+    val attributeAssignment = identifierAlternation?.let { Regex("(?i)$it\\s*=\\s*([\"'])") }
+
+    private val attributeValue = identifierAlternation?.let { Regex("(?is)$it\\s*=\\s*(?:\\{[^{}]*)?$") }
+    private val assignedClassValue = identifierAlternation?.let { Regex("(?is)$it\\s*(?:(?::[^=]+)?=|:)\\s*$") }
+
+    fun matchesAttributeValue(before: String): Boolean = attributeValue?.containsMatchIn(before) == true
+
+    fun matchesAssignedClassValue(before: String): Boolean = assignedClassValue?.containsMatchIn(before) == true
 }
 
 private enum class TokenKind {

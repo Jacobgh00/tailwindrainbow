@@ -150,7 +150,10 @@ class TailwindRainbowProjectService(private val project: Project) : Disposable {
     }
 }
 
+/** Swing renders only regular and bold, so every weight at or above this maps to bold. */
+private const val BOLD_WEIGHT_THRESHOLD = 600
+
 private fun HighlightSegment.toTextAttributes(): TextAttributes = TextAttributes().apply {
     foregroundColor = Color.decode(style.color)
-    fontType = if (style.fontWeight.value >= 600) Font.BOLD else Font.PLAIN
+    fontType = if (style.fontWeight.value >= BOLD_WEIGHT_THRESHOLD) Font.BOLD else Font.PLAIN
 }

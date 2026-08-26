@@ -1,0 +1,28 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <id>dev.tailwindrainbow</id>
+    <name>Tailwind Rainbow</name>
+    <vendor url="https://github.com/Jacobgh00/tailwindRainbow">Jacobgh00</vendor>
+
+    <description><![CDATA[
+        Colorizes Tailwind CSS variant prefixes so long class lists stay readable.
+        <p>Each variant — <code>hover</code>, <code>focus</code>, <code>sm</code>, <code>dark</code>,
+        arbitrary values such as <code>[&amp;>*]</code>, and the <code>!</code> important modifier —
+        is painted in its own color, making the structure of a class list visible at a glance.</p>
+        <p>Works in HTML, JSX/TSX, Vue, Svelte, Astro, PHP, and in CSS <code>@apply</code> directives.
+        Colors, themes, and the recognized attributes, helper functions, and file types are configurable
+        under <b>Settings | Editor | Tailwind Rainbow</b>.</p>
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <postStartupActivity
+                implementation="dev.tailwindrainbow.intellij.application.TailwindRainbowProjectActivity"/>
+        <applicationConfigurable
+                parentId="editor"
+                instance="dev.tailwindrainbow.intellij.settings.TailwindRainbowSettingsConfigurable"
+                id="dev.tailwindrainbow.intellij.settings"
+                displayName="Tailwind Rainbow"/>
+    </extensions>
+</idea-plugin>
