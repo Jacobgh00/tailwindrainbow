@@ -19,7 +19,10 @@ import dev.tailwindrainbow.intellij.bootstrap.PluginComponents
  * untested logic here is the PSI-to-text translation the IDE alone can exercise.
  */
 class TailwindRainbowAnnotator : Annotator {
-    override fun annotate(element: PsiElement, holder: AnnotationHolder) {
+    override fun annotate(
+        element: PsiElement,
+        holder: AnnotationHolder,
+    ) {
         if (element !is PsiFile) return
 
         val extension = element.virtualFile?.extension ?: return

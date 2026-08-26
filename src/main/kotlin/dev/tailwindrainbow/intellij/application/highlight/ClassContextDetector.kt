@@ -19,7 +19,10 @@ internal class ClassContextDetector(private val settings: ScanSettings) {
     private val attributeValue = identifierAlternation?.let { Regex("(?is)$it\\s*=\\s*(?:\\{[^{}]*)?$") }
     private val assignedValue = identifierAlternation?.let { Regex("(?is)$it\\s*(?:(?::[^=]+)?=|:)\\s*$") }
 
-    fun holdsClassNames(text: String, token: DocumentToken): Boolean {
+    fun holdsClassNames(
+        text: String,
+        token: DocumentToken,
+    ): Boolean {
         val precedingText = text.substring((token.start - CONTEXT_WINDOW).coerceAtLeast(0), token.start)
 
         return attributeValue.matchesEndOf(precedingText) ||
@@ -28,7 +31,10 @@ internal class ClassContextDetector(private val settings: ScanSettings) {
             isClassHelperArgument(text, token.start)
     }
 
-    private fun isTaggedTemplate(precedingText: String, token: DocumentToken): Boolean {
+    private fun isTaggedTemplate(
+        precedingText: String,
+        token: DocumentToken,
+    ): Boolean {
         if (token.kind != TokenKind.TEMPLATE) return false
 
         val tag = TRAILING_IDENTIFIER.find(precedingText)?.groupValues?.get(1)
@@ -36,19 +42,23 @@ internal class ClassContextDetector(private val settings: ScanSettings) {
     }
 
     /** Walks left past balanced parentheses to the call this token sits inside, if any. */
-    private fun isClassHelperArgument(text: String, tokenStart: Int): Boolean {
+    private fun isClassHelperArgument(
+        text: String,
+        tokenStart: Int,
+    ): Boolean {
         var depth = 0
         var index = tokenStart - 1
 
         while (index >= 0 && tokenStart - index <= HELPER_SEARCH_WINDOW) {
             when (text[index]) {
                 ')' -> depth++
-                '(' -> if (depth == 0) {
-                    val callee = text.identifierBefore(index) ?: return false
-                    return callee in settings.classFunctions
-                } else {
-                    depth--
-                }
+                '(' ->
+                    if (depth == 0) {
+                        val callee = text.identifierBefore(index) ?: return false
+                        return callee in settings.classFunctions
+                    } else {
+                        depth--
+                    }
             }
             index--
         }
@@ -65,12 +75,14 @@ internal class ClassContextDetector(private val settings: ScanSettings) {
 
 private fun Regex?.matchesEndOf(text: String): Boolean = this?.containsMatchIn(text) == true
 
+private fun Char.isIdentifierPart(): Boolean = isLetterOrDigit() || this == '_' || this == '$'
+
 private fun String.identifierBefore(endExclusive: Int): String? {
     var end = endExclusive - 1
     while (end >= 0 && this[end].isWhitespace()) end--
 
     var start = end
-    while (start >= 0 && (this[start].isLetterOrDigit() || this[start] == '_' || this[start] == '$')) start--
+    while (start >= 0 && this[start].isIdentifierPart()) start--
 
     return substring(start + 1, end + 1).ifEmpty { null }
 }
@@ -84,9 +96,10 @@ private fun String.identifierBefore(endExclusive: Int): String? {
 private fun Set<String>.identifierPattern(): String? {
     if (isEmpty()) return null
 
-    val alternatives = joinToString("|") { identifier ->
-        if (identifier.endsWith(':')) "${Regex.escape(identifier)}[A-Za-z0-9_-]*" else Regex.escape(identifier)
-    }
+    val alternatives =
+        joinToString("|") { identifier ->
+            if (identifier.endsWith(':')) "${Regex.escape(identifier)}[A-Za-z0-9_-]*" else Regex.escape(identifier)
+        }
 
     return "(?<![\\w:-])(?:$alternatives)(?![\\w-])"
 }

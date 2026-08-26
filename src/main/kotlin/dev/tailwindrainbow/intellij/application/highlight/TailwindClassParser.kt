@@ -5,13 +5,20 @@ import dev.tailwindrainbow.intellij.domain.theme.ThemeMatch
 import dev.tailwindrainbow.intellij.domain.theme.ThemeMatcher
 
 class TailwindClassParser(private val themeMatcher: ThemeMatcher) {
-    fun parse(content: String, startOffset: Int = 0): List<HighlightSegment> = buildList {
-        for ((value, start) in content.classWords()) {
-            addAll(parseClass(value, startOffset + start))
+    fun parse(
+        content: String,
+        startOffset: Int = 0,
+    ): List<HighlightSegment> =
+        buildList {
+            for ((value, start) in content.classWords()) {
+                addAll(parseClass(value, startOffset + start))
+            }
         }
-    }
 
-    private fun parseClass(className: String, startOffset: Int): List<HighlightSegment> {
+    private fun parseClass(
+        className: String,
+        startOffset: Int,
+    ): List<HighlightSegment> {
         if (className.startsWith(':') || className.endsWith(':')) {
             return emptyList()
         }
@@ -30,7 +37,10 @@ class TailwindClassParser(private val themeMatcher: ThemeMatcher) {
         }
     }
 
-    private fun MutableList<HighlightSegment>.addImportantSegment(startOffset: Int, importantLength: Int) {
+    private fun MutableList<HighlightSegment>.addImportantSegment(
+        startOffset: Int,
+        importantLength: Int,
+    ) {
         if (importantLength == 0) {
             return
         }
@@ -40,7 +50,10 @@ class TailwindClassParser(private val themeMatcher: ThemeMatcher) {
         }
     }
 
-    private fun MutableList<HighlightSegment>.addClassSegments(parts: List<String>, startOffset: Int) {
+    private fun MutableList<HighlightSegment>.addClassSegments(
+        parts: List<String>,
+        startOffset: Int,
+    ) {
         val baseClass = parts.last()
         val prefixes = parts.dropLast(1)
         val baseMatch = themeMatcher.matchBase(baseClass)
@@ -111,10 +124,11 @@ private fun String.splitOnUnnestedColons(): List<String> {
             when (character) {
                 '[' -> bracketDepth++
                 ']' -> bracketDepth = (bracketDepth - 1).coerceAtLeast(0)
-                ':' -> if (bracketDepth == 0) {
-                    add(className.substring(partStart, index))
-                    partStart = index + 1
-                }
+                ':' ->
+                    if (bracketDepth == 0) {
+                        add(className.substring(partStart, index))
+                        partStart = index + 1
+                    }
             }
         }
 
@@ -122,6 +136,7 @@ private fun String.splitOnUnnestedColons(): List<String> {
     }
 }
 
-private fun ThemeMatch.toSegment(start: Int, end: Int): HighlightSegment =
-    HighlightSegment(start, end, key, style, kind)
-
+private fun ThemeMatch.toSegment(
+    start: Int,
+    end: Int,
+): HighlightSegment = HighlightSegment(start, end, key, style, kind)

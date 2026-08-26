@@ -19,8 +19,9 @@ class ArchitectureTest {
         assertNoneOf(
             layer = "/domain/",
             forbidden = listOf("$BASE.application", "$BASE.adapter", "$BASE.bootstrap", "com.intellij"),
-            because = "the innermost layer holds the model and its invariants; it must stay usable, " +
-                "and testable, with no framework and no outer layer present",
+            because =
+                "the innermost layer holds the model and its invariants; it must stay usable, " +
+                    "and testable, with no framework and no outer layer present",
         )
     }
 
@@ -29,25 +30,28 @@ class ArchitectureTest {
         assertNoneOf(
             layer = "/application/",
             forbidden = listOf("$BASE.adapter", "$BASE.bootstrap", "com.intellij"),
-            because = "use cases talk to the outside through ports; importing an adapter inverts the " +
-                "dependency and makes the use case need an IDE to run",
+            because =
+                "use cases talk to the outside through ports; importing an adapter inverts the " +
+                    "dependency and makes the use case need an IDE to run",
         )
     }
 
     @Test
     fun `only adapters and the composition root touch the IntelliJ Platform`() {
-        val offenders = sources()
-            .filter { it.importsPlatform }
-            .filterNot { it.path.contains("/adapter/") || it.path.contains("/bootstrap/") }
+        val offenders =
+            sources()
+                .filter { it.importsPlatform }
+                .filterNot { it.path.contains("/adapter/") || it.path.contains("/bootstrap/") }
 
         assertTrue(offenders.isEmpty(), "com.intellij escaped the outer layer: ${offenders.names()}")
     }
 
     @Test
     fun `the IntelliJ adapter contains only code that touches the IntelliJ Platform`() {
-        val offenders = sources()
-            .filter { it.path.contains("/adapter/intellij/") }
-            .filterNot { it.importsPlatform }
+        val offenders =
+            sources()
+                .filter { it.path.contains("/adapter/intellij/") }
+                .filterNot { it.importsPlatform }
 
         assertTrue(
             offenders.isEmpty(),
@@ -58,9 +62,10 @@ class ArchitectureTest {
 
     @Test
     fun `the composition root is the only place that names a concrete adapter`() {
-        val offenders = sources()
-            .filterNot { it.path.contains("/adapter/") || it.path.contains("/bootstrap/") }
-            .filter { "$BASE.adapter" in it.text }
+        val offenders =
+            sources()
+                .filterNot { it.path.contains("/adapter/") || it.path.contains("/bootstrap/") }
+                .filter { "$BASE.adapter" in it.text }
 
         assertTrue(
             offenders.isEmpty(),
@@ -68,10 +73,15 @@ class ArchitectureTest {
         )
     }
 
-    private fun assertNoneOf(layer: String, forbidden: List<String>, because: String) {
-        val offenders = sources()
-            .filter { layer in it.path }
-            .filter { file -> forbidden.any { it in file.text } }
+    private fun assertNoneOf(
+        layer: String,
+        forbidden: List<String>,
+        because: String,
+    ) {
+        val offenders =
+            sources()
+                .filter { layer in it.path }
+                .filter { file -> forbidden.any { it in file.text } }
 
         assertTrue(offenders.isEmpty(), "${offenders.names()} — $because")
     }

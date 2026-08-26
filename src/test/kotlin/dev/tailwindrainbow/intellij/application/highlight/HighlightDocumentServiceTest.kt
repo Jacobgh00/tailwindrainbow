@@ -36,10 +36,14 @@ class HighlightDocumentServiceTest {
     @Test
     fun `the requested theme name is the one asked of the catalog`() {
         var asked: String? = null
-        val service = HighlightDocumentService(
-            settings = SettingsProvider { settings(themeName = "synthwave") },
-            themes = { name -> asked = name; theme },
-        )
+        val service =
+            HighlightDocumentService(
+                settings = SettingsProvider { settings(themeName = "synthwave") },
+                themes = { name ->
+                    asked = name
+                    theme
+                },
+            )
 
         service.highlight(html, "html")
 
@@ -58,8 +62,7 @@ class HighlightDocumentServiceTest {
         assertTrue(service.highlight(html, "html").isEmpty())
     }
 
-    private fun serviceWith(current: HighlightSettings) =
-        HighlightDocumentService(SettingsProvider { current }, ThemeCatalog { theme })
+    private fun serviceWith(current: HighlightSettings) = HighlightDocumentService(SettingsProvider { current }, ThemeCatalog { theme })
 
     private fun settings(
         enabled: Boolean = true,

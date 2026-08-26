@@ -2,6 +2,7 @@ package dev.tailwindrainbow.intellij.application.settings
 
 import dev.tailwindrainbow.intellij.application.highlight.ScanSettings
 import dev.tailwindrainbow.intellij.application.port.HighlightSettings
+import dev.tailwindrainbow.intellij.application.theme.ThemeSpec
 
 /**
  * Settings exactly as typed, before anything is validated.
@@ -19,11 +20,11 @@ data class SettingsForm(
     val templateTags: String,
     val ignoredPrefixModifiers: String,
     val supportedExtensions: String,
+    val themes: List<ThemeSpec> = emptyList(),
 )
 
-/** The outcome of validating a [SettingsForm]. */
 sealed interface FormResult {
-    data class Valid(val settings: HighlightSettings) : FormResult
+    data class Valid(val settings: HighlightSettings, val themes: List<ThemeSpec>) : FormResult
 
     data class Invalid(val message: String) : FormResult
 }
@@ -43,34 +44,41 @@ object SettingsFormMapper {
         }
 
         return FormResult.Valid(
-            HighlightSettings(
-                enabled = form.enabled,
-                themeName = form.themeName,
-                scan = ScanSettings(
-                    maxFileSize = maxFileSize,
-                    classIdentifiers = form.classIdentifiers.toValues(),
-                    classFunctions = form.classFunctions.toValues(),
-                    templateTags = form.templateTags.toValues(),
-                    ignoredPrefixModifiers = form.ignoredPrefixModifiers.toValues(),
-                    supportedExtensions = form.supportedExtensions.toValues().map(String::lowercase).toSet(),
+            themes = form.themes.filter { it.entries.isNotEmpty() },
+            settings =
+                HighlightSettings(
+                    enabled = form.enabled,
+                    themeName = form.themeName,
+                    scan =
+                        ScanSettings(
+                            maxFileSize = maxFileSize,
+                            classIdentifiers = form.classIdentifiers.toValues(),
+                            classFunctions = form.classFunctions.toValues(),
+                            templateTags = form.templateTags.toValues(),
+                            ignoredPrefixModifiers = form.ignoredPrefixModifiers.toValues(),
+                            supportedExtensions = form.supportedExtensions.toValues().map(String::lowercase).toSet(),
+                        ),
                 ),
-            ),
         )
     }
 
-    fun toForm(settings: HighlightSettings): SettingsForm = SettingsForm(
-        enabled = settings.enabled,
-        themeName = settings.themeName,
-        maxFileSize = settings.scan.maxFileSize.toString(),
-        classIdentifiers = settings.scan.classIdentifiers.toText(),
-        classFunctions = settings.scan.classFunctions.toText(),
-        templateTags = settings.scan.templateTags.toText(),
-        ignoredPrefixModifiers = settings.scan.ignoredPrefixModifiers.toText(),
-        supportedExtensions = settings.scan.supportedExtensions.toText(),
-    )
+    fun toForm(
+        settings: HighlightSettings,
+        themes: List<ThemeSpec> = emptyList(),
+    ): SettingsForm =
+        SettingsForm(
+            enabled = settings.enabled,
+            themeName = settings.themeName,
+            maxFileSize = settings.scan.maxFileSize.toString(),
+            classIdentifiers = settings.scan.classIdentifiers.toText(),
+            classFunctions = settings.scan.classFunctions.toText(),
+            templateTags = settings.scan.templateTags.toText(),
+            ignoredPrefixModifiers = settings.scan.ignoredPrefixModifiers.toText(),
+            supportedExtensions = settings.scan.supportedExtensions.toText(),
+            themes = themes,
+        )
 
-    private fun String.toValues(): Set<String> =
-        split(',').map(String::trim).filter(String::isNotEmpty).toSet()
+    private fun String.toValues(): Set<String> = split(',').map(String::trim).filter(String::isNotEmpty).toSet()
 
     private fun Set<String>.toText(): String = joinToString(", ")
 }

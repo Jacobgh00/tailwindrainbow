@@ -52,18 +52,20 @@ object ThemeParser {
 
     private fun StyleEntry.toTextStyle(): TextStyle? {
         if (!HEX_COLOR.matches(color)) return null
-        if (fontWeight !in VALID_WEIGHTS) return null
+        if (!FontWeight.isValid(fontWeight)) return null
         if (section.needsKey && key.isBlank()) return null
 
         return TextStyle(color, FontWeight.of(fontWeight), enabled)
     }
 
     private fun StyleEntry.problem(themeName: String): ThemeProblem {
-        val reason = when {
-            !HEX_COLOR.matches(color) -> "color must use #RRGGBB format, was '$color'"
-            fontWeight !in VALID_WEIGHTS -> "font weight must be a multiple of 100 between 100 and 900, was $fontWeight"
-            else -> "a ${section.name.lowercase()} entry needs a key"
-        }
+        val reason =
+            when {
+                !HEX_COLOR.matches(color) -> "color must use #RRGGBB format, was '$color'"
+                !FontWeight.isValid(fontWeight) ->
+                    "font weight must be one of ${FontWeight.ALL.sorted()}, was $fontWeight"
+                else -> "a ${section.name.lowercase()} entry needs a key"
+            }
 
         return ThemeProblem(themeName, section, key, reason)
     }
@@ -72,5 +74,4 @@ object ThemeParser {
         get() = this == SegmentKind.PREFIX || this == SegmentKind.BASE
 
     private val HEX_COLOR = Regex("^#[0-9a-fA-F]{6}$")
-    private val VALID_WEIGHTS = (100..900 step 100).toSet()
 }

@@ -10,20 +10,24 @@ class ThemeMatcherTest {
     private val wildcard = TextStyle("#222222", FontWeight.BOLD)
     private val arbitrary = TextStyle("#333333", FontWeight.BOLD)
 
-    private val matcher = ThemeMatcher(
-        theme = RainbowTheme(
-            prefix = mapOf(
-                "hover" to exact,
-                "min-*" to wildcard,
-            ),
-            base = mapOf(
-                "bg-blue-500" to exact,
-                "bg-*" to wildcard,
-            ),
-            arbitrary = arbitrary,
-        ),
-        ignoredPrefixModifiers = setOf("group", "peer"),
-    )
+    private val matcher =
+        ThemeMatcher(
+            theme =
+                RainbowTheme(
+                    prefix =
+                        mapOf(
+                            "hover" to exact,
+                            "min-*" to wildcard,
+                        ),
+                    base =
+                        mapOf(
+                            "bg-blue-500" to exact,
+                            "bg-*" to wildcard,
+                        ),
+                    arbitrary = arbitrary,
+                ),
+            ignoredPrefixModifiers = setOf("group", "peer"),
+        )
 
     @Test
     fun `exact prefix matches before wildcard`() {
@@ -52,7 +56,10 @@ class ThemeMatcherTest {
 
     @Test
     fun `standalone arbitrary class uses arbitrary style`() {
-        assertEquals(ThemeMatch("arbitrary", arbitrary, SegmentKind.ARBITRARY), matcher.matchBase("[mask-type:luminance]"))
+        assertEquals(
+            ThemeMatch("arbitrary", arbitrary, SegmentKind.ARBITRARY),
+            matcher.matchBase("[mask-type:luminance]"),
+        )
     }
 
     @Test
@@ -63,10 +70,11 @@ class ThemeMatcherTest {
 
     @Test
     fun `literal star variants do not behave as catch-all wildcards`() {
-        val starMatcher = ThemeMatcher(
-            theme = RainbowTheme(prefix = mapOf("*" to exact, "**" to wildcard)),
-            ignoredPrefixModifiers = emptySet(),
-        )
+        val starMatcher =
+            ThemeMatcher(
+                theme = RainbowTheme(prefix = mapOf("*" to exact, "**" to wildcard)),
+                ignoredPrefixModifiers = emptySet(),
+            )
 
         assertEquals(ThemeMatch("*", exact, SegmentKind.PREFIX), starMatcher.matchPrefix("*"))
         assertEquals(ThemeMatch("**", wildcard, SegmentKind.PREFIX), starMatcher.matchPrefix("**"))

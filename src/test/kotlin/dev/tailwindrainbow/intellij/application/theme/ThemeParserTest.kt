@@ -1,8 +1,5 @@
 package dev.tailwindrainbow.intellij.application.theme
 
-import dev.tailwindrainbow.intellij.application.theme.StyleEntry
-import dev.tailwindrainbow.intellij.application.theme.ThemeParser
-import dev.tailwindrainbow.intellij.application.theme.ThemeSpec
 import dev.tailwindrainbow.intellij.domain.theme.SegmentKind
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -30,15 +27,16 @@ class ThemeParserTest {
 
     @Test
     fun `one bad entry does not cost the user the rest of the theme`() {
-        val parsed = ThemeParser.parse(
-            ThemeSpec(
-                "mine",
-                listOf(
-                    entry(key = "hover", color = "not-a-colour"),
-                    entry(key = "focus", color = "#00ff00"),
+        val parsed =
+            ThemeParser.parse(
+                ThemeSpec(
+                    "mine",
+                    listOf(
+                        entry(key = "hover", color = "not-a-colour"),
+                        entry(key = "focus", color = "#00ff00"),
+                    ),
                 ),
-            ),
-        )
+            )
 
         assertNull(parsed.theme.prefix["hover"])
         assertEquals("#00ff00", parsed.theme.prefix["focus"]?.color)
@@ -49,20 +47,22 @@ class ThemeParserTest {
     fun `an out of range font weight is reported`() {
         val parsed = ThemeParser.parse(spec(entry(fontWeight = 650)))
 
-        assertTrue(parsed.problems.single().message.contains("multiple of 100"))
+        assertTrue(parsed.problems.single().message.contains("font weight"))
+        assertTrue(parsed.problems.single().message.contains("650"))
     }
 
     @Test
     fun `arbitrary and important need no key`() {
-        val parsed = ThemeParser.parse(
-            ThemeSpec(
-                "mine",
-                listOf(
-                    StyleEntry(SegmentKind.ARBITRARY, key = "", color = "#111111", fontWeight = 700),
-                    StyleEntry(SegmentKind.IMPORTANT, key = "", color = "#222222", fontWeight = 900),
+        val parsed =
+            ThemeParser.parse(
+                ThemeSpec(
+                    "mine",
+                    listOf(
+                        StyleEntry(SegmentKind.ARBITRARY, key = "", color = "#111111", fontWeight = 700),
+                        StyleEntry(SegmentKind.IMPORTANT, key = "", color = "#222222", fontWeight = 900),
+                    ),
                 ),
-            ),
-        )
+            )
 
         assertEquals("#111111", parsed.theme.arbitrary?.color)
         assertEquals("#222222", parsed.theme.important?.color)
@@ -84,4 +84,3 @@ class ThemeParserTest {
         fontWeight: Int = 700,
     ) = StyleEntry(SegmentKind.PREFIX, key, color, fontWeight)
 }
-

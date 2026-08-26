@@ -26,25 +26,32 @@ class TailwindRainbowSettingsConfigurable : SearchableConfigurable {
 
     override fun createComponent(): JComponent {
         val settings = TailwindRainbowSettings.getInstance()
-        val created = SettingsPanel(settings.themeRepository().names.toList())
+        val created =
+            SettingsPanel(
+                themeNames = settings.themes.names().toList(),
+                inheritedTheme = { name -> settings.themes.inherited(name) },
+            )
 
-        created.write(SettingsFormMapper.toForm(settings.current()))
+        created.write(SettingsFormMapper.toForm(settings.current(), settings.themes.overrides()))
         panel = created
 
         return created.component
     }
 
     /** An unparseable form counts as modified, so Apply runs and reports why. */
-    override fun isModified(): Boolean = when (val result = currentResult() ?: return false) {
-        is FormResult.Valid -> result.settings != TailwindRainbowSettings.getInstance().current()
-        is FormResult.Invalid -> true
-    }
+    override fun isModified(): Boolean =
+        when (val result = currentResult() ?: return false) {
+            is FormResult.Valid ->
+                result.settings != TailwindRainbowSettings.getInstance().current() ||
+                    result.themes != TailwindRainbowSettings.getInstance().themes.overrides()
+            is FormResult.Invalid -> true
+        }
 
     override fun apply() {
         when (val result = currentResult() ?: return) {
             is FormResult.Invalid -> throw ConfigurationException(result.message)
             is FormResult.Valid -> {
-                TailwindRainbowSettings.getInstance().update(result.settings)
+                TailwindRainbowSettings.getInstance().update(result.settings, result.themes)
                 ProjectManager.getInstance().openProjects.forEach { project ->
                     DaemonCodeAnalyzer.getInstance(project).restart()
                 }
@@ -53,7 +60,8 @@ class TailwindRainbowSettingsConfigurable : SearchableConfigurable {
     }
 
     override fun reset() {
-        panel?.write(SettingsFormMapper.toForm(TailwindRainbowSettings.getInstance().current()))
+        val settings = TailwindRainbowSettings.getInstance()
+        panel?.write(SettingsFormMapper.toForm(settings.current(), settings.themes.overrides()))
     }
 
     override fun disposeUIResources() {

@@ -4,6 +4,7 @@ import com.intellij.util.xmlb.annotations.XCollection
 import dev.tailwindrainbow.intellij.application.theme.StyleEntry
 import dev.tailwindrainbow.intellij.application.theme.ThemeParser
 import dev.tailwindrainbow.intellij.application.theme.ThemeSpec
+import dev.tailwindrainbow.intellij.domain.theme.FontWeight
 import dev.tailwindrainbow.intellij.domain.theme.SegmentKind
 
 /**
@@ -23,30 +24,33 @@ class StoredTheme {
     fun toSpec(): ThemeSpec = ThemeSpec(name, entries.map(StoredStyle::toEntry))
 
     companion object {
-        fun of(spec: ThemeSpec): StoredTheme = StoredTheme().apply {
-            name = spec.name
-            entries = spec.entries.mapTo(mutableListOf(), StoredStyle::of)
-        }
+        fun of(spec: ThemeSpec): StoredTheme =
+            StoredTheme().apply {
+                name = spec.name
+                entries = spec.entries.mapTo(mutableListOf(), StoredStyle::of)
+            }
     }
 }
 
 class StoredStyle {
     var section: SegmentKind = SegmentKind.PREFIX
     var key: String = ""
-    var color: String = "#ffffff"
-    var fontWeight: Int = 700
+    var color: String = DEFAULT_COLOR
+    var fontWeight: Int = FontWeight.BOLD.value
     var enabled: Boolean = true
 
     fun toEntry(): StyleEntry = StyleEntry(section, key, color, fontWeight, enabled)
 
     companion object {
-        fun of(entry: StyleEntry): StoredStyle = StoredStyle().apply {
-            section = entry.section
-            key = entry.key
-            color = entry.color
-            fontWeight = entry.fontWeight
-            enabled = entry.enabled
-        }
+        private const val DEFAULT_COLOR = "#ffffff"
+
+        fun of(entry: StyleEntry): StoredStyle =
+            StoredStyle().apply {
+                section = entry.section
+                key = entry.key
+                color = entry.color
+                fontWeight = entry.fontWeight
+                enabled = entry.enabled
+            }
     }
 }
-

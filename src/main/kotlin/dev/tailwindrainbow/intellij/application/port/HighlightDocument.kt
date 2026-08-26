@@ -9,5 +9,8 @@ import dev.tailwindrainbow.intellij.domain.highlight.HighlightSegment
  * what to paint — no PSI, no editor, no settings service.
  */
 fun interface HighlightDocument {
-    fun highlight(text: String, fileExtension: String): List<HighlightSegment>
+    fun highlight(
+        text: String,
+        fileExtension: String,
+    ): List<HighlightSegment>
 }

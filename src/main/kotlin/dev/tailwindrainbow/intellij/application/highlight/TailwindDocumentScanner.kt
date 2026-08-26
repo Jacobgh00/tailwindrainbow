@@ -53,18 +53,18 @@ class TailwindDocumentScanner {
         token: DocumentToken,
         detector: ClassContextDetector,
         parser: TailwindClassParser,
-    ): List<HighlightSegment> = buildList {
-        val attribute = detector.attributeAssignment ?: return@buildList
+    ): List<HighlightSegment> =
+        buildList {
+            val attribute = detector.attributeAssignment ?: return@buildList
 
-        attribute.findAll(token.content).forEach { match ->
-            val quote = match.groupValues[1].single()
-            val valueStart = match.range.last + 1
-            val valueEnd = token.content.indexOfUnescaped(quote, valueStart)
+            attribute.findAll(token.content).forEach { match ->
+                val quote = match.groupValues[1].single()
+                val valueStart = match.range.last + 1
+                val valueEnd = token.content.indexOfUnescaped(quote, valueStart)
 
-            if (valueEnd >= valueStart) {
-                addAll(parser.parse(token.content.substring(valueStart, valueEnd), token.contentStart + valueStart))
+                if (valueEnd >= valueStart) {
+                    addAll(parser.parse(token.content.substring(valueStart, valueEnd), token.contentStart + valueStart))
+                }
             }
         }
-    }
 }
-

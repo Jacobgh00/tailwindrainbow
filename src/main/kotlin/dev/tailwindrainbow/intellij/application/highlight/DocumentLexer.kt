@@ -27,29 +27,31 @@ internal data class DocumentToken(
  * over-collects and [ClassContextDetector] decides which tokens are worth parsing.
  */
 internal class DocumentLexer(private val profile: SyntaxProfile) {
-    fun tokenize(text: String): List<DocumentToken> = buildList {
-        var index = 0
+    fun tokenize(text: String): List<DocumentToken> =
+        buildList {
+            var index = 0
 
-        while (index < text.length) {
-            val token = text.commentAt(index) ?: text.stringAt(index)
+            while (index < text.length) {
+                val token = text.commentAt(index) ?: text.stringAt(index)
 
-            if (token == null) {
-                index++
-            } else {
-                add(token)
-                index = token.end
+                if (token == null) {
+                    index++
+                } else {
+                    add(token)
+                    index = token.end
+                }
             }
         }
-    }
 
     private fun String.commentAt(index: Int): DocumentToken? {
-        val end = when {
-            startsWith("<!--", index) -> commentEnd(index, "-->")
-            startsWith("{/*", index) -> commentEnd(index, "*/}")
-            startsWith("/*", index) -> commentEnd(index, "*/")
-            startsWith("//", index) || (profile.usesHashComments && this[index] == '#') -> lineEnd(index)
-            else -> return null
-        }
+        val end =
+            when {
+                startsWith("<!--", index) -> commentEnd(index, "-->")
+                startsWith("{/*", index) -> commentEnd(index, "*/}")
+                startsWith("/*", index) -> commentEnd(index, "*/")
+                startsWith("//", index) || (profile.usesHashComments && this[index] == '#') -> lineEnd(index)
+                else -> return null
+            }
 
         return DocumentToken(TokenKind.COMMENT, "", index, end, index)
     }
@@ -76,7 +78,10 @@ internal class DocumentLexer(private val profile: SyntaxProfile) {
     }
 }
 
-internal fun String.indexOfUnescaped(character: Char, startIndex: Int): Int {
+internal fun String.indexOfUnescaped(
+    character: Char,
+    startIndex: Int,
+): Int {
     var index = startIndex
 
     while (index < length) {
@@ -90,7 +95,10 @@ internal fun String.indexOfUnescaped(character: Char, startIndex: Int): Int {
     return -1
 }
 
-private fun String.commentEnd(start: Int, terminator: String): Int {
+private fun String.commentEnd(
+    start: Int,
+    terminator: String,
+): Int {
     val terminatorIndex = indexOf(terminator, start + 2)
     return if (terminatorIndex < 0) length else terminatorIndex + terminator.length
 }

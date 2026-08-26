@@ -1,7 +1,6 @@
 package dev.tailwindrainbow.intellij.application.theme
 
 import dev.tailwindrainbow.intellij.adapter.theme.BuiltInThemes
-import dev.tailwindrainbow.intellij.application.theme.ThemeRepository
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -38,4 +37,3 @@ class BuiltInThemesTest {
         assertEquals(BuiltInThemes.default, ThemeRepository(BuiltInThemes).find("no-such-theme"))
     }
 }
-

@@ -29,20 +29,13 @@ class ThemeRepository(private val sources: List<ThemeSource>) {
 
     val names: Set<String> get() = resolved.keys
 
-    /**
-     * The named theme, or the fallback when it is unknown — a name can go stale when a user theme
-     * is deleted or a plugin that contributed one is removed.
-     *
-     * The fallback is the first theme of the first source rather than a hard-coded name, so this
-     * layer never has to know which palettes ship with the plugin.
-     */
     fun find(name: String): RainbowTheme = resolved[name] ?: resolved.values.first()
 }
 
-private fun RainbowTheme.overriddenBy(override: RainbowTheme) = RainbowTheme(
-    prefix = prefix + override.prefix,
-    base = base + override.base,
-    arbitrary = override.arbitrary ?: arbitrary,
-    important = override.important ?: important,
-)
-
+private fun RainbowTheme.overriddenBy(override: RainbowTheme) =
+    RainbowTheme(
+        prefix = prefix + override.prefix,
+        base = base + override.base,
+        arbitrary = override.arbitrary ?: arbitrary,
+        important = override.important ?: important,
+    )

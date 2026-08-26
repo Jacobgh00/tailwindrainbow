@@ -1,6 +1,5 @@
 package dev.tailwindrainbow.intellij.application.highlight
 
-import dev.tailwindrainbow.intellij.application.highlight.TailwindClassParser
 import dev.tailwindrainbow.intellij.domain.highlight.HighlightSegment
 import dev.tailwindrainbow.intellij.domain.theme.FontWeight
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
@@ -18,17 +17,18 @@ class TailwindClassParserTest {
     private val importantStyle = TextStyle("#ff0000", FontWeight.BOLD)
     private val arbitraryStyle = TextStyle("#ffaa00", FontWeight.BOLD)
 
-    private fun parser(base: Map<String, TextStyle> = emptyMap()) = TailwindClassParser(
-        ThemeMatcher(
-            RainbowTheme(
-                prefix = mapOf("hover" to prefixStyle, "lg" to responsiveStyle),
-                base = base,
-                arbitrary = arbitraryStyle,
-                important = importantStyle,
+    private fun parser(base: Map<String, TextStyle> = emptyMap()) =
+        TailwindClassParser(
+            ThemeMatcher(
+                RainbowTheme(
+                    prefix = mapOf("hover" to prefixStyle, "lg" to responsiveStyle),
+                    base = base,
+                    arbitrary = arbitraryStyle,
+                    important = importantStyle,
+                ),
+                ignoredPrefixModifiers = setOf("group", "peer"),
             ),
-            ignoredPrefixModifiers = setOf("group", "peer"),
-        ),
-    )
+        )
 
     @Test
     fun `last configured prefix colours the remaining class when base is not configured`() {
@@ -89,4 +89,3 @@ class TailwindClassParserTest {
 }
 
 private fun HighlightSegment.sliceOf(source: String): String = source.substring(start, end)
-

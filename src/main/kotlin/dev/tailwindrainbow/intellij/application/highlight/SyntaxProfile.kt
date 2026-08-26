@@ -11,10 +11,11 @@ internal data class SyntaxProfile(
     val hasApplyDirectives: Boolean,
 ) {
     companion object {
-        fun of(extension: String): SyntaxProfile = SyntaxProfile(
-            usesHashComments = extension in HASH_COMMENT_EXTENSIONS,
-            hasApplyDirectives = extension in STYLESHEET_EXTENSIONS,
-        )
+        fun of(extension: String): SyntaxProfile =
+            SyntaxProfile(
+                usesHashComments = extension in HASH_COMMENT_EXTENSIONS,
+                hasApplyDirectives = extension in STYLESHEET_EXTENSIONS,
+            )
 
         /** Languages where `#` starts a line comment. */
         private val HASH_COMMENT_EXTENSIONS = setOf("php")

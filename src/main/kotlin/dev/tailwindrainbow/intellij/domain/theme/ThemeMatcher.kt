@@ -50,10 +50,17 @@ class ThemeMatcher(
     private fun arbitraryMatch(value: String): ThemeMatch? =
         if (value.isArbitrary()) theme.arbitrary.toMatch(ARBITRARY_KEY, SegmentKind.ARBITRARY) else null
 
-    private fun exactMatch(styles: Map<String, TextStyle>, value: String, kind: SegmentKind): ThemeMatch? =
-        styles[value].toMatch(value, kind)
+    private fun exactMatch(
+        styles: Map<String, TextStyle>,
+        value: String,
+        kind: SegmentKind,
+    ): ThemeMatch? = styles[value].toMatch(value, kind)
 
-    private fun wildcardMatch(styles: Map<String, TextStyle>, value: String, kind: SegmentKind): ThemeMatch? =
+    private fun wildcardMatch(
+        styles: Map<String, TextStyle>,
+        value: String,
+        kind: SegmentKind,
+    ): ThemeMatch? =
         styles.entries
             .filter { (pattern, style) -> style.enabled && pattern.isWildcard() && pattern.matchesGlob(value) }
             .maxByOrNull { (pattern) -> pattern.count { it != '*' } }
@@ -74,8 +81,10 @@ class ThemeMatcher(
     }
 }
 
-private fun TextStyle?.toMatch(key: String, kind: SegmentKind): ThemeMatch? =
-    this?.takeIf(TextStyle::enabled)?.let { ThemeMatch(key, it, kind) }
+private fun TextStyle?.toMatch(
+    key: String,
+    kind: SegmentKind,
+): ThemeMatch? = this?.takeIf(TextStyle::enabled)?.let { ThemeMatch(key, it, kind) }
 
 private fun String.isArbitrary(): Boolean = startsWith('[') && endsWith(']')
 

@@ -13,9 +13,7 @@ import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
 class UserThemeSource(private val specs: List<ThemeSpec>) : ThemeSource {
     private val parsed = specs.map(ThemeParser::parse)
 
-    /** Entries that could not be understood; surfaced in settings rather than thrown. */
     val problems: List<ThemeProblem> = parsed.flatMap { it.problems }
 
     override fun themes(): Map<String, RainbowTheme> = parsed.associate { it.name to it.theme }
 }
-

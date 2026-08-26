@@ -14,7 +14,8 @@ private const val BOLD_WEIGHT_THRESHOLD = 600
  * The only place the pure domain palette meets AWT, which is why the domain stores colors as
  * `#RRGGBB` strings and never imports anything from the platform.
  */
-internal fun TextStyle.toTextAttributes(): TextAttributes = TextAttributes().apply {
-    foregroundColor = Color.decode(color)
-    fontType = if (fontWeight.value >= BOLD_WEIGHT_THRESHOLD) Font.BOLD else Font.PLAIN
-}
+internal fun TextStyle.toTextAttributes(): TextAttributes =
+    TextAttributes().apply {
+        foregroundColor = Color.decode(color)
+        fontType = if (fontWeight.value >= BOLD_WEIGHT_THRESHOLD) Font.BOLD else Font.PLAIN
+    }

@@ -13,8 +13,14 @@ data class FontWeight(val value: Int) {
 
         val NORMAL = FontWeight(400)
         val BOLD = FontWeight(700)
+        val BLACK = FontWeight(900)
+
+        /** Every weight the model accepts. The single definition of the rule [FontWeight] enforces. */
+        val ALL: Set<Int> = (RANGE step STEP).toSet()
 
         fun of(value: Int): FontWeight = FontWeight(value)
+
+        fun isValid(value: Int): Boolean = value in ALL
     }
 }
 

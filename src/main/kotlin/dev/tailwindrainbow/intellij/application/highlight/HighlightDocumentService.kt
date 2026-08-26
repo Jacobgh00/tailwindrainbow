@@ -16,7 +16,10 @@ class HighlightDocumentService(
     private val themes: ThemeCatalog,
     private val scanner: TailwindDocumentScanner = TailwindDocumentScanner(),
 ) : HighlightDocument {
-    override fun highlight(text: String, fileExtension: String): List<HighlightSegment> {
+    override fun highlight(
+        text: String,
+        fileExtension: String,
+    ): List<HighlightSegment> {
         val current = settings.current()
         if (!current.enabled) return emptyList()
 

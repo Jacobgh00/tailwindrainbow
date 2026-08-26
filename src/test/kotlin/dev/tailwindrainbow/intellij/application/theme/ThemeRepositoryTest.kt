@@ -1,7 +1,6 @@
 package dev.tailwindrainbow.intellij.application.theme
 
 import dev.tailwindrainbow.intellij.application.port.ThemeSource
-import dev.tailwindrainbow.intellij.application.theme.ThemeRepository
 import dev.tailwindrainbow.intellij.domain.theme.FontWeight
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
 import dev.tailwindrainbow.intellij.domain.theme.TextStyle
@@ -10,15 +9,17 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class ThemeRepositoryTest {
-    private val builtIn = ThemeSource {
-        mapOf(
-            "default" to RainbowTheme(
-                prefix = mapOf("hover" to red, "focus" to red),
-                arbitrary = red,
-                important = red,
-            ),
-        )
-    }
+    private val builtIn =
+        ThemeSource {
+            mapOf(
+                "default" to
+                    RainbowTheme(
+                        prefix = mapOf("hover" to red, "focus" to red),
+                        arbitrary = red,
+                        important = red,
+                    ),
+            )
+        }
 
     @Test
     fun `a user override retints one entry and inherits the rest`() {
@@ -67,4 +68,3 @@ class ThemeRepositoryTest {
         val blue = TextStyle("#0000ff", FontWeight.BOLD)
     }
 }
-
