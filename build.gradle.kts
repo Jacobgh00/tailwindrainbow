@@ -1,8 +1,11 @@
+import org.jetbrains.changelog.Changelog
+
 plugins {
     id("org.jetbrains.kotlin.jvm")
     id("org.jetbrains.intellij.platform")
     id("org.jlleitschuh.gradle.ktlint") version "12.3.0"
     id("io.gitlab.arturbosch.detekt") version "1.23.8"
+    id("org.jetbrains.changelog") version "2.5.0"
 }
 
 group = "dev.tailwindrainbow"
@@ -36,6 +39,12 @@ intellijPlatform {
     }
 }
 
+// CHANGELOG.md is the single source of the release notes. Keeping them out of plugin.xml means
+// the Marketplace "What's New" tab cannot drift from the file reviewers actually read.
+changelog {
+    repositoryUrl = "https://github.com/Jacobgh00/tailwindrainbow"
+}
+
 tasks {
     test {
         useJUnitPlatform()
@@ -44,6 +53,23 @@ tasks {
     }
 
     patchPluginXml {
+        // Reads through changelog.instance rather than the extension itself: the extension is a
+        // script object, and capturing one in a provider breaks the configuration cache.
+        //
+        // Falls back to the Unreleased section so a build cut before the version is stamped still
+        // carries notes, rather than shipping an empty What's New tab.
+        val pluginVersion = project.version.toString()
+        changeNotes =
+            changelog.instance.map { log ->
+                val item =
+                    (if (log.has(pluginVersion)) log.get(pluginVersion) else log.unreleasedItem)
+                        ?: error("CHANGELOG.md has no $pluginVersion section and no Unreleased section")
+                log.renderItem(
+                    item.withHeader(false).withEmptySections(false),
+                    Changelog.OutputType.HTML,
+                )
+            }
+
         sinceBuild.set("252")
         // No upper bound: the plugin uses only stable platform API (one Annotator, one
         // Configurable). Setting untilBuild would stop it loading on the next IDE release
