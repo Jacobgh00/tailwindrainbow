@@ -1,4 +1,8 @@
-package dev.tailwindrainbow.intellij.domain
+package dev.tailwindrainbow.intellij.application.highlight
+
+import dev.tailwindrainbow.intellij.domain.highlight.HighlightSegment
+import dev.tailwindrainbow.intellij.domain.theme.ThemeMatch
+import dev.tailwindrainbow.intellij.domain.theme.ThemeMatcher
 
 class TailwindClassParser(private val themeMatcher: ThemeMatcher) {
     fun parse(content: String, startOffset: Int = 0): List<HighlightSegment> = buildList {
@@ -32,7 +36,7 @@ class TailwindClassParser(private val themeMatcher: ThemeMatcher) {
         }
 
         themeMatcher.matchImportant()?.let { match ->
-            add(match.toSegment(startOffset, startOffset + 1, SegmentKind.IMPORTANT))
+            add(match.toSegment(startOffset, startOffset + 1))
         }
     }
 
@@ -42,7 +46,7 @@ class TailwindClassParser(private val themeMatcher: ThemeMatcher) {
         val baseMatch = themeMatcher.matchBase(baseClass)
 
         if (prefixes.isEmpty()) {
-            baseMatch?.let { add(it.toSegment(startOffset, startOffset + baseClass.length, it.segmentKind())) }
+            baseMatch?.let { add(it.toSegment(startOffset, startOffset + baseClass.length)) }
             return
         }
 
@@ -55,14 +59,14 @@ class TailwindClassParser(private val themeMatcher: ThemeMatcher) {
                 val hasFollowingStyledSegment = index < prefixes.lastIndex || baseMatch != null
                 val end = if (hasFollowingStyledSegment) prefixStart + prefix.length + 1 else classEnd
 
-                add(match.toSegment(prefixStart, end, match.segmentKind(SegmentKind.PREFIX)))
+                add(match.toSegment(prefixStart, end))
             }
 
             prefixStart += prefix.length + 1
         }
 
         baseMatch?.let { match ->
-            add(match.toSegment(prefixStart, prefixStart + baseClass.length, match.segmentKind()))
+            add(match.toSegment(prefixStart, prefixStart + baseClass.length))
         }
     }
 }
@@ -118,8 +122,6 @@ private fun String.splitOnUnnestedColons(): List<String> {
     }
 }
 
-private fun ThemeMatch.toSegment(start: Int, end: Int, kind: SegmentKind): HighlightSegment =
+private fun ThemeMatch.toSegment(start: Int, end: Int): HighlightSegment =
     HighlightSegment(start, end, key, style, kind)
 
-private fun ThemeMatch.segmentKind(default: SegmentKind = SegmentKind.BASE): SegmentKind =
-    if (key == "arbitrary") SegmentKind.ARBITRARY else default

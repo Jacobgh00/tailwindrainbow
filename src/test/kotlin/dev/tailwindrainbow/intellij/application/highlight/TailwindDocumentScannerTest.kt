@@ -1,5 +1,13 @@
-package dev.tailwindrainbow.intellij.domain
+package dev.tailwindrainbow.intellij.application.highlight
 
+import dev.tailwindrainbow.intellij.application.highlight.ScanSettings
+import dev.tailwindrainbow.intellij.application.highlight.TailwindDocumentScanner
+import dev.tailwindrainbow.intellij.domain.highlight.HighlightSegment
+import dev.tailwindrainbow.intellij.domain.theme.FontWeight
+import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
+import dev.tailwindrainbow.intellij.adapter.theme.BuiltInThemes
+import dev.tailwindrainbow.intellij.domain.theme.SegmentKind
+import dev.tailwindrainbow.intellij.domain.theme.TextStyle
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -107,3 +115,4 @@ class TailwindDocumentScannerTest {
 }
 
 private fun HighlightSegment.sliceOf(source: String): String = source.substring(start, end)
+

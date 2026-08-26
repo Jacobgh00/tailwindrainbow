@@ -1,4 +1,4 @@
-package dev.tailwindrainbow.intellij.domain
+package dev.tailwindrainbow.intellij.domain.theme
 
 import kotlin.collections.mapOf
 import kotlin.test.Test
@@ -27,32 +27,32 @@ class ThemeMatcherTest {
 
     @Test
     fun `exact prefix matches before wildcard`() {
-        assertEquals(ThemeMatch("hover", exact), matcher.matchPrefix("hover"))
+        assertEquals(ThemeMatch("hover", exact, SegmentKind.PREFIX), matcher.matchPrefix("hover"))
     }
 
     @Test
     fun `wildcard prefix matches dynamic variants`() {
-        assertEquals(ThemeMatch("min-*", wildcard), matcher.matchPrefix("min-[480px]"))
+        assertEquals(ThemeMatch("min-*", wildcard, SegmentKind.PREFIX), matcher.matchPrefix("min-[480px]"))
     }
 
     @Test
     fun `ignored modifier resolves to the underlying prefix`() {
-        assertEquals(ThemeMatch("hover", exact), matcher.matchPrefix("group-hover"))
+        assertEquals(ThemeMatch("hover", exact, SegmentKind.PREFIX), matcher.matchPrefix("group-hover"))
     }
 
     @Test
     fun `named group resolves to the unnamed prefix`() {
-        assertEquals(ThemeMatch("hover", exact), matcher.matchPrefix("hover/card"))
+        assertEquals(ThemeMatch("hover", exact, SegmentKind.PREFIX), matcher.matchPrefix("hover/card"))
     }
 
     @Test
     fun `exact base class wins over wildcard`() {
-        assertEquals(ThemeMatch("bg-blue-500", exact), matcher.matchBase("bg-blue-500"))
+        assertEquals(ThemeMatch("bg-blue-500", exact, SegmentKind.BASE), matcher.matchBase("bg-blue-500"))
     }
 
     @Test
     fun `standalone arbitrary class uses arbitrary style`() {
-        assertEquals(ThemeMatch("arbitrary", arbitrary), matcher.matchBase("[mask-type:luminance]"))
+        assertEquals(ThemeMatch("arbitrary", arbitrary, SegmentKind.ARBITRARY), matcher.matchBase("[mask-type:luminance]"))
     }
 
     @Test
@@ -68,8 +68,15 @@ class ThemeMatcherTest {
             ignoredPrefixModifiers = emptySet(),
         )
 
-        assertEquals(ThemeMatch("*", exact), starMatcher.matchPrefix("*"))
-        assertEquals(ThemeMatch("**", wildcard), starMatcher.matchPrefix("**"))
+        assertEquals(ThemeMatch("*", exact, SegmentKind.PREFIX), starMatcher.matchPrefix("*"))
+        assertEquals(ThemeMatch("**", wildcard, SegmentKind.PREFIX), starMatcher.matchPrefix("**"))
         assertNull(starMatcher.matchPrefix("focus"))
+    }
+
+    @Test
+    fun `the matcher decides the segment kind, callers never infer it from the key`() {
+        assertEquals(SegmentKind.ARBITRARY, matcher.matchPrefix("[&>*]")?.kind)
+        assertEquals(SegmentKind.PREFIX, matcher.matchPrefix("min-[480px]")?.kind)
+        assertEquals(SegmentKind.BASE, matcher.matchBase("bg-teal-100")?.kind)
     }
 }

@@ -1,15 +1,14 @@
-package dev.tailwindrainbow.intellij.domain
+package dev.tailwindrainbow.intellij.adapter.theme
 
-object RainbowThemes {
+import dev.tailwindrainbow.intellij.application.port.ThemeSource
+import dev.tailwindrainbow.intellij.domain.theme.FontWeight
+import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
+import dev.tailwindrainbow.intellij.domain.theme.TextStyle
+
+/** The palettes compiled into the plugin. Always the lowest-priority source. */
+object BuiltInThemes : ThemeSource {
     const val DEFAULT_NAME = "default"
     const val SYNTHWAVE_NAME = "synthwave"
-
-    val names: Set<String> = linkedSetOf(DEFAULT_NAME, SYNTHWAVE_NAME)
-
-    fun find(name: String): RainbowTheme = when (name) {
-        SYNTHWAVE_NAME -> synthwave
-        else -> default
-    }
 
     val default = RainbowTheme(
         arbitrary = style("#ff9987"),
@@ -86,6 +85,14 @@ object RainbowThemes {
             "even" to style("#0099ff"),
         ),
     )
+
+    private val byName = linkedMapOf(
+        DEFAULT_NAME to default,
+        SYNTHWAVE_NAME to synthwave,
+    )
+
+    override fun themes(): Map<String, RainbowTheme> = byName
 }
 
 private fun style(color: String, weight: FontWeight = FontWeight.BOLD) = TextStyle(color, weight)
+

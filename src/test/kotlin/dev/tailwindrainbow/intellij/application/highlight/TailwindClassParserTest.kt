@@ -1,5 +1,12 @@
-package dev.tailwindrainbow.intellij.domain
+package dev.tailwindrainbow.intellij.application.highlight
 
+import dev.tailwindrainbow.intellij.application.highlight.TailwindClassParser
+import dev.tailwindrainbow.intellij.domain.highlight.HighlightSegment
+import dev.tailwindrainbow.intellij.domain.theme.FontWeight
+import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
+import dev.tailwindrainbow.intellij.domain.theme.SegmentKind
+import dev.tailwindrainbow.intellij.domain.theme.TextStyle
+import dev.tailwindrainbow.intellij.domain.theme.ThemeMatcher
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -82,3 +89,4 @@ class TailwindClassParserTest {
 }
 
 private fun HighlightSegment.sliceOf(source: String): String = source.substring(start, end)
+

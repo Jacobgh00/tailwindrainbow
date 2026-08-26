@@ -1,0 +1,30 @@
+package dev.tailwindrainbow.intellij.application.highlight
+
+import dev.tailwindrainbow.intellij.application.port.HighlightDocument
+import dev.tailwindrainbow.intellij.application.port.SettingsProvider
+import dev.tailwindrainbow.intellij.application.port.ThemeCatalog
+import dev.tailwindrainbow.intellij.domain.highlight.HighlightSegment
+
+/**
+ * Implements the highlighting use case: read preferences, pick the theme, scan the text.
+ *
+ * The whole decision path lives here rather than in the annotator, so it is exercised by ordinary
+ * unit tests with no IDE running.
+ */
+class HighlightDocumentService(
+    private val settings: SettingsProvider,
+    private val themes: ThemeCatalog,
+    private val scanner: TailwindDocumentScanner = TailwindDocumentScanner(),
+) : HighlightDocument {
+    override fun highlight(text: String, fileExtension: String): List<HighlightSegment> {
+        val current = settings.current()
+        if (!current.enabled) return emptyList()
+
+        return scanner.scan(
+            text = text,
+            fileExtension = fileExtension,
+            settings = current.scan,
+            theme = themes.themeNamed(current.themeName),
+        )
+    }
+}
