@@ -45,12 +45,7 @@ data class RainbowTheme(
     val important: TextStyle? = null,
 )
 
-/**
- * A theme lookup that succeeded.
- *
- * [kind] is decided by the matcher, which knows which section of the theme it read from;
- * downstream code must never re-derive it by inspecting [key].
- */
+/** [kind] is decided by the matcher; never re-derive it by inspecting [key]. */
 data class ThemeMatch(
     val key: String,
     val style: TextStyle,

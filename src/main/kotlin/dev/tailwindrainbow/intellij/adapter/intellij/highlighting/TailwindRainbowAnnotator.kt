@@ -9,14 +9,9 @@ import com.intellij.psi.PsiFile
 import dev.tailwindrainbow.intellij.bootstrap.PluginComponents
 
 /**
- * Paints Tailwind variant prefixes in the editor.
- *
  * Registered for [com.intellij.lang.Language.ANY] (`language=""`), because the scanner reads raw
  * text and needs no grammar. Running inside the daemon's annotation pass means the platform owns
  * scheduling, debouncing, cancellation, and highlighter lifetime.
- *
- * Deliberately thin: every decision lives behind [PluginComponents.highlightDocument], so the only
- * untested logic here is the PSI-to-text translation the IDE alone can exercise.
  */
 class TailwindRainbowAnnotator : Annotator {
     override fun annotate(

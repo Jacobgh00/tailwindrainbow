@@ -6,7 +6,6 @@ import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
 import dev.tailwindrainbow.intellij.domain.theme.SegmentKind
 import dev.tailwindrainbow.intellij.domain.theme.TextStyle
 
-/** One editable line in the theme editor: what it currently looks like, and whether the user set it. */
 data class ThemeEditorRow(
     val section: SegmentKind,
     val key: String,
@@ -25,11 +24,8 @@ data class ThemeEditorRow(
 }
 
 /**
- * The theme editor's logic, with no widgets in sight.
- *
- * Holds the inherited palette and the user's overrides side by side so a row can show its effective
- * colour while still knowing whether the user chose it. Every edit returns a new model, so the table
- * can rebuild from a value rather than mutating shared state.
+ * Holds the inherited palette and the user's overrides side by side so a row can show its
+ * effective colour while still knowing whether the user chose it.
  *
  * Overrides stay sparse on purpose: only touched entries are stored, so a user who recolours one
  * prefix keeps inheriting every other colour — including ones added in later plugin versions.

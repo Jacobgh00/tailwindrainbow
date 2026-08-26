@@ -5,7 +5,6 @@ import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
 import dev.tailwindrainbow.intellij.domain.theme.SegmentKind
 import dev.tailwindrainbow.intellij.domain.theme.TextStyle
 
-/** A parsed theme plus whatever could not be understood while parsing it. */
 data class ParsedTheme(
     val name: String,
     val theme: RainbowTheme,

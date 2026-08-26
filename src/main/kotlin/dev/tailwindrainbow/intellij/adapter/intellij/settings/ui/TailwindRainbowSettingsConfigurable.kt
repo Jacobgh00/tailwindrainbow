@@ -10,12 +10,8 @@ import dev.tailwindrainbow.intellij.application.settings.SettingsFormMapper
 import javax.swing.JComponent
 
 /**
- * Presenter for the settings screen.
- *
- * Owns the `isModified`/`apply`/`reset` lifecycle the IDE defines, and the side effects that go
- * with it: validation failures become [ConfigurationException], accepted settings are persisted,
- * and every open project is re-highlighted. The widgets live in [SettingsPanel] and the validation
- * lives in [SettingsFormMapper]; neither knows about the other.
+ * The widgets live in [SettingsPanel] and the validation in [SettingsFormMapper]; this owns only
+ * the IDE's `isModified`/`apply`/`reset` lifecycle and the side effects that go with it.
  */
 class TailwindRainbowSettingsConfigurable : SearchableConfigurable {
     private var panel: SettingsPanel? = null

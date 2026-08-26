@@ -5,11 +5,8 @@ import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
 import dev.tailwindrainbow.intellij.domain.theme.ThemeMatcher
 
 /**
- * Finds every Tailwind class in a document and resolves it against a theme.
- *
- * Pure orchestration: [DocumentLexer] splits the text, [ClassContextDetector] decides which tokens
- * are worth reading, [TailwindClassParser] turns class strings into segments, and
- * [ApplyDirectiveScanner] covers the CSS `@apply` case that lives outside any token.
+ * Orchestration only. [ApplyDirectiveScanner] is separate because `@apply` classes live in plain
+ * stylesheet text, outside any token the lexer produces.
  */
 class TailwindDocumentScanner {
     fun scan(

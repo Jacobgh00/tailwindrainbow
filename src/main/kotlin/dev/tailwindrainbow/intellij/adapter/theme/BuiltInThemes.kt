@@ -5,7 +5,6 @@ import dev.tailwindrainbow.intellij.domain.theme.FontWeight
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
 import dev.tailwindrainbow.intellij.domain.theme.TextStyle
 
-/** The palettes compiled into the plugin. Always the lowest-priority source. */
 object BuiltInThemes : ThemeSource {
     const val DEFAULT_NAME = "default"
     const val SYNTHWAVE_NAME = "synthwave"

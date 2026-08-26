@@ -24,7 +24,6 @@ class TailwindRainbowSettings :
     ThemeCatalog {
     private val storedState = StoredState()
 
-    /** Palette resolution lives here; this class only persists preferences. */
     val themes = UserThemeCatalog()
 
     @Synchronized
@@ -54,12 +53,6 @@ class TailwindRainbowSettings :
                 ),
         )
 
-    /**
-     * The palette a user override sits on top of: built-ins only.
-     *
-     * Deliberately not [themeNamed], which returns the merged result — the editor must show what
-     * would remain if the user reset a row, so it cannot include the user's own edits.
-     */
     @Synchronized
     fun update(
         snapshot: HighlightSettings,

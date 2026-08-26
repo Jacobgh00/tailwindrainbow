@@ -17,10 +17,8 @@ internal data class SyntaxProfile(
                 hasApplyDirectives = extension in STYLESHEET_EXTENSIONS,
             )
 
-        /** Languages where `#` starts a line comment. */
         private val HASH_COMMENT_EXTENSIONS = setOf("php")
 
-        /** Languages where Tailwind classes may appear in an `@apply` directive. */
         private val STYLESHEET_EXTENSIONS =
             setOf("css", "scss", "sass", "less", "styl", "stylus", "pcss", "postcss")
     }

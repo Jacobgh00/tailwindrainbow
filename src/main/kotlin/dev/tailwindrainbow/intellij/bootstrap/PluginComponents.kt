@@ -5,9 +5,7 @@ import dev.tailwindrainbow.intellij.application.highlight.HighlightDocumentServi
 import dev.tailwindrainbow.intellij.application.port.HighlightDocument
 
 /**
- * Composition root.
- *
- * The single place concrete adapters are bound to ports. Everything else depends on interfaces,
+ * The single place concrete adapters are bound to ports; everything else depends on interfaces,
  * which is what lets the application layer be tested without an IDE.
  */
 object PluginComponents {

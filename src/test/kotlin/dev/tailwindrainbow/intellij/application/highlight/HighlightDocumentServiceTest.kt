@@ -2,7 +2,6 @@ package dev.tailwindrainbow.intellij.application.highlight
 
 import dev.tailwindrainbow.intellij.application.port.HighlightSettings
 import dev.tailwindrainbow.intellij.application.port.SettingsProvider
-import dev.tailwindrainbow.intellij.application.port.ThemeCatalog
 import dev.tailwindrainbow.intellij.domain.theme.FontWeight
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
 import dev.tailwindrainbow.intellij.domain.theme.TextStyle
@@ -10,10 +9,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/**
- * The decision path that used to live inside the annotator, where no test could reach it.
- * Both collaborators are ports, so a literal is enough — no IDE, no service lookup.
- */
 class HighlightDocumentServiceTest {
     private val html = """<div class="hover:bg-blue-500">x</div>"""
 
@@ -62,7 +57,7 @@ class HighlightDocumentServiceTest {
         assertTrue(service.highlight(html, "html").isEmpty())
     }
 
-    private fun serviceWith(current: HighlightSettings) = HighlightDocumentService(SettingsProvider { current }, ThemeCatalog { theme })
+    private fun serviceWith(current: HighlightSettings) = HighlightDocumentService({ current }, { theme })
 
     private fun settings(
         enabled: Boolean = true,

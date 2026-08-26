@@ -1,12 +1,5 @@
 package dev.tailwindrainbow.intellij.domain.theme
 
-/**
- * Resolves a Tailwind token to the style a theme gives it.
- *
- * Prefixes are looked up most-specific first: exact name, then with ignored modifiers such as
- * `group-` stripped, then without a named group (`hover/card` -> `hover`), then by wildcard,
- * and finally as an arbitrary `[...]` variant.
- */
 class ThemeMatcher(
     private val theme: RainbowTheme,
     private val ignoredPrefixModifiers: Set<String>,

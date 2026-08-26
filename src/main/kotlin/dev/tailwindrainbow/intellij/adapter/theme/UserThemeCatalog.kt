@@ -7,9 +7,6 @@ import dev.tailwindrainbow.intellij.application.theme.UserThemeSource
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
 
 /**
- * Resolves theme names for the running plugin: built-in palettes with the user's overrides on top.
- *
- * Split out of the settings service, which was persisting preferences *and* composing palettes.
  * The repository is rebuilt only when the stored themes change, never per highlighting pass.
  */
 class UserThemeCatalog : ThemeCatalog {
@@ -30,6 +27,12 @@ class UserThemeCatalog : ThemeCatalog {
 
     fun overrides(): List<ThemeSpec> = specs
 
+    /**
+     * The palette an override sits on top of: built-ins only.
+     *
+     * Not [themeNamed], which returns the merged result — the editor must show what would remain
+     * if the user reset a row, so it cannot include the user's own edits.
+     */
     fun inherited(name: String): RainbowTheme = BuiltInThemes.themes()[name] ?: BuiltInThemes.default
 
     fun problems(): List<String> = UserThemeSource(specs).problems.map { "${it.themeName}: ${it.key} — ${it.message}" }

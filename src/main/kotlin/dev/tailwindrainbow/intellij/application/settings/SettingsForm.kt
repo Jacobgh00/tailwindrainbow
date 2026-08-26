@@ -5,11 +5,9 @@ import dev.tailwindrainbow.intellij.application.port.HighlightSettings
 import dev.tailwindrainbow.intellij.application.theme.ThemeSpec
 
 /**
- * Settings exactly as typed, before anything is validated.
- *
  * Every field is a String because a text field can hold anything; `maxFileSize` in particular may
- * be empty, negative, or not a number at all. Keeping the raw shape separate from
- * [HighlightSettings] is what lets the view stay dumb and the validation stay pure.
+ * be empty, negative, or not a number at all. Keeping this separate from [HighlightSettings] is
+ * what lets the view stay dumb and the validation stay pure.
  */
 data class SettingsForm(
     val enabled: Boolean,
@@ -30,10 +28,8 @@ sealed interface FormResult {
 }
 
 /**
- * Converts between what the user typed and what the highlighter needs.
- *
- * Pure on purpose: this is the only part of the settings screen with real logic, and it is
- * unit-tested without constructing a single Swing component.
+ * Pure on purpose: the only part of the settings screen with real logic, unit-tested without
+ * constructing a single Swing component.
  */
 object SettingsFormMapper {
     fun toSettings(form: SettingsForm): FormResult {

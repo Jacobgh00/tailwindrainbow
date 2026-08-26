@@ -10,10 +10,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
-/**
- * Validation used to live inside the Swing class, where reaching it meant constructing widgets.
- * It is ordinary logic and now tested as such.
- */
 class SettingsFormMapperTest {
     @Test
     fun `a comma separated list becomes a set, trimmed`() {

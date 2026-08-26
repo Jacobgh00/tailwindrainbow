@@ -12,11 +12,7 @@ import javax.swing.JComboBox
 import javax.swing.JComponent
 
 /**
- * The settings view: widgets and layout, nothing else.
- *
- * Knows how to show a [SettingsForm] and hand one back. It never validates, never persists, and
- * never touches the highlighter — that is the configurable's job. Keeping it this dumb is what
- * makes the theme-editing table a matter of adding a row here rather than growing the presenter.
+ * Never validates, never persists, never touches the highlighter — that is the configurable's job.
  */
 class SettingsPanel(
     themeNames: List<String>,

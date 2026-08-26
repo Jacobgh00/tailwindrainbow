@@ -8,12 +8,10 @@ import dev.tailwindrainbow.intellij.domain.theme.FontWeight
 import dev.tailwindrainbow.intellij.domain.theme.SegmentKind
 
 /**
- * Serializable mirror of [ThemeSpec].
- *
- * Mutable with a no-arg constructor because that is what the IDE's XML serializer requires - which
- * is exactly why it is a separate type from the immutable domain model rather than an annotation
- * on it. Nothing here is validated; [dev.tailwindrainbow.intellij.application.theme.ThemeParser]
- * does that after [toSpec].
+ * Mutable with a no-arg constructor because that is what the IDE's XML serializer requires, which
+ * is why it is a separate type from the immutable [ThemeSpec] rather than annotations on it.
+ * Nothing here is validated; [dev.tailwindrainbow.intellij.application.theme.ThemeParser] does
+ * that after [toSpec].
  */
 class StoredTheme {
     var name: String = ""

@@ -20,10 +20,8 @@ import javax.swing.table.AbstractTableModel
 import javax.swing.table.DefaultTableCellRenderer
 
 /**
- * Lets the user recolour the selected theme, one token per row.
- *
- * A view over [ThemeEditorModel]: the table asks the model what to show and hands every edit back to
- * it, so which colour wins and what gets stored is decided by tested logic, not by Swing.
+ * The table asks [ThemeEditorModel] what to show and hands every edit back to it, so which colour
+ * wins and what gets stored is decided by tested logic rather than by Swing.
  */
 class ThemeEditorPanel : JPanel(BorderLayout()) {
     private var model = ThemeEditorModel(RainbowTheme())
@@ -58,7 +56,6 @@ class ThemeEditorPanel : JPanel(BorderLayout()) {
         table.selectionModel.addListSelectionListener { syncColourPicker() }
     }
 
-    /** Points the editor at a theme: [inherited] is what the user sees before overriding anything. */
     fun show(
         name: String,
         inherited: RainbowTheme,
@@ -70,7 +67,6 @@ class ThemeEditorPanel : JPanel(BorderLayout()) {
         syncColourPicker()
     }
 
-    /** The overrides the user has made, or null when they have made none. */
     fun overrides(): ThemeSpec? = model.spec(themeName).takeIf { it.entries.isNotEmpty() }
 
     private fun selectedRow(): ThemeEditorRow? = model.rows().getOrNull(table.selectedRow)
@@ -105,7 +101,7 @@ class ThemeEditorPanel : JPanel(BorderLayout()) {
 
         override fun getColumnName(column: Int): String = COLUMN_NAMES[column]
 
-        override fun getColumnClass(column: Int): Class<*> = if (column == BOLD) java.lang.Boolean::class.java else String::class.java
+        override fun getColumnClass(column: Int): Class<*> = if (column == BOLD) BOOLEAN_COLUMN else String::class.java
 
         override fun isCellEditable(
             row: Int,
@@ -137,7 +133,6 @@ class ThemeEditorPanel : JPanel(BorderLayout()) {
         }
     }
 
-    /** Paints the cell in the colour it holds, so the table reads as a palette. */
     private class ColorSwatchRenderer : DefaultTableCellRenderer() {
         override fun getTableCellRendererComponent(
             table: JTable,
@@ -153,7 +148,6 @@ class ThemeEditorPanel : JPanel(BorderLayout()) {
             }
     }
 
-    /** Marks overridden tokens so the user can see what they have changed. */
     private inner class TokenRenderer : DefaultTableCellRenderer() {
         override fun getTableCellRendererComponent(
             table: JTable,
@@ -170,6 +164,7 @@ class ThemeEditorPanel : JPanel(BorderLayout()) {
     }
 
     private companion object {
+        val BOOLEAN_COLUMN: Class<*> = java.lang.Boolean::class.java
         const val ROW_HEIGHT = 24
         const val TOKEN = 0
         const val COLOR = 1

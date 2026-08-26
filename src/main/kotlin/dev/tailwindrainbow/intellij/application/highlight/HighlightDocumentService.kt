@@ -6,8 +6,6 @@ import dev.tailwindrainbow.intellij.application.port.ThemeCatalog
 import dev.tailwindrainbow.intellij.domain.highlight.HighlightSegment
 
 /**
- * Implements the highlighting use case: read preferences, pick the theme, scan the text.
- *
  * The whole decision path lives here rather than in the annotator, so it is exercised by ordinary
  * unit tests with no IDE running.
  */

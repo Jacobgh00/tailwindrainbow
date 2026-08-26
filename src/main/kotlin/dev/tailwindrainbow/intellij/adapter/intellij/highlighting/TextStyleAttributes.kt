@@ -9,9 +9,7 @@ import java.awt.Font
 private const val BOLD_WEIGHT_THRESHOLD = 600
 
 /**
- * Adapts a theme's [TextStyle] to the editor's [TextAttributes].
- *
- * The only place the pure domain palette meets AWT, which is why the domain stores colors as
+ * The only place the domain palette meets AWT, which is why the domain stores colors as
  * `#RRGGBB` strings and never imports anything from the platform.
  */
 internal fun TextStyle.toTextAttributes(): TextAttributes =
