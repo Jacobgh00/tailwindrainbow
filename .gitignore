@@ -46,3 +46,7 @@ bin/
 
 ### IntelliJ Platform Gradle Plugin ###
 .intellijPlatform/
+
+### Certs ###
+*.crt
+*.pem
