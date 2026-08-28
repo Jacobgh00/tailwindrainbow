@@ -214,7 +214,8 @@ private const val BINDING_GROUP = "binding"
 internal const val QUOTE_GROUP = "quote"
 
 /**
- * Builds one alternation matching any configured class identifier, bound or plain.
+ * Builds one alternation matching any configured class identifier, bound or plain, alone or as the
+ * tail of a compound name.
  *
  * Identifiers ending in `:` (Svelte's `class:`, Vue's `className:`) also match their directive
  * suffix, so `class:active` is recognised. Returns null when nothing is configured.
@@ -225,11 +226,27 @@ internal const val QUOTE_GROUP = "quote"
 private fun Set<String>.identifierPattern(): String? {
     if (isEmpty()) return null
 
-    val alternatives =
+    val exact =
         joinToString("|") { identifier ->
             if (identifier.endsWith(':')) "${Regex.escape(identifier)}[A-Za-z0-9_-]*" else Regex.escape(identifier)
         }
     val markers = BINDING_MARKERS.joinToString("|", transform = Regex::escape)
 
-    return "(?<![\\w:-])(?<$BINDING_GROUP>$markers)?(?:$alternatives)(?![\\w-])"
+    return "(?<![\\w:-])(?<$BINDING_GROUP>$markers)?(?:$exact|${compoundPattern()})(?![\\w-])"
+}
+
+/**
+ * Matches a name that ends in a class identifier across a camel case boundary: `buttonClasses`,
+ * `cardClassName`, `wrapperClass`.
+ *
+ * The boundary is what makes this safe to allow. Case matters here and nowhere else in the pattern —
+ * hence `(?-i:…)` — because `superclass` and `subclass` are ordinary words that must keep meaning
+ * nothing, while `buttonClasses` reads as a list of classes to anyone.
+ */
+private fun Set<String>.compoundPattern(): String {
+    val tails =
+        filterNot { it.endsWith(':') }
+            .joinToString("|") { Regex.escape(it.replaceFirstChar(Char::uppercaseChar)) }
+
+    return "(?-i:[A-Za-z0-9_$]*[a-z0-9](?:$tails))"
 }

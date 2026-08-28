@@ -68,9 +68,10 @@ plugin versions. **Delete** removes a theme you made; built-in themes cannot be 
 | Ignored prefix modifiers | `group`, `peer`, `has`, `in`, `not` |
 | Supported extensions | `html`, `htm`, `js`, `jsx`, `ts`, `tsx`, `vue`, `svelte`, `astro`, `php`, `css`, `scss`, `sass`, `less`, `styl`, `stylus`, `pcss`, `postcss` |
 
-A value assigned to one of the class identifiers is recognized whether it is a string, an array, or
-an object: `const classes = ['hover:underline', 'lg:p-4']` is highlighted, while the same array
-assigned to `notes` is not.
+A value assigned to one of the class identifiers is recognized whether it is a string, a template
+literal, an array, or an object: `const classes = ['hover:underline', 'lg:p-4']` is highlighted,
+while the same array assigned to `notes` is not. A name that ends in a class identifier counts too,
+as long as it reads as one: `buttonClasses` and `cardClassName` are recognized, `superclass` is not.
 
 Each list is comma-separated. Editing a color opens a color picker; **Reset** returns a single
 entry to its theme value without discarding your other overrides.

@@ -139,6 +139,25 @@ class TailwindDocumentScannerTest {
     }
 
     @Test
+    fun `finds classes in a template assigned to a class identifier`() {
+        val source = "const buttonClasses = `hover:bg-blue-500 lg:text-xl`"
+
+        assertEquals(
+            listOf("hover:bg-blue-500", "lg:text-xl"),
+            scan(source, "ts").map { it.sliceOf(source) },
+        )
+    }
+
+    @Test
+    fun `a name counts as a class name only across a camel case boundary`() {
+        val compound = "const cardClassName = 'hover:bg-blue-500'"
+
+        assertEquals(listOf("hover:bg-blue-500"), scan(compound, "ts").map { it.sliceOf(compound) })
+        assertTrue(scan("const superclass = 'hover:bg-blue-500'", "ts").isEmpty())
+        assertTrue(scan("const query = `hover:bg-blue-500`", "ts").isEmpty())
+    }
+
+    @Test
     fun `does not colour an unrelated string that merely looks like Tailwind`() {
         val source = "const documentation = 'hover:bg-blue-500'"
 
