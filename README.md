@@ -22,7 +22,11 @@ green              teal          purple   slate            coral        red
   Overrides are stored per entry, so a theme you customize keeps inheriting everything you did not
   touch.
 - **User-defined tokens.** Add a variant no theme lists — `focus-visible`, `aria-*`, a variant of
-  your own — or a base-class pattern such as `bg-*` that colors the utility itself.
+  your own — with `*` usable as a wildcard.
+- **Optional base-class coloring.** Add a base pattern such as `bg-*` and the utility itself is
+  colored, alongside its variants: in `lg:bg-blue-500`, `lg:` takes the variant color and
+  `bg-blue-500` the base one. No built-in theme colors base classes, because variants stop standing
+  out once everything else is colored too.
 - **Configurable recognition** — which attributes, helper functions, tagged templates, and file
   extensions are scanned, and the file size above which scanning is skipped.
 
@@ -57,9 +61,10 @@ Then **Settings | Plugins | ⚙ | Install Plugin from Disk…** and choose
 Each list is comma-separated. Editing a color opens a color picker; **Reset** returns a single
 entry to its theme value without discarding your other overrides.
 
-The token table lists what the selected theme colors. Use **+** to add a token, choosing whether it
-matches a variant prefix (`hover`, `focus-visible`, `min-*`) or a base class (`bg-*`, `text-lg`);
-patterns may use `*` as a wildcard. **−** removes a token you added. Tokens that come from the theme
+The token table lists what the selected theme colors, grouped by section. Use **+** to add a token,
+choosing whether it matches a variant prefix (`hover`, `focus-visible`, `min-*`) or a base class
+(`bg-*`, `text-lg`); patterns may use `*` as a wildcard, and the most specific pattern wins — a
+`bg-blue-500` entry beats `bg-*`. **−** removes a token you added. Tokens that come from the theme
 are reset rather than removed.
 
 ## Compatibility

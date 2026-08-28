@@ -55,12 +55,20 @@ class ThemeEditorModel private constructor(
         overrides = overrides?.entries.orEmpty().associateBy { EntryKey(it.section, it.key) },
     )
 
+    /**
+     * What the palette offers plus what the user added, grouped by section in [SegmentKind]
+     * declaration order. The sort is stable, so an added token follows the inherited ones of its
+     * own section rather than trailing the whole list.
+     */
     fun rows(): List<ThemeEditorRow> {
         val inheritedEntries = inherited.entries()
         val addedKeys = overrides.keys - inheritedEntries.map { it.first }.toSet()
 
-        return inheritedEntries.map { (entry, style) -> rowOf(entry, overrides[entry], style) } +
-            addedKeys.map { rowOf(it, overrides[it], inheritedStyle = null) }
+        val rows =
+            inheritedEntries.map { (entry, style) -> rowOf(entry, overrides[entry], style) } +
+                addedKeys.map { rowOf(it, overrides[it], inheritedStyle = null) }
+
+        return rows.sortedBy(ThemeEditorRow::section)
     }
 
     /** Whether a row for this token already exists, inherited or added. Asked before [add]. */

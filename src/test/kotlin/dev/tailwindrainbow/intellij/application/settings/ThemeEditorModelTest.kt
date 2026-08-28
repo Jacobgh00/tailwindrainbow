@@ -163,6 +163,32 @@ class ThemeEditorModelTest {
     }
 
     @Test
+    fun `added tokens are listed inside their own section`() {
+        val rows =
+            model()
+                .add(SegmentKind.BASE, "text-*")
+                .add(SegmentKind.PREFIX, "focus-visible")
+                .rows()
+
+        assertEquals(
+            listOf("hover", "focus", "focus-visible", "bg-*", "text-*", "", ""),
+            rows.map { it.key },
+        )
+        assertEquals(
+            listOf(
+                SegmentKind.PREFIX,
+                SegmentKind.PREFIX,
+                SegmentKind.PREFIX,
+                SegmentKind.BASE,
+                SegmentKind.BASE,
+                SegmentKind.ARBITRARY,
+                SegmentKind.IMPORTANT,
+            ),
+            rows.map { it.section },
+        )
+    }
+
+    @Test
     fun `a token already in the editor cannot be added twice`() {
         assertTrue(model().holds(SegmentKind.PREFIX, "hover"))
         assertFalse(model().holds(SegmentKind.BASE, "hover"))

@@ -33,6 +33,18 @@ class BuiltInThemesTest {
     }
 
     @Test
+    fun `no built-in theme colours base classes`() {
+        val withBaseEntries = BuiltInThemes.themes().filterValues { it.base.isNotEmpty() }
+
+        assertTrue(
+            withBaseEntries.isEmpty(),
+            "${withBaseEntries.keys} colour base classes out of the box; the point of the plugin is " +
+                "that variants stand out, which stops being true once every utility is coloured too. " +
+                "Base colouring is opt-in, added by the user in the theme editor",
+        )
+    }
+
+    @Test
     fun `an unknown theme name falls back to default`() {
         assertEquals(BuiltInThemes.default, ThemeRepository(BuiltInThemes).find("no-such-theme"))
     }

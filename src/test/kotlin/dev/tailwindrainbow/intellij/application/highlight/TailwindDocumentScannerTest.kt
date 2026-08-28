@@ -11,6 +11,7 @@ import kotlin.test.assertTrue
 class TailwindDocumentScannerTest {
     private val hover = TextStyle("#00ff00", FontWeight.BOLD)
     private val responsive = TextStyle("#ff00ff", FontWeight.BOLD)
+    private val baseStyle = TextStyle("#0000ff", FontWeight.NORMAL)
     private val scanner = TailwindDocumentScanner()
     private val theme = RainbowTheme(prefix = mapOf("hover" to hover, "lg" to responsive))
 
@@ -22,6 +23,17 @@ class TailwindDocumentScannerTest {
             listOf("hover:bg-blue-500", "lg:text-xl"),
             scan(source, "html").map { it.sliceOf(source) },
         )
+    }
+
+    @Test
+    fun `a base rule colours the utility class itself`() {
+        val source = "<div class=\"bg-blue-500 lg:bg-blue-500\"></div>"
+        val withBase = theme.copy(base = mapOf("bg-*" to baseStyle))
+
+        val segments = scan(source, "html", theme = withBase)
+
+        assertEquals(listOf("bg-blue-500", "lg:", "bg-blue-500"), segments.map { it.sliceOf(source) })
+        assertEquals(listOf(baseStyle, responsive, baseStyle), segments.map { it.style })
     }
 
     @Test
@@ -110,6 +122,7 @@ class TailwindDocumentScannerTest {
     private fun scan(
         source: String,
         extension: String,
+        theme: RainbowTheme = this.theme,
     ): List<HighlightSegment> = scanner.scan(source, extension, ScanSettings(), theme)
 }
 
