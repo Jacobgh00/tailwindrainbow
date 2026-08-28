@@ -5,8 +5,8 @@ stays readable.
 
 Every variant — `hover`, `focus`, `sm`, `dark`, arbitrary values such as `[&>*]`, and the `!`
 important modifier wherever Tailwind puts it (`!font-bold`, `hover:!font-bold`, `font-bold!`) — is
-painted in its own color. The structure of a class list becomes visible at
-a glance instead of having to be read word by word.
+painted in its own color. The structure of a class list becomes visible at a glance instead of
+having to be read word by word.
 
 ```
 hover:bg-blue-500  focus:ring-2  sm:px-4  dark:text-white  [&>*]:mt-2  !font-bold
@@ -23,9 +23,8 @@ green              teal          purple   slate            coral        red
 - **Framework bindings** — `:class`, `v-bind:class`, and `x-bind:class`. A bound attribute holds an
   expression, so the class names are read out of the strings inside it: `:class="{ 'lg:p-4': ok }"`
   colors `lg:p-4` and leaves the braces and the condition alone.
-- **Readable on any editor background.** A color that would not contrast with the background you
-  are using is darkened or lightened until it does, keeping its hue. On a dark scheme the built-in
-  palettes are used exactly as they are; on a light one they adapt.
+- **Tailwind v3 and v4.** The important modifier is read in every position either version allows,
+  and an `@apply` directive ends where CSS says it does rather than at the end of a line.
 - **Two built-in themes** — `default` and `synthwave` — plus any number of your own, each started
   from one of them.
 - **User-defined colors.** Pick a color for any variant with a color picker, toggle bold, or switch
@@ -37,8 +36,12 @@ green              teal          purple   slate            coral        red
   colored, alongside its variants: in `lg:bg-blue-500`, `lg:` takes the variant color and
   `bg-blue-500` the base one. No built-in theme colors base classes, because variants stop standing
   out once everything else is colored too.
-- **Configurable recognition** — which attributes, helper functions, tagged templates, and file
-  extensions are scanned, and the file size above which scanning is skipped.
+- **Readable on any editor background.** A color that would not contrast with the background you
+  are using is darkened or lightened until it does, keeping its hue. On a dark scheme the built-in
+  palettes are used exactly as they are; on a light one they adapt.
+- **Configurable recognition** — which attributes, helper functions, tagged templates, ignored
+  modifiers, and file extensions are scanned, and the file size above which scanning is skipped.
+  A project can keep its own answers and commit them.
 
 ## Installation
 
@@ -64,15 +67,9 @@ theme, so leaving with `Esc` changes nothing.
 
 **Settings | Editor | Tailwind Rainbow**
 
-Recognition — what the plugin looks at and how far — can belong to the project instead of the IDE.
-Tick **Use project settings for what is recognized** and those fields are stored in
-`.idea/tailwindRainbow.xml`, which a repository can commit so everyone who opens it recognizes the
-same helpers and file types. The theme and its colors always stay yours: a palette is a preference,
-not a property of the code. Unticking hands the rules back to your IDE-wide settings.
+**Enable Tailwind Rainbow** turns the coloring off without uninstalling anything.
 
-**New…** creates a theme of your own, based on a built-in one. It stores only the colors you change,
-so everything you leave alone keeps following the base theme — including tokens added in later
-plugin versions. **Delete** removes a theme you made; built-in themes cannot be deleted.
+### What is recognized
 
 | Setting | Default |
 | --- | --- |
@@ -80,34 +77,48 @@ plugin versions. **Delete** removes a theme you made; built-in themes cannot be 
 | Maximum file size | 1000000 characters |
 | Class identifiers | `class`, `className`, `class:`, `className:`, `class:list`, `classlist`, `classes`, `css`, `style` |
 | Class functions | `cn`, `clsx`, `cva`, `classNames`, `classList`, `classnames`, `twMerge`, `tw`, `cls`, `cc`, `cx`, `classname`, `styled`, `css`, `theme`, `variants` |
-| | A method called on one of these counts too, so `el.classList.add("…")` is recognized. |
 | Template tags | `tw`, `css`, `styled` |
 | Ignored prefix modifiers | `group`, `peer`, `has`, `in`, `not` |
 | Supported extensions | `html`, `htm`, `js`, `jsx`, `ts`, `tsx`, `vue`, `svelte`, `astro`, `php`, `css`, `scss`, `sass`, `less`, `styl`, `stylus`, `pcss`, `postcss` |
+
+Each list is comma-separated. A method called on one of the class functions counts as one too, so
+`el.classList.add("…")` is read like `clsx(…)`.
 
 A value assigned to one of the class identifiers is recognized whether it is a string, a template
 literal, an array, or an object: `const classes = ['hover:underline', 'lg:p-4']` is highlighted,
 while the same array assigned to `notes` is not. A name that ends in a class identifier counts too,
 as long as it reads as one: `buttonClasses` and `cardClassName` are recognized, `superclass` is not.
 
-Each list is comma-separated. Editing a color opens a color picker; **Reset** returns a single
-entry to its theme value without discarding your other overrides.
+These rules can belong to the project instead of the IDE. Tick **Use project settings for what is
+recognized** and they are stored in `.idea/tailwindRainbow.xml`, which a repository can commit so
+that everyone who opens it recognizes the same helpers and file types. Unticking hands them back to
+your IDE-wide settings. The theme and its colors always stay yours: a palette is a preference, not a
+property of the code.
 
-If a stored theme holds an entry the plugin cannot use — a color that is not `#RRGGBB`, say, after
-the settings file was edited by hand — it is listed above the token table with what is wrong. The
-entry is skipped rather than applied, and its row stays in the table so it can be reset or removed.
+### Themes and colors
+
+**New…** creates a theme of your own, based on a built-in one. It stores only the colors you change,
+so everything you leave alone keeps following the base theme — including tokens added in later
+plugin versions. **Delete** removes a theme you made; built-in themes cannot be deleted.
+
+The token table lists what the selected theme colors, grouped by section. Editing a color opens a
+color picker, and **Reset** returns a single entry to its theme value without discarding your other
+overrides. Unticking **Enabled** leaves a token uncolored while keeping the color you picked, so it
+can be switched back on later.
+
+Use **+** to add a token, choosing whether it matches a variant prefix (`hover`, `focus-visible`,
+`min-*`) or a base class (`bg-*`, `text-lg`); patterns may use `*` as a wildcard, and the most
+specific pattern wins — a `bg-blue-500` entry beats `bg-*`. **−** removes a token you added; tokens
+that come from the theme are reset rather than removed.
 
 Adding a token offers the variants your project declares for itself — `@custom-variant` and
 `--breakpoint-*` in a Tailwind v4 stylesheet, `addVariant(…)` and `screens` in a v3 config — so a
 project-specific variant is a pick from a list rather than something to type from memory. They are
 offered, not added: which of them deserve a color, and which color, stays your decision.
 
-The token table lists what the selected theme colors, grouped by section. Use **+** to add a token,
-choosing whether it matches a variant prefix (`hover`, `focus-visible`, `min-*`) or a base class
-(`bg-*`, `text-lg`); patterns may use `*` as a wildcard, and the most specific pattern wins — a
-`bg-blue-500` entry beats `bg-*`. **−** removes a token you added. Tokens that come from the theme
-are reset rather than removed. Unticking **Enabled** leaves a token uncolored while keeping the
-color you picked, so it can be switched back on later.
+If a stored theme holds an entry the plugin cannot use — a color that is not `#RRGGBB`, say, after
+the settings file was edited by hand — it is listed above the token table with what is wrong. The
+entry is skipped rather than applied, and its row stays in the table so it can be reset or removed.
 
 ## Contributing themes from another plugin
 
@@ -167,12 +178,14 @@ The source is layered, and the layering is enforced by tests rather than by conv
 domain/       Themes, segment kinds, matching. Depends on nothing.
 application/  Scanning, parsing, theme resolution, settings mapping. Depends only on domain.
   port/       The interfaces the application needs the outside world to satisfy.
-adapter/      Implementations of those ports. The only code that imports com.intellij.
+adapter/      Implementations of those ports. Imports com.intellij; nothing inward does.
 bootstrap/    Composition root. The only place that names a concrete adapter.
 ```
 
-`ArchitectureTest` asserts each of those five statements. They fail on a violation, which is how
-two dependency inversions and one misplaced class were caught during development.
+`ArchitectureTest` asserts those statements, and two more: that no code outside `adapter/` and
+`bootstrap/` touches the platform, and that nothing sits in the IDE adapter without needing to be
+there. They fail on a violation, which is how two dependency inversions, a misplaced class, and a
+documentation link pointing the wrong way were caught during development.
 
 Highlighting runs through an `Annotator`, so the platform's `DaemonCodeAnalyzer` owns debouncing,
 cancellation, and highlight lifetime. The plugin does not manage the markup model itself.

@@ -10,61 +10,43 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 
 - Highlighting of Tailwind variant prefixes, base classes, arbitrary variants such as `[&>*]`, and
-  the `!` important modifier.
-- Recognition in class attributes (`class`, `className`, `class:list`, …), class helper functions
-  (`cn`, `clsx`, `cva`, `twMerge`, …), tagged templates (`tw`, `css`, `styled`), and CSS `@apply`
-  directives.
+  the important modifier in every position Tailwind allows — `!font-bold` and `hover:!font-bold`
+  from v3, `font-bold!` from v4.
+- Recognition of class names in class attributes (`class`, `className`, `class:list`, …), framework
+  bindings (`:class`, `v-bind:class`, `x-bind:class`), class helper functions (`cn`, `clsx`, `cva`,
+  `twMerge`, …) and methods called on them (`el.classList.add(…)`), tagged templates including ones
+  that carry a component, a type, or attributes (`` styled.div`…` ``, `` styled(Button)`…` ``), and
+  CSS `@apply` directives including ones wrapped over several lines.
+- Recognition of values assigned to a class-shaped name, whether a string, a template literal, an
+  array, or an object. A compound name counts across a camel case boundary, so `buttonClasses` and
+  `cardClassName` are read while ordinary words such as `superclass` are not.
+- A bound attribute is treated as the expression it is, so `:class="{ 'lg:p-4': ok }"` colors
+  `lg:p-4` and leaves the braces, brackets, and conditions alone.
 - Support for HTML, JSX/TSX, Vue, Svelte, Astro, PHP, and CSS/SCSS/Sass/Less/Stylus/PostCSS files.
-- Two built-in themes: `default` and `synthwave`.
-- User-defined colors. Any variant can be recolored with a color picker and set bold, per theme.
-  Overrides are stored per entry, so untouched variants keep following the theme.
-- Recognition of compound names that end in a class identifier across a camel case boundary, so
-  `const buttonClasses = \`hover:underline\`` and `cardClassName` are highlighted while ordinary
-  words such as `superclass` are not.
-- Recognition of arrays and objects assigned to a class identifier, so
-  `const classes = ['hover:underline', 'lg:p-4']` is highlighted while the same array assigned to
-  another name is left alone.
-- Recognition of methods called on a class helper, so `el.classList.add("hover:underline")` and
-  `classList.toggle(…)` are read the same way as `clsx(…)`.
-- Recognition of styled-components tags that carry something: `` styled.div`…` ``,
-  `` styled(Button)`…` ``, `` styled.div<Props>`…` ``, and `` styled.input.attrs({…})`…` `` are all
-  read as the `styled` tag.
-- Recognition of framework class bindings: `:class`, `v-bind:class`, and `x-bind:class`. The value
-  of a bound attribute is treated as an expression, so class names are read from the strings inside
-  it rather than from the surrounding braces, brackets, and conditions.
-- Colors now adapt to the editor background. One that would be unreadable against it is darkened or
-  lightened, keeping its hue, until it meets the WCAG AA contrast ratio; one that already reads is
-  used exactly as chosen. This applies to every theme, including ones you create and ones another
-  plugin contributes.
+- Two built-in themes, `default` and `synthwave`, and any number of your own based on either. A
+  theme of your own stores only the colors you change, so the rest keeps following its base —
+  including tokens added in later plugin versions.
+- Adding and removing theme tokens, so a variant no built-in theme lists can be colored. Base-class
+  patterns such as `bg-*` can be added too, coloring the utility itself alongside its variants;
+  built-in themes ship none, so this stays opt-in.
+- A color, a bold setting, and an on/off switch per token. Switching one off leaves it uncolored
+  while keeping the color you picked, which is the difference between silencing a variant and
+  deleting it.
+- Colors adapt to the editor background: one that would be unreadable against it is darkened or
+  lightened, keeping its hue, until it meets the WCAG AA contrast ratio. One that already reads is
+  used exactly as chosen.
+- Settings under **Editor | Tailwind Rainbow** for the theme, the maximum file size to scan, and the
+  recognized attributes, functions, template tags, ignored prefix modifiers, and file extensions.
+- Project-level recognition settings. A project can keep its own answers in
+  `.idea/tailwindRainbow.xml` for a repository to share, while the theme stays with the user.
 - Variants your project declares are offered when adding a token, read from `@custom-variant` and
   `--breakpoint-*` in Tailwind v4 stylesheets and from `addVariant(…)` and `screens` in a v3 config.
-- Recognition of `@apply` directives wrapped over several lines. A directive now ends where CSS says
-  it does — at a semicolon or the closing brace — rather than at the end of the first line.
-- Recognition of the important modifier wherever Tailwind writes it: `!font-bold` and
-  `hover:!font-bold` from v3, and `font-bold!` from v4. A codebase mid-migration holds a mixture, so
-  all three are read.
-- Project-level recognition settings. A project can keep its own class identifiers, helper
-  functions, template tags, ignored modifiers, file extensions, and maximum file size in
-  `.idea/tailwindRainbow.xml` for a repository to share, while the theme stays with the user.
+- Reporting of theme entries the plugin cannot use, listed in the settings screen with what is wrong
+  rather than dropped in silence; an edit that would add a new one is refused with the reason.
 - A **Select Tailwind Rainbow Theme** action, found through Find Action, that switches themes
   without opening settings and previews each one in the editor while the list is open.
 - A `dev.tailwindrainbow.themeContributor` extension point, so other plugins can ship themes. A
   contributed theme can be based on a built-in one, can be the base of a user theme, and is
   overridden entry by entry by the user's own colors.
-- Reporting of theme entries the plugin cannot use. They were dropped silently before, so a color
-  that never appeared had nothing to explain it; they are now listed in the settings screen, and an
-  edit that would add a new one is refused with the reason.
-- Themes of your own. A new theme is based on a built-in one and stores only the colors you change,
-  so the rest keeps following its base.
-- Switching a single theme entry off. The token keeps its color and can be switched back on, which
-  is the difference between silencing one variant and deleting it.
-- Optional base-class coloring. A base pattern such as `bg-*` colors the utility itself, separately
-  from the variants in front of it. Built-in themes ship none, so this is opt-in.
-- Adding and removing theme tokens. Any variant prefix or base-class pattern can be given a color,
-  including ones no built-in theme lists; added tokens can be removed again, while tokens that come
-  from the theme are reset to their inherited color.
-- Settings under **Editor | Tailwind Rainbow** for the theme, the maximum file size to scan, and
-  the recognized attributes, functions, template tags, ignored prefix modifiers, and file
-  extensions.
 
 [Unreleased]: https://github.com/Jacobgh00/tailwindrainbow/commits/main
