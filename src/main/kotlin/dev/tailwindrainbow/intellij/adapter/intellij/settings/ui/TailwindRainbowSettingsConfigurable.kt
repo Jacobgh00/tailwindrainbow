@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project
 import dev.tailwindrainbow.intellij.adapter.intellij.highlighting.rehighlightOpenProjects
 import dev.tailwindrainbow.intellij.adapter.intellij.settings.TailwindRainbowProjectSettings
 import dev.tailwindrainbow.intellij.adapter.intellij.settings.TailwindRainbowSettings
+import dev.tailwindrainbow.intellij.adapter.intellij.variants.ProjectVariants
 import dev.tailwindrainbow.intellij.application.settings.FormResult
 import dev.tailwindrainbow.intellij.application.settings.SettingsFormMapper
 import dev.tailwindrainbow.intellij.application.theme.ThemeProblem
@@ -34,6 +35,7 @@ class TailwindRainbowSettingsConfigurable(private val project: Project) : Search
                 baseNames = settings.themes.baseNames().toList(),
                 themeNames = settings.themes.names().toList(),
                 basePalette = { name -> settings.themes.basePalette(name) },
+                declaredVariants = { ProjectVariants.getInstance(project).declared() },
             )
 
         created.write(currentForm())

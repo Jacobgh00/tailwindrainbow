@@ -94,6 +94,11 @@ If a stored theme holds an entry the plugin cannot use — a color that is not `
 the settings file was edited by hand — it is listed above the token table with what is wrong. The
 entry is skipped rather than applied, and its row stays in the table so it can be reset or removed.
 
+Adding a token offers the variants your project declares for itself — `@custom-variant` and
+`--breakpoint-*` in a Tailwind v4 stylesheet, `addVariant(…)` and `screens` in a v3 config — so a
+project-specific variant is a pick from a list rather than something to type from memory. They are
+offered, not added: which of them deserve a color, and which color, stays your decision.
+
 The token table lists what the selected theme colors, grouped by section. Use **+** to add a token,
 choosing whether it matches a variant prefix (`hover`, `focus-visible`, `min-*`) or a base class
 (`bg-*`, `text-lg`); patterns may use `*` as a wildcard, and the most specific pattern wins — a

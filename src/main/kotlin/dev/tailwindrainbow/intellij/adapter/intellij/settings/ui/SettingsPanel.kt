@@ -28,8 +28,9 @@ class SettingsPanel(
     private val baseNames: List<String>,
     themeNames: List<String>,
     private val basePalette: (String) -> RainbowTheme,
+    declaredVariants: () -> Set<String>,
 ) {
-    private val themeEditor = ThemeEditorPanel()
+    private val themeEditor = ThemeEditorPanel(declaredVariants)
     private val enabled = JBCheckBox("Enable Tailwind Rainbow")
     private val themeNameModel = MutableCollectionComboBoxModel(themeNames.toMutableList())
     private val theme = ComboBox(themeNameModel)

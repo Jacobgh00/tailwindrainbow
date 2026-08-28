@@ -28,7 +28,7 @@ import javax.swing.table.DefaultTableCellRenderer
  * The table asks [ThemeEditorModel] what to show and hands every edit back to it, so which colour
  * wins and what gets stored is decided by tested logic rather than by Swing.
  */
-class ThemeEditorPanel : JPanel(BorderLayout()) {
+class ThemeEditorPanel(private val declaredVariants: () -> Set<String>) : JPanel(BorderLayout()) {
     private var model = ThemeEditorModel(RainbowTheme())
 
     private val tableModel = RowTableModel()
@@ -93,7 +93,7 @@ class ThemeEditorPanel : JPanel(BorderLayout()) {
     private fun selectedRow(): ThemeEditorRow? = model.rows().getOrNull(table.selectedRow)
 
     private fun addToken() {
-        val dialog = AddTokenDialog(model::holds)
+        val dialog = AddTokenDialog(model::holds, declaredVariants)
         if (!dialog.showAndGet()) return
 
         model = model.add(dialog.selectedSection, dialog.enteredKey)
