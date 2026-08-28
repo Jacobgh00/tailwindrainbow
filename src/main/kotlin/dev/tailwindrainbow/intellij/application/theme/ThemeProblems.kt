@@ -10,7 +10,7 @@ package dev.tailwindrainbow.intellij.application.theme
 fun problemsIntroducedBy(
     pending: List<ThemeSpec>,
     stored: List<ThemeSpec>,
-): List<ThemeProblem> = UserThemeSource(pending).problems - UserThemeSource(stored).problems.toSet()
+): List<ThemeProblem> = SpecThemeSource(pending).problems - SpecThemeSource(stored).problems.toSet()
 
 /** One line naming the theme, the entry, and what is wrong with it. */
 fun ThemeProblem.describe(): String {

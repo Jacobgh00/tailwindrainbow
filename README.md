@@ -87,6 +87,42 @@ choosing whether it matches a variant prefix (`hover`, `focus-visible`, `min-*`)
 are reset rather than removed. Unticking **Enabled** leaves a token uncolored while keeping the
 color you picked, so it can be switched back on later.
 
+## Contributing themes from another plugin
+
+A plugin can add themes of its own — a company palette shared across a team, for instance — through
+the `dev.tailwindrainbow.themeContributor` extension point:
+
+```xml
+<idea-plugin>
+    <depends>dev.tailwindrainbow</depends>
+
+    <extensions defaultExtensionNs="dev.tailwindrainbow">
+        <themeContributor implementation="com.example.CorporateThemes"/>
+    </extensions>
+</idea-plugin>
+```
+
+```kotlin
+class CorporateThemes : ThemeContributor {
+    override fun themes() =
+        listOf(
+            ThemeSpec(
+                name = "corporate",
+                basedOn = "default",
+                entries = listOf(StyleEntry(SegmentKind.PREFIX, "hover", "#0055ff", 700)),
+            ),
+        )
+}
+```
+
+A contributed theme behaves like a built-in one: it appears in the theme list, it can be the base of
+a user theme, it cannot be deleted from settings, and any color the user changes in it wins while
+everything untouched keeps following the contribution. Malformed entries are reported in the
+settings screen rather than thrown, and a contributor that fails costs only its own themes.
+
+Contributions are picked up when settings are applied or when the IDE starts, not the instant a
+plugin is installed.
+
 ## Compatibility
 
 Built against IntelliJ Platform 2025.2 (`since-build` 252) with no upper bound, so it keeps working

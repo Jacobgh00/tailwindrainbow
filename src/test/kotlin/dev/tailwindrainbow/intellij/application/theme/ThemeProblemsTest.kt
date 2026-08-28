@@ -32,7 +32,7 @@ class ThemeProblemsTest {
 
     @Test
     fun `a description names the theme, the entry, and what is wrong with it`() {
-        val problem = UserThemeSource(listOf(spec(entry(color = "not-a-colour")))).problems.single()
+        val problem = SpecThemeSource(listOf(spec(entry(color = "not-a-colour")))).problems.single()
 
         val description = problem.describe()
 

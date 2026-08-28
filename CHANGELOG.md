@@ -32,6 +32,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Recognition of framework class bindings: `:class`, `v-bind:class`, and `x-bind:class`. The value
   of a bound attribute is treated as an expression, so class names are read from the strings inside
   it rather than from the surrounding braces, brackets, and conditions.
+- A `dev.tailwindrainbow.themeContributor` extension point, so other plugins can ship themes. A
+  contributed theme can be based on a built-in one, can be the base of a user theme, and is
+  overridden entry by entry by the user's own colors.
 - Reporting of theme entries the plugin cannot use. They were dropped silently before, so a color
   that never appeared had nothing to explain it; they are now listed in the settings screen, and an
   edit that would add a new one is refused with the reason.

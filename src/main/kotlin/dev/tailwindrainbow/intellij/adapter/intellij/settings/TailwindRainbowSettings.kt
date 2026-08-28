@@ -8,6 +8,7 @@ import com.intellij.openapi.components.service
 import com.intellij.util.xmlb.XmlSerializerUtil
 import com.intellij.util.xmlb.annotations.XCollection
 import dev.tailwindrainbow.intellij.adapter.intellij.settings.persistence.StoredTheme
+import dev.tailwindrainbow.intellij.adapter.intellij.theme.ContributedThemes
 import dev.tailwindrainbow.intellij.adapter.theme.UserThemeCatalog
 import dev.tailwindrainbow.intellij.application.highlight.ScanSettings
 import dev.tailwindrainbow.intellij.application.port.HighlightSettings
@@ -24,7 +25,7 @@ class TailwindRainbowSettings :
     ThemeCatalog {
     private val storedState = StoredState()
 
-    val themes = UserThemeCatalog()
+    val themes = UserThemeCatalog(ContributedThemes)
 
     @Synchronized
     override fun getState(): StoredState = storedState

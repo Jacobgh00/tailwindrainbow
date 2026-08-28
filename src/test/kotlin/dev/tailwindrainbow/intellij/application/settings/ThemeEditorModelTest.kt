@@ -1,10 +1,10 @@
 package dev.tailwindrainbow.intellij.application.settings
 
 import dev.tailwindrainbow.intellij.application.port.ThemeSource
+import dev.tailwindrainbow.intellij.application.theme.SpecThemeSource
 import dev.tailwindrainbow.intellij.application.theme.StyleEntry
 import dev.tailwindrainbow.intellij.application.theme.ThemeRepository
 import dev.tailwindrainbow.intellij.application.theme.ThemeSpec
-import dev.tailwindrainbow.intellij.application.theme.UserThemeSource
 import dev.tailwindrainbow.intellij.domain.theme.FontWeight
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
 import dev.tailwindrainbow.intellij.domain.theme.SegmentKind
@@ -265,7 +265,7 @@ class ThemeEditorModelTest {
                 .restyle(SegmentKind.PREFIX, "focus-visible", RowStyle("#abcdef"))
                 .spec("mine")
 
-        val resolved = ThemeRepository(ThemeSource { mapOf("mine" to builtIn) }, UserThemeSource(listOf(spec)))
+        val resolved = ThemeRepository(ThemeSource { mapOf("mine" to builtIn) }, SpecThemeSource(listOf(spec)))
 
         assertEquals(TextStyle("#abcdef", FontWeight.BOLD), resolved.find("mine").prefix["focus-visible"])
         assertEquals(TextStyle("#111111", FontWeight.BOLD), resolved.find("mine").prefix["hover"])

@@ -8,7 +8,7 @@ import dev.tailwindrainbow.intellij.domain.theme.TextStyle
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class UserThemeSourceTest {
+class SpecThemeSourceTest {
     private val builtIns =
         ThemeSource {
             mapOf(
@@ -21,7 +21,7 @@ class UserThemeSourceTest {
     fun `a theme based on another starts from that palette`() {
         val spec = ThemeSpec("midnight", listOf(entry("focus", "#0a0a0a")), basedOn = "synthwave")
 
-        val theme = UserThemeSource(listOf(spec), builtIns).themes().getValue("midnight")
+        val theme = SpecThemeSource(listOf(spec), builtIns).themes().getValue("midnight")
 
         assertEquals(blue, theme.prefix["hover"], "an entry the user never touched, inherited from the base")
         assertEquals("#0a0a0a", theme.prefix.getValue("focus").color, "the user's own entry")
@@ -31,7 +31,7 @@ class UserThemeSourceTest {
     fun `a spec that restyles an existing theme is based on that theme`() {
         val spec = ThemeSpec("default", listOf(entry("hover", "#0a0a0a")))
 
-        val theme = UserThemeSource(listOf(spec), builtIns).themes().getValue("default")
+        val theme = SpecThemeSource(listOf(spec), builtIns).themes().getValue("default")
 
         assertEquals("#0a0a0a", theme.prefix.getValue("hover").color)
         assertEquals(red, theme.arbitrary, "the rest of the base palette is still there")
@@ -41,7 +41,7 @@ class UserThemeSourceTest {
     fun `a base that no longer exists leaves the theme with the user's entries alone`() {
         val spec = ThemeSpec("orphan", listOf(entry("hover", "#0a0a0a")), basedOn = "deleted-theme")
 
-        val theme = UserThemeSource(listOf(spec), builtIns).themes().getValue("orphan")
+        val theme = SpecThemeSource(listOf(spec), builtIns).themes().getValue("orphan")
 
         assertEquals(mapOf("hover" to TextStyle("#0a0a0a", FontWeight.BOLD)), theme.prefix)
     }
@@ -50,7 +50,7 @@ class UserThemeSourceTest {
     fun `a malformed entry is reported and dropped, not thrown`() {
         val spec = ThemeSpec("midnight", listOf(entry("focus", "not-a-colour")), basedOn = "synthwave")
 
-        val source = UserThemeSource(listOf(spec), builtIns)
+        val source = SpecThemeSource(listOf(spec), builtIns)
 
         assertEquals(1, source.problems.size)
         assertEquals(blue, source.themes().getValue("midnight").prefix["focus"], "the base colour survives")

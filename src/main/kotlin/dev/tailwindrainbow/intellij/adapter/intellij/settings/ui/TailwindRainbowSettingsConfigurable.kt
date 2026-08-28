@@ -28,9 +28,9 @@ class TailwindRainbowSettingsConfigurable : SearchableConfigurable {
         val settings = TailwindRainbowSettings.getInstance()
         val created =
             SettingsPanel(
-                builtInNames = settings.themes.builtInNames().toList(),
+                baseNames = settings.themes.baseNames().toList(),
                 themeNames = settings.themes.names().toList(),
-                builtInTheme = { name -> settings.themes.builtIn(name) },
+                basePalette = { name -> settings.themes.basePalette(name) },
             )
 
         created.write(SettingsFormMapper.toForm(settings.current(), settings.themes.overrides()))

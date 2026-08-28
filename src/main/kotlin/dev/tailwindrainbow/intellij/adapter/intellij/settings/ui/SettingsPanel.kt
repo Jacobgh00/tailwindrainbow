@@ -26,9 +26,9 @@ import javax.swing.SwingConstants
  * so the name and base travel with the spec on the way in and out.
  */
 class SettingsPanel(
-    private val builtInNames: List<String>,
+    private val baseNames: List<String>,
     themeNames: List<String>,
-    private val builtInTheme: (String) -> RainbowTheme,
+    private val basePalette: (String) -> RainbowTheme,
 ) {
     private val themeEditor = ThemeEditorPanel()
     private val enabled = JBCheckBox("Enable Tailwind Rainbow")
@@ -109,7 +109,7 @@ class SettingsPanel(
 
         themes = form.themes
         editing = ""
-        themeNameModel.replaceAll(builtInNames + form.themes.map(ThemeSpec::name).filterNot { it in builtInNames })
+        themeNameModel.replaceAll(baseNames + form.themes.map(ThemeSpec::name).filterNot { it in baseNames })
         theme.selectedItem = form.themeName
         showSelectedTheme()
     }
@@ -138,13 +138,13 @@ class SettingsPanel(
     private fun showSelectedTheme() {
         themes = park()
         editing = selectedThemeName()
-        deleteTheme.isEnabled = editing !in builtInNames
+        deleteTheme.isEnabled = editing !in baseNames
 
-        themeEditor.show(builtInTheme(baseOf(editing)), themes.firstOrNull { it.name == editing })
+        themeEditor.show(basePalette(baseOf(editing)), themes.firstOrNull { it.name == editing })
     }
 
     private fun createTheme() {
-        val dialog = NewThemeDialog(builtInNames) { themeNameModel.items.contains(it) }
+        val dialog = NewThemeDialog(baseNames) { themeNameModel.items.contains(it) }
         if (!dialog.showAndGet()) return
 
         themes = park() + ThemeSpec(dialog.enteredName, emptyList(), basedOn = dialog.selectedBase)
@@ -155,12 +155,12 @@ class SettingsPanel(
 
     private fun deleteSelectedTheme() {
         val name = selectedThemeName()
-        if (name in builtInNames) return
+        if (name in baseNames) return
 
         themes = themes.filterNot { it.name == name }
         editing = ""
         themeNameModel.remove(name)
-        theme.selectedItem = builtInNames.first()
+        theme.selectedItem = baseNames.first()
     }
 
     /** The theme a name derives its untouched colours from. Built-in themes derive from themselves. */
