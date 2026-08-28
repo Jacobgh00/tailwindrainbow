@@ -108,7 +108,7 @@ class ThemeEditorPanel : JPanel(BorderLayout()) {
         val row = selectedRow() ?: return
         val chosen = colorPanel.selectedColor ?: return
 
-        model = model.recolour(row.section, row.key, chosen.toHex())
+        model = model.restyle(row.section, row.key, row.style.copy(color = chosen.toHex()))
         tableModel.fireTableDataChanged()
     }
 
@@ -136,7 +136,7 @@ class ThemeEditorPanel : JPanel(BorderLayout()) {
         val row = selectedRow()
         colorPanel.isEnabled = row != null
         resetButton.isEnabled = row?.origin == RowOrigin.OVERRIDDEN
-        colorPanel.selectedColor = row?.color?.let(Color::decode)
+        colorPanel.selectedColor = row?.style?.color?.let(Color::decode)
     }
 
     private inner class RowTableModel : AbstractTableModel() {
@@ -146,12 +146,12 @@ class ThemeEditorPanel : JPanel(BorderLayout()) {
 
         override fun getColumnName(column: Int): String = COLUMN_NAMES[column]
 
-        override fun getColumnClass(column: Int): Class<*> = if (column == BOLD) BOOLEAN_COLUMN else String::class.java
+        override fun getColumnClass(column: Int): Class<*> = if (column in SWITCHES) BOOLEAN_COLUMN else TEXT_COLUMN
 
         override fun isCellEditable(
             row: Int,
             column: Int,
-        ): Boolean = column == BOLD
+        ): Boolean = column in SWITCHES
 
         override fun getValueAt(
             row: Int,
@@ -161,8 +161,9 @@ class ThemeEditorPanel : JPanel(BorderLayout()) {
                 when (column) {
                     SECTION -> it.section.displayName
                     TOKEN -> it.label
-                    COLOR -> it.color
-                    else -> it.bold
+                    COLOR -> it.style.color
+                    BOLD -> it.style.bold
+                    else -> it.style.enabled
                 }
             }
 
@@ -171,10 +172,15 @@ class ThemeEditorPanel : JPanel(BorderLayout()) {
             row: Int,
             column: Int,
         ) {
-            if (column != BOLD) return
-
             val target = model.rows()[row]
-            model = model.setBold(target.section, target.key, value as Boolean)
+            val restyled =
+                when (column) {
+                    BOLD -> target.style.copy(bold = value as Boolean)
+                    ENABLED -> target.style.copy(enabled = value as Boolean)
+                    else -> return
+                }
+
+            model = model.restyle(target.section, target.key, restyled)
             fireTableRowsUpdated(row, row)
         }
     }
@@ -204,20 +210,26 @@ class ThemeEditorPanel : JPanel(BorderLayout()) {
             column: Int,
         ): Component =
             super.getTableCellRendererComponent(table, value, selected, focused, row, column).also {
-                val userDefined = model.rows().getOrNull(row)?.isUserDefined == true
-                it.font = it.font.deriveFont(if (userDefined) Font.BOLD else Font.PLAIN)
+                val target = model.rows().getOrNull(row)
+                it.font = it.font.deriveFont(if (target?.isUserDefined == true) Font.BOLD else Font.PLAIN)
+                it.isEnabled = target?.style?.enabled != false
             }
     }
 
     private companion object {
         val BOOLEAN_COLUMN: Class<*> = java.lang.Boolean::class.java
+        val TEXT_COLUMN: Class<*> = String::class.java
         const val ROW_HEIGHT = 24
         const val SECTION_COLUMN_WIDTH = 90
         const val SECTION = 0
         const val TOKEN = 1
         const val COLOR = 2
         const val BOLD = 3
-        val COLUMN_NAMES = arrayOf("Section", "Token", "Colour", "Bold")
+        const val ENABLED = 4
+        val COLUMN_NAMES = arrayOf("Section", "Token", "Colour", "Bold", "Enabled")
+
+        /** The columns the user toggles rather than types into. */
+        val SWITCHES = setOf(BOLD, ENABLED)
 
         fun Color.toHex(): String = "#%02x%02x%02x".format(red, green, blue)
     }

@@ -18,9 +18,9 @@ green              teal          purple   slate            coral        red
 - **Variant highlighting** in class attributes, class helper functions, tagged templates, and CSS
   `@apply` directives.
 - **Two built-in themes** — `default` and `synthwave`.
-- **User-defined colors.** Pick a color for any variant with a color picker, and toggle bold.
-  Overrides are stored per entry, so a theme you customize keeps inheriting everything you did not
-  touch.
+- **User-defined colors.** Pick a color for any variant with a color picker, toggle bold, or switch
+  an entry off so that variant is left alone. Overrides are stored per entry, so a theme you
+  customize keeps inheriting everything you did not touch.
 - **User-defined tokens.** Add a variant no theme lists — `focus-visible`, `aria-*`, a variant of
   your own — with `*` usable as a wildcard.
 - **Optional base-class coloring.** Add a base pattern such as `bg-*` and the utility itself is
@@ -65,7 +65,8 @@ The token table lists what the selected theme colors, grouped by section. Use **
 choosing whether it matches a variant prefix (`hover`, `focus-visible`, `min-*`) or a base class
 (`bg-*`, `text-lg`); patterns may use `*` as a wildcard, and the most specific pattern wins — a
 `bg-blue-500` entry beats `bg-*`. **−** removes a token you added. Tokens that come from the theme
-are reset rather than removed.
+are reset rather than removed. Unticking **Enabled** leaves a token uncolored while keeping the
+color you picked, so it can be switched back on later.
 
 ## Compatibility
 

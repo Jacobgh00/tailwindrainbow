@@ -29,6 +29,15 @@ class HighlightDocumentServiceTest {
     }
 
     @Test
+    fun `a theme entry switched off paints nothing`() {
+        val switchedOff =
+            RainbowTheme(prefix = mapOf("hover" to TextStyle("#abcdef", FontWeight.BOLD, enabled = false)))
+        val service = HighlightDocumentService({ settings() }, { switchedOff })
+
+        assertTrue(service.highlight(html, "html").isEmpty())
+    }
+
+    @Test
     fun `the requested theme name is the one asked of the catalog`() {
         var asked: String? = null
         val service =

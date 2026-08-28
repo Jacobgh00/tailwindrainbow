@@ -52,23 +52,23 @@ class ThemeEditorModelTest {
     fun `an untouched row shows the inherited colour and is only inherited`() {
         val row = model().rows().first { it.key == "hover" }
 
-        assertEquals("#111111", row.color)
+        assertEquals("#111111", row.style.color)
         assertEquals(RowOrigin.INHERITED, row.origin)
         assertFalse(row.isUserDefined)
     }
 
     @Test
     fun `recolouring a row changes what it shows and marks it overridden`() {
-        val updated = model().recolour(SegmentKind.PREFIX, "hover", "#abcdef")
+        val updated = model().restyle(SegmentKind.PREFIX, "hover", RowStyle("#abcdef"))
         val row = updated.rows().first { it.key == "hover" }
 
-        assertEquals("#abcdef", row.color)
+        assertEquals("#abcdef", row.style.color)
         assertEquals(RowOrigin.OVERRIDDEN, row.origin)
     }
 
     @Test
     fun `recolouring produces a spec holding only the changed entry`() {
-        val spec = model().recolour(SegmentKind.PREFIX, "hover", "#abcdef").spec("mine")
+        val spec = model().restyle(SegmentKind.PREFIX, "hover", RowStyle("#abcdef")).spec("mine")
 
         assertEquals("mine", spec.name)
         assertEquals(
@@ -81,23 +81,46 @@ class ThemeEditorModelTest {
     fun `resetting a row restores the inherited colour and drops the override`() {
         val reset =
             model()
-                .recolour(SegmentKind.PREFIX, "hover", "#abcdef")
+                .restyle(SegmentKind.PREFIX, "hover", RowStyle("#abcdef"))
                 .reset(SegmentKind.PREFIX, "hover")
 
-        assertEquals("#111111", reset.rows().first { it.key == "hover" }.color)
+        assertEquals("#111111", reset.rows().first { it.key == "hover" }.style.color)
         assertEquals(RowOrigin.INHERITED, reset.rows().first { it.key == "hover" }.origin)
         assertTrue(reset.spec("mine").entries.isEmpty())
     }
 
     @Test
     fun `bold is editable and stored as a font weight`() {
-        val bolded = model().setBold(SegmentKind.BASE, "bg-*", bold = true)
+        val bolded = model().restyle(SegmentKind.BASE, "bg-*", RowStyle("#333333", bold = true))
 
-        assertTrue(bolded.rows().first { it.key == "bg-*" }.bold)
+        assertTrue(bolded.rows().first { it.key == "bg-*" }.style.bold)
         assertEquals(700, bolded.spec("mine").entries.single().fontWeight)
 
-        val plain = bolded.setBold(SegmentKind.BASE, "bg-*", bold = false)
+        val plain = bolded.restyle(SegmentKind.BASE, "bg-*", RowStyle("#333333", bold = false))
         assertEquals(400, plain.spec("mine").entries.single().fontWeight)
+    }
+
+    @Test
+    fun `a row can be switched off and keeps the colour it had`() {
+        val off = model().restyle(SegmentKind.PREFIX, "hover", RowStyle("#111111", enabled = false))
+        val row = off.rows().first { it.key == "hover" }
+
+        assertFalse(row.style.enabled)
+        assertEquals("#111111", row.style.color)
+        assertEquals(
+            listOf(StyleEntry(SegmentKind.PREFIX, "hover", "#111111", 700, enabled = false)),
+            off.spec("mine").entries,
+        )
+    }
+
+    @Test
+    fun `an entry stored as switched off opens that way`() {
+        val stored =
+            model(
+                ThemeSpec("mine", listOf(StyleEntry(SegmentKind.PREFIX, "hover", "#111111", 700, enabled = false))),
+            )
+
+        assertFalse(stored.rows().first { it.key == "hover" }.style.enabled)
     }
 
     @Test
@@ -105,8 +128,8 @@ class ThemeEditorModelTest {
         val withOverride = model(ThemeSpec("mine", listOf(StyleEntry(SegmentKind.PREFIX, "focus", "#0f0f0f", 400))))
         val row = withOverride.rows().first { it.key == "focus" }
 
-        assertEquals("#0f0f0f", row.color)
-        assertFalse(row.bold)
+        assertEquals("#0f0f0f", row.style.color)
+        assertFalse(row.style.bold)
         assertEquals(RowOrigin.OVERRIDDEN, row.origin)
     }
 
@@ -130,11 +153,11 @@ class ThemeEditorModelTest {
         val added =
             model()
                 .add(SegmentKind.PREFIX, "focus-visible")
-                .recolour(SegmentKind.PREFIX, "focus-visible", "#abcdef")
+                .restyle(SegmentKind.PREFIX, "focus-visible", RowStyle("#abcdef"))
 
         val row = added.rows().first { it.key == "focus-visible" }
         assertEquals(RowOrigin.ADDED, row.origin)
-        assertEquals("#abcdef", row.color)
+        assertEquals("#abcdef", row.style.color)
         assertEquals(
             listOf(StyleEntry(SegmentKind.PREFIX, "focus-visible", "#abcdef", 700)),
             added.spec("mine").entries,
@@ -211,7 +234,7 @@ class ThemeEditorModelTest {
 
     @Test
     fun `an inherited token is reset rather than removed`() {
-        val recoloured = model().recolour(SegmentKind.PREFIX, "hover", "#abcdef")
+        val recoloured = model().restyle(SegmentKind.PREFIX, "hover", RowStyle("#abcdef"))
 
         assertFailsWith<IllegalArgumentException> { recoloured.remove(SegmentKind.PREFIX, "hover") }
     }
@@ -228,7 +251,7 @@ class ThemeEditorModelTest {
         val spec =
             model()
                 .add(SegmentKind.PREFIX, "focus-visible")
-                .recolour(SegmentKind.PREFIX, "focus-visible", "#abcdef")
+                .restyle(SegmentKind.PREFIX, "focus-visible", RowStyle("#abcdef"))
                 .spec("mine")
 
         val resolved = ThemeRepository(ThemeSource { mapOf("mine" to builtIn) }, UserThemeSource(listOf(spec)))

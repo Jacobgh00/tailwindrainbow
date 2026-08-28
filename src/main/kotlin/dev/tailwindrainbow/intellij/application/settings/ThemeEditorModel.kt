@@ -18,11 +18,20 @@ enum class RowOrigin {
     ADDED,
 }
 
+/**
+ * How a row looks, in the terms the editor works in. The theme stores a font weight; the editor
+ * offers the one distinction the IDE can actually render, so a row is bold or it is not.
+ */
+data class RowStyle(
+    val color: String,
+    val bold: Boolean = true,
+    val enabled: Boolean = true,
+)
+
 data class ThemeEditorRow(
     val section: SegmentKind,
     val key: String,
-    val color: String,
-    val bold: Boolean,
+    val style: RowStyle,
     val origin: RowOrigin,
 ) {
     /** What to show in the token column. [key] is empty for the two keyless sections. */
@@ -96,17 +105,19 @@ class ThemeEditorModel private constructor(
         return withOverrides(overrides + (entry to blankEntry(entry)))
     }
 
-    fun recolour(
+    /**
+     * Records how the user wants this row to look. The whole style is given at once, so an edit
+     * never has to merge with what was there — a row's style is what the editor last showed. A
+     * stored font weight the editor cannot express is therefore rewritten to the one it displayed.
+     */
+    fun restyle(
         section: SegmentKind,
         key: String,
-        color: String,
-    ): ThemeEditorModel = edit(EntryKey(section, key)) { it.copy(color = color) }
-
-    fun setBold(
-        section: SegmentKind,
-        key: String,
-        bold: Boolean,
-    ): ThemeEditorModel = edit(EntryKey(section, key)) { it.copy(fontWeight = if (bold) BOLD else NORMAL) }
+        style: RowStyle,
+    ): ThemeEditorModel {
+        val entry = EntryKey(section, key)
+        return withOverrides(overrides + (entry to style.toEntry(entry)))
+    }
 
     /** Drops the user's edit so the row follows the inherited palette again. */
     fun reset(
@@ -134,14 +145,6 @@ class ThemeEditorModel private constructor(
     fun spec(name: String): ThemeSpec = ThemeSpec(name, overrides.values.toList())
 
     private fun withOverrides(overrides: Map<EntryKey, StyleEntry>) = ThemeEditorModel(inherited, overrides)
-
-    private fun edit(
-        entry: EntryKey,
-        change: (StyleEntry) -> StyleEntry,
-    ): ThemeEditorModel {
-        val current = overrides[entry] ?: inherited.styleOf(entry)?.toEntry(entry) ?: blankEntry(entry)
-        return withOverrides(overrides + (entry to change(current)))
-    }
 }
 
 private const val BOLD = 700
@@ -164,8 +167,7 @@ private fun rowOf(
     return ThemeEditorRow(
         section = entry.section,
         key = entry.key,
-        color = effective.color,
-        bold = effective.fontWeight >= BOLD,
+        style = RowStyle(effective.color, bold = effective.fontWeight >= BOLD, enabled = effective.enabled),
         origin =
             when {
                 override == null -> RowOrigin.INHERITED
@@ -176,5 +178,9 @@ private fun rowOf(
 }
 
 private fun TextStyle.toEntry(entry: EntryKey) = StyleEntry(entry.section, entry.key, color, fontWeight.value, enabled)
+
+private fun RowStyle.toEntry(entry: EntryKey) = StyleEntry(entry.section, entry.key, color, weight(), enabled)
+
+private fun RowStyle.weight() = if (bold) BOLD else NORMAL
 
 private fun blankEntry(entry: EntryKey) = StyleEntry(entry.section, entry.key, FALLBACK_COLOR, BOLD)
