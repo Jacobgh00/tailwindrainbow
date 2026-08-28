@@ -50,3 +50,6 @@ bin/
 ### Certs ###
 *.crt
 *.pem
+
+### Plan ###
+plan/

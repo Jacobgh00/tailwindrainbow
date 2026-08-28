@@ -4,13 +4,6 @@ import dev.tailwindrainbow.intellij.application.port.ThemeSource
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
 import dev.tailwindrainbow.intellij.domain.theme.overriddenBy
 
-/**
- * Resolves a theme name against every source, in order.
- *
- * Sources later in [sources] override earlier ones **entry by entry**, so a user source that sets
- * only `hover` keeps every other color of the built-in theme it shadows. Overriding by whole theme
- * instead would force users to restate ~30 entries to change one.
- */
 class ThemeRepository(private val sources: List<ThemeSource>) {
     constructor(vararg sources: ThemeSource) : this(sources.toList())
 

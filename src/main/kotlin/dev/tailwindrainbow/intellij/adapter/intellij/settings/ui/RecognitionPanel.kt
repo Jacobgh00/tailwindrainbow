@@ -7,12 +7,6 @@ import com.intellij.util.ui.FormBuilder
 import dev.tailwindrainbow.intellij.application.settings.RecognitionForm
 import javax.swing.JComponent
 
-/**
- * What the plugin looks at, and who decides it.
- *
- * One set of fields serves both answers: the switch says whether they belong to the project, and
- * the side not on screen waits in [parked] so turning the switch on and off again loses neither.
- */
 internal class RecognitionPanel {
     private val ownedByProject = JBCheckBox("Use project settings for what is recognized")
     private val maxFileSize = JBTextField()
@@ -22,7 +16,7 @@ internal class RecognitionPanel {
     private val ignoredModifiers = JBTextField()
     private val supportedExtensions = JBTextField()
 
-    private var parked: RecognitionForm? = null
+    private var rulesOffScreen: RecognitionForm? = null
 
     val component: JComponent =
         FormBuilder.createFormBuilder()
@@ -40,10 +34,8 @@ internal class RecognitionPanel {
         ownedByProject.addActionListener { swap() }
     }
 
-    /** The rules to store IDE-wide, whichever side is on screen. */
-    fun applicationRules(): RecognitionForm = if (ownedByProject.isSelected) parked ?: onScreen() else onScreen()
+    fun applicationRules(): RecognitionForm = if (ownedByProject.isSelected) rulesOffScreen() else onScreen()
 
-    /** The rules to store in the project, or null while it follows the IDE-wide ones. */
     fun projectRules(): RecognitionForm? = onScreen().takeIf { ownedByProject.isSelected }
 
     fun show(
@@ -52,15 +44,17 @@ internal class RecognitionPanel {
     ) {
         ownedByProject.isSelected = project != null
         write(project ?: application)
-        parked = application.takeIf { project != null }
+        rulesOffScreen = application.takeIf { project != null }
     }
 
     private fun swap() {
         val current = onScreen()
 
-        write(parked ?: current)
-        parked = current
+        write(rulesOffScreen ?: current)
+        rulesOffScreen = current
     }
+
+    private fun rulesOffScreen() = rulesOffScreen ?: onScreen()
 
     private fun onScreen() =
         RecognitionForm(

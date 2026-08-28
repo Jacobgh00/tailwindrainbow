@@ -25,10 +25,6 @@ import javax.swing.ListSelectionModel
 import javax.swing.table.AbstractTableModel
 import javax.swing.table.DefaultTableCellRenderer
 
-/**
- * The table asks [ThemeEditorModel] what to show and hands every edit back to it, so which colour
- * wins and what gets stored is decided by tested logic rather than by Swing.
- */
 class ThemeEditorPanel(private val declaredVariants: () -> Set<String>) : JPanel(BorderLayout()) {
     private var model = ThemeEditorModel(RainbowTheme())
 
@@ -80,16 +76,11 @@ class ThemeEditorPanel(private val declaredVariants: () -> Set<String>) : JPanel
         syncControls()
     }
 
-    /**
-     * What the user has changed, named. The editor colours a palette and does not track which theme
-     * it belongs to; [SettingsPanel] owns that, and passes the identity back in here.
-     */
     fun specFor(
         name: String,
         basedOn: String,
     ): ThemeSpec? = model.spec(name).copy(basedOn = basedOn).takeIf { !it.isRedundant }
 
-    /** Add and remove live on the table's own toolbar, where the platform puts them. */
     private fun tableWithToolbar(): JPanel =
         ToolbarDecorator.createDecorator(table)
             .setAddAction { addToken() }
@@ -134,7 +125,6 @@ class ThemeEditorPanel(private val declaredVariants: () -> Set<String>) : JPanel
         syncControls()
     }
 
-    /** Puts the caret on a freshly added token so the colour picker acts on it straight away. */
     private fun select(
         section: SegmentKind,
         key: String,
@@ -242,7 +232,6 @@ class ThemeEditorPanel(private val declaredVariants: () -> Set<String>) : JPanel
         const val ENABLED = 4
         val COLUMN_NAMES = arrayOf("Section", "Token", "Colour", "Bold", "Enabled")
 
-        /** The columns the user toggles rather than types into. */
         val SWITCHES = setOf(BOLD, ENABLED)
 
         fun Color.toHex(): String = "#%02x%02x%02x".format(red, green, blue)

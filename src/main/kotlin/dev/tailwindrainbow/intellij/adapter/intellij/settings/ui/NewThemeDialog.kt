@@ -9,12 +9,6 @@ import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.FormBuilder
 import javax.swing.JComponent
 
-/**
- * Asks for a name and a theme to start from.
- *
- * The new theme stores only what the user changes, so the base is not copied: colours left alone
- * keep following it, including ones added in later plugin versions.
- */
 internal class NewThemeDialog(
     private val bases: List<String>,
     private val isTaken: (String) -> Boolean,

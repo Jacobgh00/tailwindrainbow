@@ -3,48 +3,33 @@ package dev.tailwindrainbow.intellij.domain.theme
 import kotlin.math.abs
 import kotlin.math.pow
 
-/**
- * This style, moved far enough from [background] to be readable against it.
- *
- * A palette is chosen once and read on whatever background the IDE happens to be using, and the
- * colours that make variants stand out on a dark editor are the same colours that disappear into a
- * light one. Rather than ask for a second palette nobody would keep up to date — and which a theme
- * contributed by another plugin could not supply at all — the colour is moved only along its
- * lightness, only when it falls below [MINIMUM_CONTRAST], and only far enough to clear it. The hue
- * the user picked survives; its legibility stops depending on which scheme they are in.
- *
- * A colour or background that is not `#RRGGBB` is left alone. Reporting a malformed colour belongs
- * to whatever parsed it; making it readable is impossible and pretending otherwise would hide it.
- */
 fun TextStyle.readableOn(background: String): TextStyle {
     val backgroundColor = background.toRgb() ?: return this
     val chosen = color.toRgb() ?: return this
 
-    if (contrast(chosen, backgroundColor) >= MINIMUM_CONTRAST) {
+    if (contrast(chosen, backgroundColor) >= WCAG_AA_CONTRAST) {
         return this
     }
 
     return copy(color = chosen.movedAwayFrom(backgroundColor).toHex())
 }
 
-/** WCAG AA for text. Below this a variant is present but unreadable, which is worse than uncoloured. */
-private const val MINIMUM_CONTRAST = 4.5
+private const val WCAG_AA_CONTRAST = 4.5
 
 private const val LIGHTNESS_STEP = 0.02
-private const val LIGHT_BACKGROUND = 0.5
+private const val LIGHT_BACKGROUND_LUMINANCE = 0.5
 
-/** Steps to walk the whole lightness range, so the loop cannot end before the range does. */
-private const val MAX_STEPS = (1.0 / LIGHTNESS_STEP).toInt() + 1
+private const val STEPS_ACROSS_LIGHTNESS_RANGE = (1.0 / LIGHTNESS_STEP).toInt() + 1
 
 private fun Rgb.movedAwayFrom(background: Rgb): Rgb {
-    val step = if (background.luminance() > LIGHT_BACKGROUND) -LIGHTNESS_STEP else LIGHTNESS_STEP
+    val step = if (background.luminance() > LIGHT_BACKGROUND_LUMINANCE) -LIGHTNESS_STEP else LIGHTNESS_STEP
     var moved = toHsl()
 
-    repeat(MAX_STEPS) {
+    repeat(STEPS_ACROSS_LIGHTNESS_RANGE) {
         moved = moved.copy(lightness = (moved.lightness + step).coerceIn(0.0, 1.0))
         val candidate = moved.toRgb()
 
-        if (contrast(candidate, background) >= MINIMUM_CONTRAST) return candidate
+        if (contrast(candidate, background) >= WCAG_AA_CONTRAST) return candidate
     }
 
     return moved.toRgb()
@@ -64,7 +49,6 @@ private const val HEX = 16
 private const val HEX_DIGITS_PER_CHANNEL = 2
 private const val MAX_CHANNEL = 255.0
 
-/** The constants of the WCAG contrast and luminance formulas, which are the formulas, not choices. */
 private const val CONTRAST_FLOOR = 0.05
 private const val SRGB_KNEE = 0.03928
 private const val SRGB_SLOPE = 12.92
@@ -78,7 +62,6 @@ private const val BLUE_LUMINANCE = 0.0722
 private const val DEGREES_PER_SECTOR = 60.0
 private const val FULL_CIRCLE = 360.0
 
-/** Where each channel's sector starts on the wheel, counted in sectors from red. */
 private const val GREEN_SECTOR = 2.0
 private const val BLUE_SECTOR = 4.0
 
@@ -98,7 +81,6 @@ private fun Rgb.toHex(): String = "#%02x%02x%02x".format(red.toChannel(), green.
 
 private fun Double.toChannel(): Int = (this * MAX_CHANNEL).toInt().coerceIn(0, MAX_CHANNEL.toInt())
 
-/** WCAG relative luminance: how bright a colour reads, rather than how large its numbers are. */
 private fun Rgb.luminance(): Double {
     return RED_LUMINANCE * red.weighed() + GREEN_LUMINANCE * green.weighed() + BLUE_LUMINANCE * blue.weighed()
 }
@@ -135,7 +117,6 @@ private fun Hsl.toRgb(): Rgb {
     val second = chroma * (1 - abs(sector % 2 - 1))
     val offset = lightness - chroma / 2
 
-    // The six sectors of the colour wheel, each naming which channel rises, which falls, and which rests.
     val sectors =
         listOf(
             Triple(chroma, second, 0.0),

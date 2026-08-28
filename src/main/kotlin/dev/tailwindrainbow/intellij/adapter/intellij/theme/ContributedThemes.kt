@@ -9,12 +9,6 @@ import dev.tailwindrainbow.intellij.application.theme.SpecThemeSource
 import dev.tailwindrainbow.intellij.application.theme.ThemeSpec
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
 
-/**
- * The themes other plugins have contributed, read fresh each time they are asked for.
- *
- * A contributor that throws costs only its own themes: one broken plugin must not take the palette
- * of every other away with it.
- */
 object ContributedThemes : ThemeSource {
     private val EXTENSION_POINT = ExtensionPointName<ThemeContributor>("dev.tailwindrainbow.themeContributor")
 

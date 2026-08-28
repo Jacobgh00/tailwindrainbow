@@ -10,15 +10,6 @@ import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
 import dev.tailwindrainbow.intellij.application.variants.variantsDeclaredIn
 
-/**
- * The variants this project declares, read from the files Tailwind declares them in.
- *
- * Read on demand rather than kept up to date: the only caller is the theme editor asking what to
- * offer, which is a click, not a keystroke. Nothing is cached, so nothing can go stale.
- *
- * Bounded on both counts — how many files are opened and how large each may be — because a
- * repository can hold any number of stylesheets and this runs while a dialog is opening.
- */
 @Service(Service.Level.PROJECT)
 class ProjectVariants(private val project: Project) {
     fun declared(): Set<String> =

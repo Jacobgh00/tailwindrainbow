@@ -6,12 +6,6 @@ internal enum class TokenKind {
     COMMENT,
 }
 
-/**
- * A string, template literal, or comment found in a document.
- *
- * [start]/[end] span the token including its delimiters; [contentStart] is where [content] begins,
- * so segment offsets stay relative to the document rather than to the token.
- */
 internal data class DocumentToken(
     val kind: TokenKind,
     val content: String,
@@ -20,12 +14,6 @@ internal data class DocumentToken(
     val contentStart: Int,
 )
 
-/**
- * Splits raw document text into string, template, and comment tokens.
- *
- * Deliberately language-agnostic: recognising every host grammar is impossible, so the lexer
- * over-collects and [ClassContextDetector] decides which tokens are worth parsing.
- */
 internal class DocumentLexer(private val profile: SyntaxProfile) {
     fun tokenize(text: String): List<DocumentToken> =
         buildList {

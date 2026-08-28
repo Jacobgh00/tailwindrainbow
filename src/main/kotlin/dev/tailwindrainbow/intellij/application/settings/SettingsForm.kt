@@ -4,12 +4,6 @@ import dev.tailwindrainbow.intellij.application.highlight.ScanSettings
 import dev.tailwindrainbow.intellij.application.port.HighlightSettings
 import dev.tailwindrainbow.intellij.application.theme.ThemeSpec
 
-/**
- * What the plugin looks at and how far: the fields a project may keep its own answers to.
- *
- * Every field is a String because a text field can hold anything; `maxFileSize` in particular may
- * be empty, negative, or not a number at all.
- */
 data class RecognitionForm(
     val maxFileSize: String,
     val classIdentifiers: String,
@@ -19,16 +13,6 @@ data class RecognitionForm(
     val supportedExtensions: String,
 )
 
-/**
- * The settings screen as text.
- *
- * [projectRecognition] is null while the project follows the application's rules. Both sides are
- * carried at once because the screen edits one of them while the other waits: turning the project's
- * rules on must not overwrite what the user set globally.
- *
- * Keeping this separate from [HighlightSettings] is what lets the view stay dumb and the validation
- * stay pure.
- */
 data class SettingsForm(
     val enabled: Boolean,
     val themeName: String,
@@ -47,10 +31,6 @@ sealed interface FormResult {
     data class Invalid(val message: String) : FormResult
 }
 
-/**
- * Pure on purpose: the only part of the settings screen with real logic, unit-tested without
- * constructing a single Swing component.
- */
 object SettingsFormMapper {
     fun toSettings(form: SettingsForm): FormResult {
         val scan = form.recognition.toScanSettings() ?: return FormResult.Invalid(SIZE_MESSAGE)

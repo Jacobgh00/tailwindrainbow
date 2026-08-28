@@ -25,7 +25,6 @@ class TailwindRainbowSettings :
     ThemeCatalog {
     private val storedState = StoredState()
 
-    /** A theme being tried out, which must never reach storage. Null means the stored one applies. */
     @Volatile
     private var previewedTheme: String? = null
 
@@ -58,12 +57,10 @@ class TailwindRainbowSettings :
                 ),
         )
 
-    /** Shows a theme without storing it. Null returns to the stored one. */
     fun previewTheme(name: String?) {
         previewedTheme = name
     }
 
-    /** Makes a theme the stored one, ending any preview. */
     @Synchronized
     fun chooseTheme(name: String) {
         previewedTheme = null

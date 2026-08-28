@@ -67,13 +67,6 @@ class TailwindClassParser(private val themeMatcher: ThemeMatcher) {
         }
     }
 
-    /**
-     * Adds a segment, stepping around the important marker if it sits inside.
-     *
-     * The last prefix colours everything after it when the utility has no colour of its own, and in
-     * `hover:!font-bold` the marker sits in the middle of exactly that stretch. It has a colour of
-     * its own, so the stretch is painted either side of it rather than over it.
-     */
     private fun MutableList<HighlightSegment>.addSegmentAround(
         importantAt: Int?,
         match: ThemeMatch,
@@ -90,7 +83,6 @@ class TailwindClassParser(private val themeMatcher: ThemeMatcher) {
     }
 }
 
-/** One colon-separated piece of a class, with where it sits in the document. */
 private data class ClassPart(val value: String, val offset: Int) {
     val end: Int get() = offset + value.length
 
@@ -99,16 +91,8 @@ private data class ClassPart(val value: String, val offset: Int) {
     fun withoutLastCharacter() = ClassPart(value.dropLast(1), offset)
 }
 
-/** A class with its important marker taken out, and where that marker was. */
 private data class MarkedClass(val parts: List<ClassPart>, val importantAt: Int?)
 
-/**
- * Separates the important marker from the class it marks.
- *
- * Tailwind has spelled it three ways: before the whole class and before the utility in v3
- * (`!font-bold`, `hover:!font-bold`), and after the utility in v4 (`hover:font-bold!`). All three
- * mean the same thing, and codebases hold a mixture during a migration, so all three are read.
- */
 private fun List<ClassPart>.takeImportantOut(): MarkedClass {
     val first = first()
     val last = last()

@@ -9,11 +9,6 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import dev.tailwindrainbow.intellij.bootstrap.PluginComponents
 
-/**
- * Registered for [com.intellij.lang.Language.ANY] (`language=""`), because the scanner reads raw
- * text and needs no grammar. Running inside the daemon's annotation pass means the platform owns
- * scheduling, debouncing, cancellation, and highlighter lifetime.
- */
 class TailwindRainbowAnnotator : Annotator {
     override fun annotate(
         element: PsiElement,

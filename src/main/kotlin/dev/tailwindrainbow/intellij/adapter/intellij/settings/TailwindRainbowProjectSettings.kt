@@ -9,14 +9,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.util.xmlb.XmlSerializerUtil
 import dev.tailwindrainbow.intellij.application.highlight.ScanSettings
 
-/**
- * The recognition rules a project keeps for itself.
- *
- * Stored in the project rather than in the IDE because which helpers and file types hold Tailwind
- * classes is a property of the codebase: committing `.idea/tailwindRainbow.xml` gives everyone who
- * opens the repository the same answer. Themes are deliberately not here — see
- * [dev.tailwindrainbow.intellij.application.settings.withProjectRecognition].
- */
 @Service(Service.Level.PROJECT)
 @State(name = "TailwindRainbowProjectSettings", storages = [Storage("tailwindRainbow.xml")])
 class TailwindRainbowProjectSettings : PersistentStateComponent<TailwindRainbowProjectSettings.StoredState> {
@@ -30,7 +22,6 @@ class TailwindRainbowProjectSettings : PersistentStateComponent<TailwindRainbowP
         XmlSerializerUtil.copyBean(state, storedState)
     }
 
-    /** The rules this project keeps, or null while it follows the ones set in the IDE. */
     @Synchronized
     fun recognition(): ScanSettings? {
         if (!storedState.ownRecognition) return null
@@ -45,7 +36,6 @@ class TailwindRainbowProjectSettings : PersistentStateComponent<TailwindRainbowP
         )
     }
 
-    /** Null hands the rules back to the IDE-wide settings, keeping nothing behind in the project. */
     @Synchronized
     fun update(scan: ScanSettings?) {
         storedState.ownRecognition = scan != null

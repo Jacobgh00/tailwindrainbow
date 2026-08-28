@@ -2,10 +2,6 @@ package dev.tailwindrainbow.intellij.application.highlight
 
 import dev.tailwindrainbow.intellij.domain.highlight.HighlightSegment
 
-/**
- * Finds classes in CSS `@apply` directives, which live in plain stylesheet text rather than
- * inside any string token the lexer produces.
- */
 internal class ApplyDirectiveScanner(private val parser: TailwindClassParser) {
     fun scan(
         text: String,
@@ -43,15 +39,8 @@ private fun String.indexAfterWhitespace(start: Int): Int {
     return index
 }
 
-/** A directive ends where CSS says it does, not at the end of a line: wrapping a long list is idiomatic. */
 private val TERMINATORS = charArrayOf(';', '}')
 
-/**
- * How far a single directive is allowed to reach.
- *
- * A file being typed in holds unterminated rules, and without a bound one missing semicolon would
- * hand the rest of the file to the parser as though it were a class list.
- */
 private const val MAX_DIRECTIVE_LENGTH = 500
 
 private fun String.directiveEnd(start: Int): Int {

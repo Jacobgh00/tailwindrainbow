@@ -18,12 +18,6 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.SwingConstants
 
-/**
- * Never validates, never persists, never touches the highlighter — that is the configurable's job.
- *
- * Owns which theme is being edited: the editor below colours a palette without knowing whose it is,
- * so the name and base travel with the spec on the way in and out.
- */
 class SettingsPanel(
     private val baseNames: List<String>,
     themeNames: List<String>,
@@ -39,7 +33,6 @@ class SettingsPanel(
     private val problems = JPanel().apply { layout = BoxLayout(this, BoxLayout.Y_AXIS) }
     private val recognition = RecognitionPanel()
 
-    /** The theme the editor is showing, which is not always the selected one — see [park]. */
     private var editing = ""
     private var themes: List<ThemeSpec> = emptyList()
 
@@ -60,13 +53,6 @@ class SettingsPanel(
         deleteTheme.addActionListener { deleteSelectedTheme() }
     }
 
-    /**
-     * Lists entries the stored themes hold that the plugin cannot use.
-     *
-     * They are dropped when a theme is read, so without this the colour simply would not appear and
-     * nothing would say why. Shown rather than thrown: the user did not necessarily cause them, and
-     * the rest of the screen still works.
-     */
     fun showProblems(found: List<ThemeProblem>) {
         problems.removeAll()
         found.forEach { problems.add(JBLabel(it.describe(), AllIcons.General.Warning, SwingConstants.LEFT)) }
@@ -104,12 +90,6 @@ class SettingsPanel(
 
     private fun selectedThemeName(): String = theme.selectedItem as? String ?: ""
 
-    /**
-     * Every theme's overrides, with the ones being edited right now folded back in.
-     *
-     * Keyed on [editing] rather than on the selection, because when a selection changes the editor
-     * still holds the theme that was left behind, and that is the one to keep.
-     */
     private fun park(): List<ThemeSpec> {
         if (editing.isEmpty()) return themes
 
@@ -144,7 +124,6 @@ class SettingsPanel(
         theme.selectedItem = baseNames.first()
     }
 
-    /** The theme a name derives its untouched colours from. Built-in themes derive from themselves. */
     private fun baseOf(name: String): String = themes.firstOrNull { it.name == name }?.basedOn ?: name
 
     private companion object {

@@ -12,13 +12,6 @@ data class ParsedTheme(
     val problems: List<ThemeProblem>,
 )
 
-/**
- * Turns an untrusted [ThemeSpec] into a validated [RainbowTheme].
- *
- * Lenient by design: a single malformed color must not cost the user their whole theme, so bad
- * entries are dropped and reported through [ParsedTheme.problems] rather than thrown. This is the
- * boundary that keeps [TextStyle]'s constructor invariant safe to be strict.
- */
 object ThemeParser {
     fun parse(spec: ThemeSpec): ParsedTheme {
         val prefix = mutableMapOf<String, TextStyle>()

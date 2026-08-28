@@ -6,16 +6,9 @@ import dev.tailwindrainbow.intellij.application.theme.ThemeSpec
 import dev.tailwindrainbow.intellij.domain.theme.FontWeight
 import dev.tailwindrainbow.intellij.domain.theme.SegmentKind
 
-/**
- * Mutable with a no-arg constructor because that is what the IDE's XML serializer requires, which
- * is why it is a separate type from the immutable [ThemeSpec] rather than annotations on it.
- * Nothing here is validated; [dev.tailwindrainbow.intellij.application.theme.ThemeParser] does
- * that after [toSpec].
- */
 class StoredTheme {
     var name: String = ""
 
-    /** Blank in settings written before themes could be derived, which means "based on itself". */
     var basedOn: String = ""
 
     @get:XCollection(style = XCollection.Style.v2)

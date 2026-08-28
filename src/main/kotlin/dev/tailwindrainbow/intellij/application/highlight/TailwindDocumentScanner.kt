@@ -4,10 +4,6 @@ import dev.tailwindrainbow.intellij.domain.highlight.HighlightSegment
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
 import dev.tailwindrainbow.intellij.domain.theme.ThemeMatcher
 
-/**
- * Orchestration only. [ApplyDirectiveScanner] is separate because `@apply` classes live in plain
- * stylesheet text, outside any token the lexer produces.
- */
 class TailwindDocumentScanner {
     fun scan(
         text: String,
@@ -44,13 +40,6 @@ class TailwindDocumentScanner {
             .sortedBy(HighlightSegment::start)
     }
 
-    /**
-     * Reads the class names out of a bound attribute such as `:class="{ 'p-4': ok }"`.
-     *
-     * The value is an expression, so only its string literals can hold class names — found with the
-     * same lexer that finds strings in a document. An expression without any string is taken as a
-     * plain class list, which is how `:class="p-4"` still works.
-     */
     private fun expressionSegments(
         token: DocumentToken,
         profile: SyntaxProfile,
@@ -65,10 +54,6 @@ class TailwindDocumentScanner {
         return strings.flatMap { parser.parse(it.content, token.contentStart + it.contentStart) }
     }
 
-    /**
-     * Reads `class="…"` attributes written *inside* a token, such as an HTML fragment held in a
-     * template literal, where the attribute never appears as a token of its own.
-     */
     private fun nestedAttributeSegments(
         token: DocumentToken,
         detector: ClassContextDetector,

@@ -7,10 +7,6 @@ import dev.tailwindrainbow.intellij.application.highlight.HighlightDocumentServi
 import dev.tailwindrainbow.intellij.application.port.HighlightDocument
 import dev.tailwindrainbow.intellij.application.settings.withProjectRecognition
 
-/**
- * The single place concrete adapters are bound to ports; everything else depends on interfaces,
- * which is what lets the application layer be tested without an IDE.
- */
 object PluginComponents {
     fun highlightDocument(project: Project): HighlightDocument {
         val application = TailwindRainbowSettings.getInstance()

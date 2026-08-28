@@ -9,12 +9,6 @@ import com.intellij.openapi.ui.popup.LightweightWindowEvent
 import dev.tailwindrainbow.intellij.adapter.intellij.highlighting.rehighlightOpenProjects
 import dev.tailwindrainbow.intellij.adapter.intellij.settings.TailwindRainbowSettings
 
-/**
- * Switches the active theme from a chooser, without opening settings.
- *
- * Arrowing through the list previews the theme in the editor; the preview is transient, so leaving
- * the popup by any route other than choosing leaves the stored theme as it was.
- */
 class SelectThemeAction : AnAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
@@ -32,7 +26,7 @@ class SelectThemeAction : AnAction() {
             .setSelectedValue(settings.current().themeName, true)
             .setItemSelectedCallback { name -> preview(settings, name) }
             .setItemChosenCallback { name -> choose(settings, name) }
-            .addListener(cancellation(settings))
+            .addListener(dropPreviewUnlessChosen(settings))
             .createPopup()
             .showCenteredInCurrentWindow(project)
     }
@@ -53,8 +47,7 @@ class SelectThemeAction : AnAction() {
         rehighlightOpenProjects()
     }
 
-    /** Whatever else closes the popup — Escape, a click elsewhere — drops the preview. */
-    private fun cancellation(settings: TailwindRainbowSettings) =
+    private fun dropPreviewUnlessChosen(settings: TailwindRainbowSettings) =
         object : JBPopupListener {
             override fun onClosed(event: LightweightWindowEvent) {
                 if (!event.isOk) preview(settings, null)

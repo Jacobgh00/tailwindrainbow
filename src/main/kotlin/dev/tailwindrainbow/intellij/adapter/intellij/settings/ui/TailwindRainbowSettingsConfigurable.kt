@@ -15,10 +15,6 @@ import dev.tailwindrainbow.intellij.application.theme.describe
 import dev.tailwindrainbow.intellij.application.theme.problemsIntroducedBy
 import javax.swing.JComponent
 
-/**
- * The widgets live in [SettingsPanel] and the validation in [SettingsFormMapper]; this owns only
- * the IDE's `isModified`/`apply`/`reset` lifecycle and the side effects that go with it.
- */
 class TailwindRainbowSettingsConfigurable(private val project: Project) : SearchableConfigurable {
     private var panel: SettingsPanel? = null
 
@@ -45,7 +41,6 @@ class TailwindRainbowSettingsConfigurable(private val project: Project) : Search
         return created.component
     }
 
-    /** An unparseable form counts as modified, so Apply runs and reports why. */
     override fun isModified(): Boolean =
         when (val result = currentResult() ?: return false) {
             is FormResult.Valid ->
@@ -70,10 +65,6 @@ class TailwindRainbowSettingsConfigurable(private val project: Project) : Search
         }
     }
 
-    /**
-     * Entries already stored broken are listed rather than refused, so unrelated changes can still
-     * be saved; only what this edit would add is worth stopping.
-     */
     private fun refuseIntroducedProblems(
         pending: List<ThemeSpec>,
         stored: List<ThemeSpec>,

@@ -5,10 +5,6 @@ import dev.tailwindrainbow.intellij.application.port.SettingsProvider
 import dev.tailwindrainbow.intellij.application.port.ThemeCatalog
 import dev.tailwindrainbow.intellij.domain.highlight.HighlightSegment
 
-/**
- * The whole decision path lives here rather than in the annotator, so it is exercised by ordinary
- * unit tests with no IDE running.
- */
 class HighlightDocumentService(
     private val settings: SettingsProvider,
     private val themes: ThemeCatalog,

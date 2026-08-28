@@ -15,7 +15,6 @@ data class FontWeight(val value: Int) {
         val BOLD = FontWeight(700)
         val BLACK = FontWeight(900)
 
-        /** Every weight the model accepts. The single definition of the rule [FontWeight] enforces. */
         val ALL: Set<Int> = (RANGE step STEP).toSet()
 
         fun of(value: Int): FontWeight = FontWeight(value)
@@ -36,12 +35,6 @@ data class TextStyle(
 
 private val HEX_COLOR = Regex("^#[0-9a-fA-F]{6}$")
 
-/**
- * The one colour format the plugin accepts.
- *
- * Stated once because three layers ask the same question: the model enforcing its invariant, the
- * parser reporting what it had to drop, and the settings screen deciding what it can paint.
- */
 fun String.isHexColor(): Boolean = HEX_COLOR.matches(this)
 
 data class RainbowTheme(
@@ -51,13 +44,6 @@ data class RainbowTheme(
     val important: TextStyle? = null,
 )
 
-/**
- * This palette with [override] laid on top, entry by entry.
- *
- * Entry-wise rather than section-wise on purpose: an override that names one prefix keeps every
- * other colour of the palette underneath it, which is what makes both user edits and derived themes
- * sparse.
- */
 fun RainbowTheme.overriddenBy(override: RainbowTheme): RainbowTheme =
     RainbowTheme(
         prefix = prefix + override.prefix,
@@ -66,7 +52,6 @@ fun RainbowTheme.overriddenBy(override: RainbowTheme): RainbowTheme =
         important = override.important ?: important,
     )
 
-/** [kind] is decided by the matcher; never re-derive it by inspecting [key]. */
 data class ThemeMatch(
     val key: String,
     val style: TextStyle,

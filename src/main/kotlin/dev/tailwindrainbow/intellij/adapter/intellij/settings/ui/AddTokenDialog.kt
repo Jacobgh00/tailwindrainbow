@@ -12,16 +12,6 @@ import dev.tailwindrainbow.intellij.application.settings.displayName
 import dev.tailwindrainbow.intellij.domain.theme.SegmentKind
 import javax.swing.JComponent
 
-/**
- * Asks which token to colour. Only the two keyed sections are offered, because `arbitrary` and
- * `important` hold a single style each and are always present.
- *
- * [isTaken] is the editor's own view of what it already holds, so the dialog reports a duplicate
- * while the user types instead of letting the model reject it afterwards.
- *
- * [declaredVariants] are the variants the project defines for itself. They are offered rather than
- * added: which of them deserve a colour, and which colour, is the user's call.
- */
 internal class AddTokenDialog(
     private val isTaken: (SegmentKind, String) -> Boolean,
     private val declaredVariants: () -> Set<String>,
@@ -43,10 +33,6 @@ internal class AddTokenDialog(
         offerSuggestions()
     }
 
-    /**
-     * Variants the project declares belong to the prefix section and nowhere else, so the list
-     * empties when another section is chosen rather than suggesting nonsense.
-     */
     private fun offerSuggestions() {
         val typed = enteredKey
         val offered =
