@@ -17,7 +17,8 @@ green              teal          purple   slate            coral        red
 ## Features
 
 - **Variant highlighting** in class attributes, class helper functions, tagged templates, and CSS
-  `@apply` directives. A tagged template is recognized by what it hangs off, so `` styled.div`…` ``,
+  `@apply` directives, including ones wrapped over several lines. A tagged template is recognized by
+  what it hangs off, so `` styled.div`…` ``,
   `` styled(Button)`…` ``, and `` styled.div<Props>`…` `` all count as `styled`.
 - **Framework bindings** — `:class`, `v-bind:class`, and `x-bind:class`. A bound attribute holds an
   expression, so the class names are read out of the strings inside it: `:class="{ 'lg:p-4': ok }"`

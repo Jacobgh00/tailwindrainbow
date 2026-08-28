@@ -25,7 +25,7 @@ internal class ApplyDirectiveScanner(private val parser: TailwindClassParser) {
                 }
 
                 val classesStart = text.indexAfterWhitespace(directiveStart + APPLY.length)
-                val classesEnd = text.indexOfAny(TERMINATORS, classesStart)
+                val classesEnd = text.directiveEnd(classesStart)
 
                 addAll(parser.parse(text.substring(classesStart, classesEnd), classesStart))
                 searchFrom = classesEnd + 1
@@ -34,7 +34,6 @@ internal class ApplyDirectiveScanner(private val parser: TailwindClassParser) {
 
     private companion object {
         const val APPLY = "@apply"
-        val TERMINATORS = charArrayOf(';', '}', '\n', '\r')
     }
 }
 
@@ -44,11 +43,22 @@ private fun String.indexAfterWhitespace(start: Int): Int {
     return index
 }
 
-private fun String.indexOfAny(
-    characters: CharArray,
-    start: Int,
-): Int {
+/** A directive ends where CSS says it does, not at the end of a line: wrapping a long list is idiomatic. */
+private val TERMINATORS = charArrayOf(';', '}')
+
+/**
+ * How far a single directive is allowed to reach.
+ *
+ * A file being typed in holds unterminated rules, and without a bound one missing semicolon would
+ * hand the rest of the file to the parser as though it were a class list.
+ */
+private const val MAX_DIRECTIVE_LENGTH = 500
+
+private fun String.directiveEnd(start: Int): Int {
+    val limit = (start + MAX_DIRECTIVE_LENGTH).coerceAtMost(length)
     var index = start
-    while (index < length && this[index] !in characters) index++
+
+    while (index < limit && this[index] !in TERMINATORS) index++
+
     return index
 }

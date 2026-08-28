@@ -237,6 +237,28 @@ class TailwindDocumentScannerTest {
     }
 
     @Test
+    fun `an apply directive wrapped over several lines is read to its end`() {
+        val source = ".button {\n  @apply hover:bg-blue-500\n    lg:text-xl;\n}"
+
+        assertEquals(
+            listOf("hover:bg-blue-500", "lg:text-xl"),
+            scan(source, "css").map { it.sliceOf(source) },
+        )
+    }
+
+    @Test
+    fun `an apply directive nobody closed stops rather than running through the file`() {
+        val runaway = "x".repeat(600)
+        val source = ".button { @apply hover:bg-blue-500 $runaway lg:text-xl"
+
+        assertEquals(
+            listOf("hover:bg-blue-500"),
+            scan(source, "css").map { it.sliceOf(source) },
+            "a missing semicolon must not turn the rest of the file into class names",
+        )
+    }
+
+    @Test
     fun `skips files larger than the configured limit`() {
         val settings = ScanSettings(maxFileSize = 10)
 

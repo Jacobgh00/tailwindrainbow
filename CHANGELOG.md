@@ -32,6 +32,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Recognition of framework class bindings: `:class`, `v-bind:class`, and `x-bind:class`. The value
   of a bound attribute is treated as an expression, so class names are read from the strings inside
   it rather than from the surrounding braces, brackets, and conditions.
+- Recognition of `@apply` directives wrapped over several lines. A directive now ends where CSS says
+  it does — at a semicolon or the closing brace — rather than at the end of the first line.
 - Recognition of the important modifier wherever Tailwind writes it: `!font-bold` and
   `hover:!font-bold` from v3, and `font-bold!` from v4. A codebase mid-migration holds a mixture, so
   all three are read.
