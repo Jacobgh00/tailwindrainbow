@@ -29,7 +29,6 @@ import javax.swing.table.DefaultTableCellRenderer
  */
 class ThemeEditorPanel : JPanel(BorderLayout()) {
     private var model = ThemeEditorModel(RainbowTheme())
-    private var themeName = ""
 
     private val tableModel = RowTableModel()
     private val table =
@@ -63,17 +62,23 @@ class ThemeEditorPanel : JPanel(BorderLayout()) {
     }
 
     fun show(
-        name: String,
         inherited: RainbowTheme,
         overrides: ThemeSpec?,
     ) {
-        themeName = name
         model = ThemeEditorModel(inherited, overrides)
+        table.clearSelection()
         tableModel.fireTableDataChanged()
         syncControls()
     }
 
-    fun overrides(): ThemeSpec? = model.spec(themeName).takeIf { it.entries.isNotEmpty() }
+    /**
+     * What the user has changed, named. The editor colours a palette and does not track which theme
+     * it belongs to; [SettingsPanel] owns that, and passes the identity back in here.
+     */
+    fun specFor(
+        name: String,
+        basedOn: String,
+    ): ThemeSpec? = model.spec(name).copy(basedOn = basedOn).takeIf { !it.isRedundant }
 
     /** Add and remove live on the table's own toolbar, where the platform puts them. */
     private fun tableWithToolbar(): JPanel =

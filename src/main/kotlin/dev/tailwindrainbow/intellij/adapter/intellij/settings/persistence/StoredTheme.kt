@@ -2,7 +2,6 @@ package dev.tailwindrainbow.intellij.adapter.intellij.settings.persistence
 
 import com.intellij.util.xmlb.annotations.XCollection
 import dev.tailwindrainbow.intellij.application.theme.StyleEntry
-import dev.tailwindrainbow.intellij.application.theme.ThemeParser
 import dev.tailwindrainbow.intellij.application.theme.ThemeSpec
 import dev.tailwindrainbow.intellij.domain.theme.FontWeight
 import dev.tailwindrainbow.intellij.domain.theme.SegmentKind
@@ -16,15 +15,19 @@ import dev.tailwindrainbow.intellij.domain.theme.SegmentKind
 class StoredTheme {
     var name: String = ""
 
+    /** Blank in settings written before themes could be derived, which means "based on itself". */
+    var basedOn: String = ""
+
     @get:XCollection(style = XCollection.Style.v2)
     var entries: MutableList<StoredStyle> = mutableListOf()
 
-    fun toSpec(): ThemeSpec = ThemeSpec(name, entries.map(StoredStyle::toEntry))
+    fun toSpec(): ThemeSpec = ThemeSpec(name, entries.map(StoredStyle::toEntry), basedOn.ifBlank { name })
 
     companion object {
         fun of(spec: ThemeSpec): StoredTheme =
             StoredTheme().apply {
                 name = spec.name
+                basedOn = spec.basedOn
                 entries = spec.entries.mapTo(mutableListOf(), StoredStyle::of)
             }
     }

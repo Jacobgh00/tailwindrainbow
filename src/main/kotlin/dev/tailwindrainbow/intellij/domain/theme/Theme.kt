@@ -45,6 +45,21 @@ data class RainbowTheme(
     val important: TextStyle? = null,
 )
 
+/**
+ * This palette with [override] laid on top, entry by entry.
+ *
+ * Entry-wise rather than section-wise on purpose: an override that names one prefix keeps every
+ * other colour of the palette underneath it, which is what makes both user edits and derived themes
+ * sparse.
+ */
+fun RainbowTheme.overriddenBy(override: RainbowTheme): RainbowTheme =
+    RainbowTheme(
+        prefix = prefix + override.prefix,
+        base = base + override.base,
+        arbitrary = override.arbitrary ?: arbitrary,
+        important = override.important ?: important,
+    )
+
 /** [kind] is decided by the matcher; never re-derive it by inspecting [key]. */
 data class ThemeMatch(
     val key: String,

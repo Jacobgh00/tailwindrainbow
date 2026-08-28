@@ -14,28 +14,33 @@ class UserThemeCatalog : ThemeCatalog {
     private var specs: List<ThemeSpec> = emptyList()
 
     @Volatile
-    private var repository: ThemeRepository = build(emptyList())
+    private var source: UserThemeSource = UserThemeSource(emptyList(), BuiltInThemes)
+
+    @Volatile
+    private var repository: ThemeRepository = ThemeRepository(BuiltInThemes, source)
 
     fun refresh(themes: List<ThemeSpec>) {
         specs = themes
-        repository = build(themes)
+        source = UserThemeSource(themes, BuiltInThemes)
+        repository = ThemeRepository(BuiltInThemes, source)
     }
 
     override fun themeNamed(name: String): RainbowTheme = repository.find(name)
 
     fun names(): Set<String> = repository.names
 
+    /** The themes a user theme can be based on. */
+    fun builtInNames(): Set<String> = BuiltInThemes.themes().keys
+
     fun overrides(): List<ThemeSpec> = specs
 
     /**
-     * The palette an override sits on top of: built-ins only.
+     * The palette a theme derived from [name] sits on top of: built-ins only.
      *
      * Not [themeNamed], which returns the merged result — the editor must show what would remain
      * if the user reset a row, so it cannot include the user's own edits.
      */
-    fun inherited(name: String): RainbowTheme = BuiltInThemes.themes()[name] ?: BuiltInThemes.default
+    fun builtIn(name: String): RainbowTheme = BuiltInThemes.themes()[name] ?: BuiltInThemes.default
 
-    fun problems(): List<String> = UserThemeSource(specs).problems.map { "${it.themeName}: ${it.key} — ${it.message}" }
-
-    private fun build(themes: List<ThemeSpec>) = ThemeRepository(BuiltInThemes, UserThemeSource(themes))
+    fun problems(): List<String> = source.problems.map { "${it.themeName}: ${it.key} — ${it.message}" }
 }

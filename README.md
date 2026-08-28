@@ -17,7 +17,8 @@ green              teal          purple   slate            coral        red
 
 - **Variant highlighting** in class attributes, class helper functions, tagged templates, and CSS
   `@apply` directives.
-- **Two built-in themes** — `default` and `synthwave`.
+- **Two built-in themes** — `default` and `synthwave` — plus any number of your own, each started
+  from one of them.
 - **User-defined colors.** Pick a color for any variant with a color picker, toggle bold, or switch
   an entry off so that variant is left alone. Overrides are stored per entry, so a theme you
   customize keeps inheriting everything you did not touch.
@@ -47,6 +48,10 @@ Then **Settings | Plugins | ⚙ | Install Plugin from Disk…** and choose
 ## Configuration
 
 **Settings | Editor | Tailwind Rainbow**
+
+**New…** creates a theme of your own, based on a built-in one. It stores only the colors you change,
+so everything you leave alone keeps following the base theme — including tokens added in later
+plugin versions. **Delete** removes a theme you made; built-in themes cannot be deleted.
 
 | Setting | Default |
 | --- | --- |

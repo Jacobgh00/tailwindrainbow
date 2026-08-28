@@ -40,7 +40,7 @@ object SettingsFormMapper {
         }
 
         return FormResult.Valid(
-            themes = form.themes.filter { it.entries.isNotEmpty() },
+            themes = form.themes.filterNot(ThemeSpec::isRedundant),
             settings =
                 HighlightSettings(
                     enabled = form.enabled,

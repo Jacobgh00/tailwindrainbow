@@ -2,6 +2,7 @@ package dev.tailwindrainbow.intellij.application.theme
 
 import dev.tailwindrainbow.intellij.application.port.ThemeSource
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
+import dev.tailwindrainbow.intellij.domain.theme.overriddenBy
 
 /**
  * Resolves a theme name against every source, in order.
@@ -31,11 +32,3 @@ class ThemeRepository(private val sources: List<ThemeSource>) {
 
     fun find(name: String): RainbowTheme = resolved[name] ?: resolved.values.first()
 }
-
-private fun RainbowTheme.overriddenBy(override: RainbowTheme) =
-    RainbowTheme(
-        prefix = prefix + override.prefix,
-        base = base + override.base,
-        arbitrary = override.arbitrary ?: arbitrary,
-        important = override.important ?: important,
-    )

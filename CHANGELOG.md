@@ -18,6 +18,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Two built-in themes: `default` and `synthwave`.
 - User-defined colors. Any variant can be recolored with a color picker and set bold, per theme.
   Overrides are stored per entry, so untouched variants keep following the theme.
+- Themes of your own. A new theme is based on a built-in one and stores only the colors you change,
+  so the rest keeps following its base.
 - Switching a single theme entry off. The token keeps its color and can be switched back on, which
   is the difference between silencing one variant and deleting it.
 - Optional base-class coloring. A base pattern such as `bg-*` colors the utility itself, separately

@@ -82,6 +82,16 @@ class SettingsFormMapperTest {
     }
 
     @Test
+    fun `a theme the user created is kept before it has any overrides`() {
+        val fresh = ThemeSpec("midnight", emptyList(), basedOn = "synthwave")
+
+        val result = SettingsFormMapper.toSettings(form().copy(themes = listOf(fresh)))
+
+        assertIs<FormResult.Valid>(result)
+        assertEquals(listOf(fresh), result.themes, "dropping it would delete the theme the user just made")
+    }
+
+    @Test
     fun `palettes round trip back into the form`() {
         val mine = ThemeSpec("synthwave", listOf(StyleEntry(SegmentKind.ARBITRARY, "", "#101010", 400)))
         val settings = HighlightSettings(enabled = true, themeName = "synthwave", scan = ScanSettings())
