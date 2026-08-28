@@ -18,6 +18,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Two built-in themes: `default` and `synthwave`.
 - User-defined colors. Any variant can be recolored with a color picker and set bold, per theme.
   Overrides are stored per entry, so untouched variants keep following the theme.
+- Recognition of methods called on a class helper, so `el.classList.add("hover:underline")` and
+  `classList.toggle(…)` are read the same way as `clsx(…)`.
 - Recognition of styled-components tags that carry something: `` styled.div`…` ``,
   `` styled(Button)`…` ``, `` styled.div<Props>`…` ``, and `` styled.input.attrs({…})`…` `` are all
   read as the `styled` tag.

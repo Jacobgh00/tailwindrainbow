@@ -63,6 +63,7 @@ plugin versions. **Delete** removes a theme you made; built-in themes cannot be 
 | Maximum file size | 1000000 characters |
 | Class identifiers | `class`, `className`, `class:`, `className:`, `class:list`, `classlist`, `classes`, `css`, `style` |
 | Class functions | `cn`, `clsx`, `cva`, `classNames`, `classList`, `classnames`, `twMerge`, `tw`, `cls`, `cc`, `cx`, `classname`, `styled`, `css`, `theme`, `variants` |
+| | A method called on one of these counts too, so `el.classList.add("…")` is recognized. |
 | Template tags | `tw`, `css`, `styled` |
 | Ignored prefix modifiers | `group`, `peer`, `has`, `in`, `not` |
 | Supported extensions | `html`, `htm`, `js`, `jsx`, `ts`, `tsx`, `vue`, `svelte`, `astro`, `php`, `css`, `scss`, `sass`, `less`, `styl`, `stylus`, `pcss`, `postcss` |

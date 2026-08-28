@@ -69,8 +69,7 @@ internal class ClassContextDetector(private val settings: ScanSettings) {
                 ')' -> depth++
                 '(' ->
                     if (depth == 0) {
-                        val callee = text.identifierBefore(index) ?: return false
-                        return callee in settings.classFunctions
+                        return isClassHelperCall(text, index)
                     } else {
                         depth--
                     }
@@ -79,6 +78,24 @@ internal class ClassContextDetector(private val settings: ScanSettings) {
         }
 
         return false
+    }
+
+    /**
+     * Whether the call opening at [callIndex] is one that takes class names.
+     *
+     * Either the function itself is configured — `clsx(…)` — or it is a method on something that is,
+     * which is what `classList.add(…)` and `el.classList.toggle(…)` are. The function is tried first,
+     * so a configured name still decides on its own.
+     */
+    private fun isClassHelperCall(
+        text: String,
+        callIndex: Int,
+    ): Boolean {
+        val callee = text.identifierRangeBefore(callIndex) ?: return false
+        if (text.substring(callee) in settings.classFunctions) return true
+
+        val dot = callee.first - 1
+        return dot >= 0 && text[dot] == '.' && text.identifierBefore(dot) in settings.classFunctions
     }
 
     private companion object {

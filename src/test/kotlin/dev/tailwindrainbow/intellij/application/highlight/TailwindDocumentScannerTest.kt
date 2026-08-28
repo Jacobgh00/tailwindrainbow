@@ -101,6 +101,18 @@ class TailwindDocumentScannerTest {
     }
 
     @Test
+    fun `finds classes passed to a method on a class helper`() {
+        val source = "el.classList.add('hover:bg-blue-500')"
+
+        assertEquals(listOf("hover:bg-blue-500"), scan(source, "ts").map { it.sliceOf(source) })
+    }
+
+    @Test
+    fun `a method call on something unrelated is left alone`() {
+        assertTrue(scan("logger.add('hover:bg-blue-500')", "ts").isEmpty())
+    }
+
+    @Test
     fun `does not colour an unrelated string that merely looks like Tailwind`() {
         val source = "const documentation = 'hover:bg-blue-500'"
 
