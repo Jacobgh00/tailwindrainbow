@@ -32,6 +32,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Recognition of framework class bindings: `:class`, `v-bind:class`, and `x-bind:class`. The value
   of a bound attribute is treated as an expression, so class names are read from the strings inside
   it rather than from the surrounding braces, brackets, and conditions.
+- Colors now adapt to the editor background. One that would be unreadable against it is darkened or
+  lightened, keeping its hue, until it meets the WCAG AA contrast ratio; one that already reads is
+  used exactly as chosen. This applies to every theme, including ones you create and ones another
+  plugin contributes.
 - Variants your project declares are offered when adding a token, read from `@custom-variant` and
   `--breakpoint-*` in Tailwind v4 stylesheets and from `addVariant(…)` and `screens` in a v3 config.
 - Recognition of `@apply` directives wrapped over several lines. A directive now ends where CSS says

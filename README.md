@@ -23,6 +23,9 @@ green              teal          purple   slate            coral        red
 - **Framework bindings** — `:class`, `v-bind:class`, and `x-bind:class`. A bound attribute holds an
   expression, so the class names are read out of the strings inside it: `:class="{ 'lg:p-4': ok }"`
   colors `lg:p-4` and leaves the braces and the condition alone.
+- **Readable on any editor background.** A color that would not contrast with the background you
+  are using is darkened or lightened until it does, keeping its hue. On a dark scheme the built-in
+  palettes are used exactly as they are; on a light one they adapt.
 - **Two built-in themes** — `default` and `synthwave` — plus any number of your own, each started
   from one of them.
 - **User-defined colors.** Pick a color for any variant with a color picker, toggle bold, or switch
@@ -141,6 +144,14 @@ settings screen rather than thrown, and a contributor that fails costs only its 
 
 Contributions are picked up when settings are applied or when the IDE starts, not the instant a
 plugin is installed.
+
+## Colors and IDE color schemes
+
+Colors are applied directly rather than through the IDE's color scheme, because a theme's tokens are
+user-defined and can be added at any time, while a scheme's attribute keys are fixed. Two
+consequences worth knowing: the plugin's colors are not editable under **Settings | Editor | Color
+Scheme**, and they are not carried along when a color scheme is exported or shared. Adapting each
+color to the editor background is what keeps a single palette usable across schemes.
 
 ## Compatibility
 

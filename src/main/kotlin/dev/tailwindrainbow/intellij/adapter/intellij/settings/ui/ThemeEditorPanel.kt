@@ -17,6 +17,7 @@ import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Component
 import java.awt.Font
+import javax.swing.BoxLayout
 import javax.swing.JButton
 import javax.swing.JPanel
 import javax.swing.JTable
@@ -46,7 +47,14 @@ class ThemeEditorPanel(private val declaredVariants: () -> Set<String>) : JPanel
     private val resetButton = JButton("Reset to inherited")
 
     init {
-        add(JBLabel("Colours for the selected theme — pick a row, then choose a colour:"), BorderLayout.NORTH)
+        add(
+            JPanel().apply {
+                layout = BoxLayout(this, BoxLayout.Y_AXIS)
+                add(JBLabel("Colours for the selected theme — pick a row, then choose a colour:"))
+                add(JBLabel("A colour unreadable on your editor background is darkened or lightened to suit it."))
+            },
+            BorderLayout.NORTH,
+        )
         add(tableWithToolbar(), BorderLayout.CENTER)
         add(
             JPanel().apply {
