@@ -49,6 +49,12 @@ To install a local build:
 Then **Settings | Plugins | ⚙ | Install Plugin from Disk…** and choose
 `build/distributions/tailwindrainbow-<version>.zip`.
 
+## Switching themes
+
+**Find Action** (`⇧⌘A` / `Ctrl+Shift+A`) → **Select Tailwind Rainbow Theme** lists every theme and
+previews each one in the editor as you arrow through it. The preview is discarded unless you pick a
+theme, so leaving with `Esc` changes nothing.
+
 ## Configuration
 
 **Settings | Editor | Tailwind Rainbow**

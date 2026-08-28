@@ -34,4 +34,11 @@
                 id="dev.tailwindrainbow.intellij.settings"
                 displayName="Tailwind Rainbow"/>
     </extensions>
+
+    <actions>
+        <action id="dev.tailwindrainbow.SelectTheme"
+                class="dev.tailwindrainbow.intellij.adapter.intellij.actions.SelectThemeAction"
+                text="Select Tailwind Rainbow Theme"
+                description="Switch the palette used to colour Tailwind variants, previewing as you go"/>
+    </actions>
 </idea-plugin>

@@ -1,9 +1,8 @@
 package dev.tailwindrainbow.intellij.adapter.intellij.settings.ui
 
-import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.openapi.options.ConfigurationException
 import com.intellij.openapi.options.SearchableConfigurable
-import com.intellij.openapi.project.ProjectManager
+import dev.tailwindrainbow.intellij.adapter.intellij.highlighting.rehighlightOpenProjects
 import dev.tailwindrainbow.intellij.adapter.intellij.settings.TailwindRainbowSettings
 import dev.tailwindrainbow.intellij.application.settings.FormResult
 import dev.tailwindrainbow.intellij.application.settings.SettingsFormMapper
@@ -58,9 +57,7 @@ class TailwindRainbowSettingsConfigurable : SearchableConfigurable {
 
                 settings.update(result.settings, result.themes)
                 panel?.showProblems(settings.themes.problems())
-                ProjectManager.getInstance().openProjects.forEach { project ->
-                    DaemonCodeAnalyzer.getInstance(project).restart()
-                }
+                rehighlightOpenProjects()
             }
         }
     }

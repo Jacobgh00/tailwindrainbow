@@ -25,6 +25,10 @@ class TailwindRainbowSettings :
     ThemeCatalog {
     private val storedState = StoredState()
 
+    /** A theme being tried out, which must never reach storage. Null means the stored one applies. */
+    @Volatile
+    private var previewedTheme: String? = null
+
     val themes = UserThemeCatalog(ContributedThemes)
 
     @Synchronized
@@ -42,7 +46,7 @@ class TailwindRainbowSettings :
     override fun current(): HighlightSettings =
         HighlightSettings(
             enabled = storedState.enabled,
-            themeName = storedState.themeName,
+            themeName = previewedTheme ?: storedState.themeName,
             scan =
                 ScanSettings(
                     maxFileSize = storedState.maxFileSize,
@@ -54,11 +58,24 @@ class TailwindRainbowSettings :
                 ),
         )
 
+    /** Shows a theme without storing it. Null returns to the stored one. */
+    fun previewTheme(name: String?) {
+        previewedTheme = name
+    }
+
+    /** Makes a theme the stored one, ending any preview. */
+    @Synchronized
+    fun chooseTheme(name: String) {
+        previewedTheme = null
+        storedState.themeName = name
+    }
+
     @Synchronized
     fun update(
         snapshot: HighlightSettings,
         userThemes: List<ThemeSpec> = storedSpecs(),
     ) {
+        previewedTheme = null
         storedState.enabled = snapshot.enabled
         storedState.themeName = snapshot.themeName
         storedState.maxFileSize = snapshot.scan.maxFileSize
