@@ -1,13 +1,17 @@
 package dev.tailwindrainbow.intellij.application.settings
 
+import dev.tailwindrainbow.intellij.application.port.ThemeSource
 import dev.tailwindrainbow.intellij.application.theme.StyleEntry
+import dev.tailwindrainbow.intellij.application.theme.ThemeRepository
 import dev.tailwindrainbow.intellij.application.theme.ThemeSpec
+import dev.tailwindrainbow.intellij.application.theme.UserThemeSource
 import dev.tailwindrainbow.intellij.domain.theme.FontWeight
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
 import dev.tailwindrainbow.intellij.domain.theme.SegmentKind
 import dev.tailwindrainbow.intellij.domain.theme.TextStyle
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -45,11 +49,12 @@ class ThemeEditorModelTest {
     }
 
     @Test
-    fun `an untouched row shows the inherited colour and is not marked overridden`() {
+    fun `an untouched row shows the inherited colour and is only inherited`() {
         val row = model().rows().first { it.key == "hover" }
 
         assertEquals("#111111", row.color)
-        assertFalse(row.overridden)
+        assertEquals(RowOrigin.INHERITED, row.origin)
+        assertFalse(row.isUserDefined)
     }
 
     @Test
@@ -58,7 +63,7 @@ class ThemeEditorModelTest {
         val row = updated.rows().first { it.key == "hover" }
 
         assertEquals("#abcdef", row.color)
-        assertTrue(row.overridden)
+        assertEquals(RowOrigin.OVERRIDDEN, row.origin)
     }
 
     @Test
@@ -80,7 +85,7 @@ class ThemeEditorModelTest {
                 .reset(SegmentKind.PREFIX, "hover")
 
         assertEquals("#111111", reset.rows().first { it.key == "hover" }.color)
-        assertFalse(reset.rows().first { it.key == "hover" }.overridden)
+        assertEquals(RowOrigin.INHERITED, reset.rows().first { it.key == "hover" }.origin)
         assertTrue(reset.spec("mine").entries.isEmpty())
     }
 
@@ -102,14 +107,14 @@ class ThemeEditorModelTest {
 
         assertEquals("#0f0f0f", row.color)
         assertFalse(row.bold)
-        assertTrue(row.overridden)
+        assertEquals(RowOrigin.OVERRIDDEN, row.origin)
     }
 
     @Test
-    fun `an override for a token the inherited theme lacks is still editable`() {
+    fun `an override for a token the inherited theme lacks counts as added`() {
         val stale = model(ThemeSpec("mine", listOf(StyleEntry(SegmentKind.PREFIX, "dark", "#0a0a0a", 700))))
 
-        assertTrue(stale.rows().any { it.key == "dark" && it.overridden })
+        assertEquals(RowOrigin.ADDED, stale.rows().first { it.key == "dark" }.origin)
     }
 
     @Test
@@ -118,6 +123,92 @@ class ThemeEditorModelTest {
 
         assertTrue("[arbitrary]" in labels)
         assertTrue("!important" in labels)
+    }
+
+    @Test
+    fun `a token the inherited theme lacks can be added and then coloured`() {
+        val added =
+            model()
+                .add(SegmentKind.PREFIX, "focus-visible")
+                .recolour(SegmentKind.PREFIX, "focus-visible", "#abcdef")
+
+        val row = added.rows().first { it.key == "focus-visible" }
+        assertEquals(RowOrigin.ADDED, row.origin)
+        assertEquals("#abcdef", row.color)
+        assertEquals(
+            listOf(StyleEntry(SegmentKind.PREFIX, "focus-visible", "#abcdef", 700)),
+            added.spec("mine").entries,
+        )
+    }
+
+    @Test
+    fun `an added token can be removed again`() {
+        val removed =
+            model()
+                .add(SegmentKind.BASE, "text-*")
+                .remove(SegmentKind.BASE, "text-*")
+
+        assertTrue(removed.rows().none { it.key == "text-*" })
+        assertTrue(removed.spec("mine").entries.isEmpty())
+    }
+
+    @Test
+    fun `the same token can be added to a second section`() {
+        val added = model().add(SegmentKind.BASE, "hover")
+
+        assertEquals(
+            listOf(SegmentKind.PREFIX, SegmentKind.BASE),
+            added.rows().filter { it.key == "hover" }.map { it.section },
+        )
+    }
+
+    @Test
+    fun `a token already in the editor cannot be added twice`() {
+        assertTrue(model().holds(SegmentKind.PREFIX, "hover"))
+        assertFalse(model().holds(SegmentKind.BASE, "hover"))
+
+        assertFailsWith<IllegalArgumentException> { model().add(SegmentKind.PREFIX, "hover") }
+        assertFailsWith<IllegalArgumentException> {
+            model().add(SegmentKind.PREFIX, "focus-visible").add(SegmentKind.PREFIX, "focus-visible")
+        }
+    }
+
+    @Test
+    fun `a section holding a single style takes no added token`() {
+        assertFailsWith<IllegalArgumentException> { model().add(SegmentKind.ARBITRARY, "whatever") }
+    }
+
+    @Test
+    fun `a blank token cannot be added`() {
+        assertFailsWith<IllegalArgumentException> { model().add(SegmentKind.PREFIX, "  ") }
+    }
+
+    @Test
+    fun `an inherited token is reset rather than removed`() {
+        val recoloured = model().recolour(SegmentKind.PREFIX, "hover", "#abcdef")
+
+        assertFailsWith<IllegalArgumentException> { recoloured.remove(SegmentKind.PREFIX, "hover") }
+    }
+
+    @Test
+    fun `an added token is removed rather than reset`() {
+        val added = model().add(SegmentKind.PREFIX, "focus-visible")
+
+        assertFailsWith<IllegalArgumentException> { added.reset(SegmentKind.PREFIX, "focus-visible") }
+    }
+
+    @Test
+    fun `a token added in the editor becomes part of the resolved theme`() {
+        val spec =
+            model()
+                .add(SegmentKind.PREFIX, "focus-visible")
+                .recolour(SegmentKind.PREFIX, "focus-visible", "#abcdef")
+                .spec("mine")
+
+        val resolved = ThemeRepository(ThemeSource { mapOf("mine" to builtIn) }, UserThemeSource(listOf(spec)))
+
+        assertEquals(TextStyle("#abcdef", FontWeight.BOLD), resolved.find("mine").prefix["focus-visible"])
+        assertEquals(TextStyle("#111111", FontWeight.BOLD), resolved.find("mine").prefix["hover"])
     }
 
     private fun model(overrides: ThemeSpec? = null) = ThemeEditorModel(builtIn, overrides)

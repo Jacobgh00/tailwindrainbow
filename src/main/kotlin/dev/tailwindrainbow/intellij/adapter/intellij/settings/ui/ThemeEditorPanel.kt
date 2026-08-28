@@ -1,21 +1,25 @@
 package dev.tailwindrainbow.intellij.adapter.intellij.settings.ui
 
 import com.intellij.ui.ColorPanel
+import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.JBUI
+import dev.tailwindrainbow.intellij.application.settings.RowOrigin
 import dev.tailwindrainbow.intellij.application.settings.ThemeEditorModel
 import dev.tailwindrainbow.intellij.application.settings.ThemeEditorRow
+import dev.tailwindrainbow.intellij.application.settings.displayName
 import dev.tailwindrainbow.intellij.application.theme.ThemeSpec
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
+import dev.tailwindrainbow.intellij.domain.theme.SegmentKind
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Component
 import java.awt.Font
 import javax.swing.JButton
 import javax.swing.JPanel
-import javax.swing.JScrollPane
 import javax.swing.JTable
+import javax.swing.ListSelectionModel
 import javax.swing.table.AbstractTableModel
 import javax.swing.table.DefaultTableCellRenderer
 
@@ -32,6 +36,8 @@ class ThemeEditorPanel : JPanel(BorderLayout()) {
         JBTable(tableModel).apply {
             rowHeight = JBUI.scale(ROW_HEIGHT)
             setShowGrid(false)
+            setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
+            columnModel.getColumn(SECTION).maxWidth = JBUI.scale(SECTION_COLUMN_WIDTH)
             columnModel.getColumn(COLOR).cellRenderer = ColorSwatchRenderer()
             columnModel.getColumn(TOKEN).cellRenderer = TokenRenderer()
         }
@@ -41,7 +47,7 @@ class ThemeEditorPanel : JPanel(BorderLayout()) {
 
     init {
         add(JBLabel("Colours for the selected theme — pick a row, then choose a colour:"), BorderLayout.NORTH)
-        add(JScrollPane(table), BorderLayout.CENTER)
+        add(tableWithToolbar(), BorderLayout.CENTER)
         add(
             JPanel().apply {
                 add(JBLabel("Colour:"))
@@ -53,7 +59,7 @@ class ThemeEditorPanel : JPanel(BorderLayout()) {
 
         colorPanel.addActionListener { applySelectedColour() }
         resetButton.addActionListener { resetSelected() }
-        table.selectionModel.addListSelectionListener { syncColourPicker() }
+        table.selectionModel.addListSelectionListener { syncControls() }
     }
 
     fun show(
@@ -64,12 +70,39 @@ class ThemeEditorPanel : JPanel(BorderLayout()) {
         themeName = name
         model = ThemeEditorModel(inherited, overrides)
         tableModel.fireTableDataChanged()
-        syncColourPicker()
+        syncControls()
     }
 
     fun overrides(): ThemeSpec? = model.spec(themeName).takeIf { it.entries.isNotEmpty() }
 
+    /** Add and remove live on the table's own toolbar, where the platform puts them. */
+    private fun tableWithToolbar(): JPanel =
+        ToolbarDecorator.createDecorator(table)
+            .setAddAction { addToken() }
+            .setRemoveAction { removeSelectedToken() }
+            .setRemoveActionUpdater { selectedRow()?.origin == RowOrigin.ADDED }
+            .disableUpDownActions()
+            .createPanel()
+
     private fun selectedRow(): ThemeEditorRow? = model.rows().getOrNull(table.selectedRow)
+
+    private fun addToken() {
+        val dialog = AddTokenDialog(model::holds)
+        if (!dialog.showAndGet()) return
+
+        model = model.add(dialog.selectedSection, dialog.enteredKey)
+        tableModel.fireTableDataChanged()
+        select(dialog.selectedSection, dialog.enteredKey)
+    }
+
+    private fun removeSelectedToken() {
+        val row = selectedRow() ?: return
+
+        model = model.remove(row.section, row.key)
+        table.clearSelection()
+        tableModel.fireTableDataChanged()
+        syncControls()
+    }
 
     private fun applySelectedColour() {
         val row = selectedRow() ?: return
@@ -84,20 +117,32 @@ class ThemeEditorPanel : JPanel(BorderLayout()) {
 
         model = model.reset(row.section, row.key)
         tableModel.fireTableDataChanged()
-        syncColourPicker()
+        syncControls()
     }
 
-    private fun syncColourPicker() {
+    /** Puts the caret on a freshly added token so the colour picker acts on it straight away. */
+    private fun select(
+        section: SegmentKind,
+        key: String,
+    ) {
+        val index = model.rows().indexOfFirst { it.section == section && it.key == key }
+        if (index < 0) return
+
+        table.selectionModel.setSelectionInterval(index, index)
+        table.scrollRectToVisible(table.getCellRect(index, TOKEN, true))
+    }
+
+    private fun syncControls() {
         val row = selectedRow()
         colorPanel.isEnabled = row != null
-        resetButton.isEnabled = row?.overridden == true
+        resetButton.isEnabled = row?.origin == RowOrigin.OVERRIDDEN
         colorPanel.selectedColor = row?.color?.let(Color::decode)
     }
 
     private inner class RowTableModel : AbstractTableModel() {
         override fun getRowCount(): Int = model.rows().size
 
-        override fun getColumnCount(): Int = 3
+        override fun getColumnCount(): Int = COLUMN_NAMES.size
 
         override fun getColumnName(column: Int): String = COLUMN_NAMES[column]
 
@@ -114,6 +159,7 @@ class ThemeEditorPanel : JPanel(BorderLayout()) {
         ): Any =
             model.rows()[row].let {
                 when (column) {
+                    SECTION -> it.section.displayName
                     TOKEN -> it.label
                     COLOR -> it.color
                     else -> it.bold
@@ -158,18 +204,20 @@ class ThemeEditorPanel : JPanel(BorderLayout()) {
             column: Int,
         ): Component =
             super.getTableCellRendererComponent(table, value, selected, focused, row, column).also {
-                val overridden = model.rows().getOrNull(row)?.overridden == true
-                it.font = it.font.deriveFont(if (overridden) Font.BOLD else Font.PLAIN)
+                val userDefined = model.rows().getOrNull(row)?.isUserDefined == true
+                it.font = it.font.deriveFont(if (userDefined) Font.BOLD else Font.PLAIN)
             }
     }
 
     private companion object {
         val BOOLEAN_COLUMN: Class<*> = java.lang.Boolean::class.java
         const val ROW_HEIGHT = 24
-        const val TOKEN = 0
-        const val COLOR = 1
-        const val BOLD = 2
-        val COLUMN_NAMES = arrayOf("Token", "Colour", "Bold")
+        const val SECTION_COLUMN_WIDTH = 90
+        const val SECTION = 0
+        const val TOKEN = 1
+        const val COLOR = 2
+        const val BOLD = 3
+        val COLUMN_NAMES = arrayOf("Section", "Token", "Colour", "Bold")
 
         fun Color.toHex(): String = "#%02x%02x%02x".format(red, green, blue)
     }

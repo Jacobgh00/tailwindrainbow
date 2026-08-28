@@ -52,7 +52,7 @@ object ThemeParser {
     private fun StyleEntry.toTextStyle(): TextStyle? {
         if (!HEX_COLOR.matches(color)) return null
         if (!FontWeight.isValid(fontWeight)) return null
-        if (section.needsKey && key.isBlank()) return null
+        if (section.isKeyed && key.isBlank()) return null
 
         return TextStyle(color, FontWeight.of(fontWeight), enabled)
     }
@@ -68,9 +68,6 @@ object ThemeParser {
 
         return ThemeProblem(themeName, section, key, reason)
     }
-
-    private val SegmentKind.needsKey: Boolean
-        get() = this == SegmentKind.PREFIX || this == SegmentKind.BASE
 
     private val HEX_COLOR = Regex("^#[0-9a-fA-F]{6}$")
 }

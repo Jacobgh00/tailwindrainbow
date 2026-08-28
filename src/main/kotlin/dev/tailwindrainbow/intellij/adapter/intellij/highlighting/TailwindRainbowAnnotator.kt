@@ -18,7 +18,9 @@ class TailwindRainbowAnnotator : Annotator {
         element: PsiElement,
         holder: AnnotationHolder,
     ) {
-        if (element !is PsiFile) return
+        if (element !is PsiFile) {
+            return
+        }
 
         val extension = element.virtualFile?.extension ?: return
 

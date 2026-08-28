@@ -18,6 +18,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Two built-in themes: `default` and `synthwave`.
 - User-defined colors. Any variant can be recolored with a color picker and set bold, per theme.
   Overrides are stored per entry, so untouched variants keep following the theme.
+- Adding and removing theme tokens. Any variant prefix or base-class pattern can be given a color,
+  including ones no built-in theme lists; added tokens can be removed again, while tokens that come
+  from the theme are reset to their inherited color.
 - Settings under **Editor | Tailwind Rainbow** for the theme, the maximum file size to scan, and
   the recognized attributes, functions, template tags, ignored prefix modifiers, and file
   extensions.

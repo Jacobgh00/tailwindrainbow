@@ -58,7 +58,10 @@ internal class DocumentLexer(private val profile: SyntaxProfile) {
 
     private fun String.stringAt(index: Int): DocumentToken? {
         val quote = this[index]
-        if (quote !in QUOTES) return null
+
+        if (quote !in QUOTES) {
+            return null
+        }
 
         val closing = indexOfUnescaped(quote, index + 1)
         val contentEnd = if (closing < 0) length else closing
@@ -100,10 +103,20 @@ private fun String.commentEnd(
     terminator: String,
 ): Int {
     val terminatorIndex = indexOf(terminator, start + 2)
-    return if (terminatorIndex < 0) length else terminatorIndex + terminator.length
+
+    if (terminatorIndex < 0) {
+        return length
+    }
+
+    return terminatorIndex + terminator.length
 }
 
 private fun String.lineEnd(start: Int): Int {
     val newLine = indexOf('\n', start)
-    return if (newLine < 0) length else newLine
+
+    if (newLine < 0) {
+        return length
+    }
+
+    return newLine
 }
