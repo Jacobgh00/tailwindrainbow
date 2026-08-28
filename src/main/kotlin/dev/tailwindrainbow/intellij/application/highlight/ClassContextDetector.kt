@@ -29,7 +29,14 @@ internal class ClassContextDetector(private val settings: ScanSettings) {
     /** `class="…"` including the opening quote, used to find attributes nested inside a token. */
     val attributeAssignment = identifierAlternation?.let { Regex("(?i)$it\\s*=\\s*(?<$QUOTE_GROUP>[\"'])") }
 
-    private val attributeValue = identifierAlternation?.let { Regex("(?is)$it\\s*=\\s*(?:\\{[^{}]*)?$") }
+    /**
+     * A class identifier assigned a value: `class="…"`, `class={…}`, and `classes = ['…', …]`.
+     *
+     * The value may be a collection the token sits inside. Each opener excludes only its own closer,
+     * so a match reaches into the collection that was opened but never past the end of it.
+     */
+    private val attributeValue =
+        identifierAlternation?.let { Regex("(?is)$it\\s*=\\s*(?:\\{[^{}]*|\\[[^\\[\\]]*)?$") }
 
     private val assignedValue = identifierAlternation?.let { Regex("(?is)$it\\s*(?:(?::[^=]+)?=|:)\\s*$") }
 

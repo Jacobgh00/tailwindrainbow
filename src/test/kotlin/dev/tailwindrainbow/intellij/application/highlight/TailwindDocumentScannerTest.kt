@@ -113,6 +113,32 @@ class TailwindDocumentScannerTest {
     }
 
     @Test
+    fun `finds classes in an array assigned to a class identifier`() {
+        val source = "const classes = ['hover:bg-blue-500', 'lg:text-xl']"
+
+        assertEquals(
+            listOf("hover:bg-blue-500", "lg:text-xl"),
+            scan(source, "ts").map { it.sliceOf(source) },
+        )
+    }
+
+    @Test
+    fun `finds classes nested in an object assigned to a class identifier`() {
+        val source = "const classes = { sizes: ['lg:text-xl'], state: 'hover:bg-blue-500' }"
+
+        assertEquals(
+            listOf("lg:text-xl", "hover:bg-blue-500"),
+            scan(source, "ts").map { it.sliceOf(source) },
+        )
+    }
+
+    @Test
+    fun `a collection assigned to something else is left alone`() {
+        assertTrue(scan("const documentation = ['hover:bg-blue-500']", "ts").isEmpty())
+        assertTrue(scan("const notes = { first: 'hover:bg-blue-500' }", "ts").isEmpty())
+    }
+
+    @Test
     fun `does not colour an unrelated string that merely looks like Tailwind`() {
         val source = "const documentation = 'hover:bg-blue-500'"
 
