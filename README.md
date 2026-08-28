@@ -4,7 +4,8 @@ An IntelliJ Platform plugin that colorizes Tailwind CSS variant prefixes, so a l
 stays readable.
 
 Every variant — `hover`, `focus`, `sm`, `dark`, arbitrary values such as `[&>*]`, and the `!`
-important modifier — is painted in its own color. The structure of a class list becomes visible at
+important modifier wherever Tailwind puts it (`!font-bold`, `hover:!font-bold`, `font-bold!`) — is
+painted in its own color. The structure of a class list becomes visible at
 a glance instead of having to be read word by word.
 
 ```

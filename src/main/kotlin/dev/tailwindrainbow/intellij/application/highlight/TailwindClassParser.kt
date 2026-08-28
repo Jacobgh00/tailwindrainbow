@@ -23,66 +23,109 @@ class TailwindClassParser(private val themeMatcher: ThemeMatcher) {
             return emptyList()
         }
 
-        val importantLength = if (className.startsWith('!')) 1 else 0
-        val classWithoutImportant = className.drop(importantLength)
-        val parts = classWithoutImportant.splitOnUnnestedColons()
+        val (parts, importantAt) = className.splitOnUnnestedColons(startOffset).takeImportantOut()
 
-        if (parts.isEmpty() || parts.any(String::isEmpty)) {
+        if (parts.any { it.value.isEmpty() }) {
             return emptyList()
         }
 
         return buildList {
-            addImportantSegment(startOffset, importantLength)
-            addClassSegments(parts, startOffset + importantLength)
+            addImportantSegment(importantAt)
+            addClassSegments(parts, importantAt)
         }
     }
 
-    private fun MutableList<HighlightSegment>.addImportantSegment(
-        startOffset: Int,
-        importantLength: Int,
-    ) {
-        if (importantLength == 0) {
+    private fun MutableList<HighlightSegment>.addImportantSegment(importantAt: Int?) {
+        if (importantAt == null) {
             return
         }
 
         themeMatcher.matchImportant()?.let { match ->
-            add(match.toSegment(startOffset, startOffset + 1))
+            add(match.toSegment(importantAt, importantAt + 1))
         }
     }
 
     private fun MutableList<HighlightSegment>.addClassSegments(
-        parts: List<String>,
-        startOffset: Int,
+        parts: List<ClassPart>,
+        importantAt: Int?,
     ) {
         val baseClass = parts.last()
         val prefixes = parts.dropLast(1)
-        val baseMatch = themeMatcher.matchBase(baseClass)
-
-        if (prefixes.isEmpty()) {
-            baseMatch?.let { add(it.toSegment(startOffset, startOffset + baseClass.length)) }
-            return
-        }
-
-        val colonCount = prefixes.size
-        val classEnd = startOffset + parts.sumOf(String::length) + colonCount
-        var prefixStart = startOffset
+        val baseMatch = themeMatcher.matchBase(baseClass.value)
 
         prefixes.forEachIndexed { index, prefix ->
-            themeMatcher.matchPrefix(prefix)?.let { match ->
+            themeMatcher.matchPrefix(prefix.value)?.let { match ->
                 val hasFollowingStyledSegment = index < prefixes.lastIndex || baseMatch != null
-                val end = if (hasFollowingStyledSegment) prefixStart + prefix.length + 1 else classEnd
+                val end = if (hasFollowingStyledSegment) prefix.end + 1 else baseClass.end
 
-                add(match.toSegment(prefixStart, end))
+                addSegmentAround(importantAt, match, prefix.offset, end)
             }
-
-            prefixStart += prefix.length + 1
         }
 
         baseMatch?.let { match ->
-            add(match.toSegment(prefixStart, prefixStart + baseClass.length))
+            add(match.toSegment(baseClass.offset, baseClass.end))
         }
     }
+
+    /**
+     * Adds a segment, stepping around the important marker if it sits inside.
+     *
+     * The last prefix colours everything after it when the utility has no colour of its own, and in
+     * `hover:!font-bold` the marker sits in the middle of exactly that stretch. It has a colour of
+     * its own, so the stretch is painted either side of it rather than over it.
+     */
+    private fun MutableList<HighlightSegment>.addSegmentAround(
+        importantAt: Int?,
+        match: ThemeMatch,
+        start: Int,
+        end: Int,
+    ) {
+        if (importantAt == null || importantAt !in start until end) {
+            add(match.toSegment(start, end))
+            return
+        }
+
+        if (start < importantAt) add(match.toSegment(start, importantAt))
+        if (importantAt + 1 < end) add(match.toSegment(importantAt + 1, end))
+    }
 }
+
+/** One colon-separated piece of a class, with where it sits in the document. */
+private data class ClassPart(val value: String, val offset: Int) {
+    val end: Int get() = offset + value.length
+
+    fun withoutFirstCharacter() = ClassPart(value.drop(1), offset + 1)
+
+    fun withoutLastCharacter() = ClassPart(value.dropLast(1), offset)
+}
+
+/** A class with its important marker taken out, and where that marker was. */
+private data class MarkedClass(val parts: List<ClassPart>, val importantAt: Int?)
+
+/**
+ * Separates the important marker from the class it marks.
+ *
+ * Tailwind has spelled it three ways: before the whole class and before the utility in v3
+ * (`!font-bold`, `hover:!font-bold`), and after the utility in v4 (`hover:font-bold!`). All three
+ * mean the same thing, and codebases hold a mixture during a migration, so all three are read.
+ */
+private fun List<ClassPart>.takeImportantOut(): MarkedClass {
+    val first = first()
+    val last = last()
+
+    return when {
+        first.value.startsWith(IMPORTANT) -> MarkedClass(replacingFirst(first.withoutFirstCharacter()), first.offset)
+        last.value.endsWith(IMPORTANT) -> MarkedClass(replacingLast(last.withoutLastCharacter()), last.end - 1)
+        last.value.startsWith(IMPORTANT) -> MarkedClass(replacingLast(last.withoutFirstCharacter()), last.offset)
+        else -> MarkedClass(this, null)
+    }
+}
+
+private const val IMPORTANT = '!'
+
+private fun List<ClassPart>.replacingFirst(part: ClassPart) = listOf(part) + drop(1)
+
+private fun List<ClassPart>.replacingLast(part: ClassPart) = dropLast(1) + part
 
 private data class ClassWord(val value: String, val start: Int)
 
@@ -113,7 +156,7 @@ private fun String.classWords(): List<ClassWord> {
     }
 }
 
-private fun String.splitOnUnnestedColons(): List<String> {
+private fun String.splitOnUnnestedColons(startOffset: Int): List<ClassPart> {
     val className = this
 
     return buildList {
@@ -126,13 +169,13 @@ private fun String.splitOnUnnestedColons(): List<String> {
                 ']' -> bracketDepth = (bracketDepth - 1).coerceAtLeast(0)
                 ':' ->
                     if (bracketDepth == 0) {
-                        add(className.substring(partStart, index))
+                        add(ClassPart(className.substring(partStart, index), startOffset + partStart))
                         partStart = index + 1
                     }
             }
         }
 
-        add(className.substring(partStart))
+        add(ClassPart(className.substring(partStart), startOffset + partStart))
     }
 }
 

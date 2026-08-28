@@ -72,6 +72,38 @@ class TailwindClassParserTest {
 
         assertEquals("!", segments.first().sliceOf(source))
         assertEquals(SegmentKind.IMPORTANT, segments.first().kind)
+        assertEquals("hover:bg-blue-500", segments[1].sliceOf(source))
+    }
+
+    @Test
+    fun `an important modifier written after the class is recognised`() {
+        val source = "hover:bg-blue-500!"
+        val segments = parser().parse(source)
+
+        assertEquals(listOf("!", "hover:bg-blue-500"), segments.map { it.sliceOf(source) })
+        assertEquals(SegmentKind.IMPORTANT, segments.first().kind)
+    }
+
+    @Test
+    fun `an important modifier written before the utility is recognised`() {
+        val source = "hover:!bg-blue-500"
+        val segments = parser().parse(source)
+
+        assertEquals(
+            listOf("!", "hover:", "bg-blue-500"),
+            segments.map { it.sliceOf(source) },
+            "the prefix colours both sides of the marker rather than painting over it",
+        )
+        assertEquals(SegmentKind.IMPORTANT, segments.first().kind)
+    }
+
+    @Test
+    fun `an important modifier on a standalone utility is recognised at either end`() {
+        val leading = parser(mapOf("bg-*" to baseStyle)).parse("!bg-blue-500")
+        val trailing = parser(mapOf("bg-*" to baseStyle)).parse("bg-blue-500!")
+
+        assertEquals(listOf("!", "bg-blue-500"), leading.map { it.sliceOf("!bg-blue-500") })
+        assertEquals(listOf("!", "bg-blue-500"), trailing.map { it.sliceOf("bg-blue-500!") })
     }
 
     @Test

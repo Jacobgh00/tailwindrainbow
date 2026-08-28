@@ -32,6 +32,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Recognition of framework class bindings: `:class`, `v-bind:class`, and `x-bind:class`. The value
   of a bound attribute is treated as an expression, so class names are read from the strings inside
   it rather than from the surrounding braces, brackets, and conditions.
+- Recognition of the important modifier wherever Tailwind writes it: `!font-bold` and
+  `hover:!font-bold` from v3, and `font-bold!` from v4. A codebase mid-migration holds a mixture, so
+  all three are read.
 - Project-level recognition settings. A project can keep its own class identifiers, helper
   functions, template tags, ignored modifiers, file extensions, and maximum file size in
   `.idea/tailwindRainbow.xml` for a repository to share, while the theme stays with the user.
