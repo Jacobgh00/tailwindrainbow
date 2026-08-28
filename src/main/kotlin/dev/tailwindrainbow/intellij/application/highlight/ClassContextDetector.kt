@@ -1,6 +1,19 @@
 package dev.tailwindrainbow.intellij.application.highlight
 
 /**
+ * What a lexed token holds, as far as class names are concerned.
+ *
+ * A bound attribute is told apart from a plain one because `:class="[…]"` is an expression: the
+ * class names are the strings inside it, and the brackets, commas, and variable names around them
+ * are not class names at all.
+ */
+internal enum class ClassContent {
+    NONE,
+    CLASS_NAMES,
+    EXPRESSION,
+}
+
+/**
  * Decides whether a lexed token holds Tailwind class names.
  *
  * The lexer cannot tell `class="p-4"` from any other string, so this is where the heuristics live:
@@ -14,21 +27,28 @@ internal class ClassContextDetector(private val settings: ScanSettings) {
     private val identifierAlternation = settings.classIdentifiers.identifierPattern()
 
     /** `class="…"` including the opening quote, used to find attributes nested inside a token. */
-    val attributeAssignment = identifierAlternation?.let { Regex("(?i)$it\\s*=\\s*([\"'])") }
+    val attributeAssignment = identifierAlternation?.let { Regex("(?i)$it\\s*=\\s*(?<$QUOTE_GROUP>[\"'])") }
 
     private val attributeValue = identifierAlternation?.let { Regex("(?is)$it\\s*=\\s*(?:\\{[^{}]*)?$") }
+
     private val assignedValue = identifierAlternation?.let { Regex("(?is)$it\\s*(?:(?::[^=]+)?=|:)\\s*$") }
 
-    fun holdsClassNames(
+    fun classify(
         text: String,
         token: DocumentToken,
-    ): Boolean {
+    ): ClassContent {
         val precedingText = text.substring((token.start - CONTEXT_WINDOW).coerceAtLeast(0), token.start)
 
-        return attributeValue.matchesEndOf(precedingText) ||
+        attributeValue?.find(precedingText)?.let { attribute ->
+            return if (attribute.isBound) ClassContent.EXPRESSION else ClassContent.CLASS_NAMES
+        }
+
+        val holdsClassNames =
             assignedValue.matchesEndOf(precedingText) ||
-            isTaggedTemplate(precedingText, token) ||
-            isClassHelperArgument(text, token.start)
+                isTaggedTemplate(precedingText, token) ||
+                isClassHelperArgument(text, token.start)
+
+        return if (holdsClassNames) ClassContent.CLASS_NAMES else ClassContent.NONE
     }
 
     private fun isTaggedTemplate(
@@ -73,6 +93,8 @@ internal class ClassContextDetector(private val settings: ScanSettings) {
     }
 }
 
+private val MatchResult.isBound: Boolean get() = groups[BINDING_GROUP] != null
+
 private fun Regex?.matchesEndOf(text: String): Boolean = this?.containsMatchIn(text) == true
 
 private fun Char.isIdentifierPart(): Boolean = isLetterOrDigit() || this == '_' || this == '$'
@@ -88,10 +110,26 @@ private fun String.identifierBefore(endExclusive: Int): String? {
 }
 
 /**
- * Builds one alternation matching any configured class identifier.
+ * Frameworks bind an attribute instead of assigning it: Vue's `:class`, its long form
+ * `v-bind:class`, and Alpine's `x-bind:class` all name the same attribute. The marker is part of the
+ * binding syntax rather than part of the attribute, so a user configures `class` once and every
+ * bound spelling of it follows.
+ */
+private val BINDING_MARKERS = listOf("v-bind:", "x-bind:", ":")
+
+private const val BINDING_GROUP = "binding"
+
+/** Groups are read by name: the optional binding marker makes their numbering unstable. */
+internal const val QUOTE_GROUP = "quote"
+
+/**
+ * Builds one alternation matching any configured class identifier, bound or plain.
  *
  * Identifiers ending in `:` (Svelte's `class:`, Vue's `className:`) also match their directive
  * suffix, so `class:active` is recognised. Returns null when nothing is configured.
+ *
+ * The marker is consumed by the pattern rather than allowed by the lookbehind, which is what keeps
+ * `foo:class` and `:superclass` out while letting `:class` in.
  */
 private fun Set<String>.identifierPattern(): String? {
     if (isEmpty()) return null
@@ -100,6 +138,7 @@ private fun Set<String>.identifierPattern(): String? {
         joinToString("|") { identifier ->
             if (identifier.endsWith(':')) "${Regex.escape(identifier)}[A-Za-z0-9_-]*" else Regex.escape(identifier)
         }
+    val markers = BINDING_MARKERS.joinToString("|", transform = Regex::escape)
 
-    return "(?<![\\w:-])(?:$alternatives)(?![\\w-])"
+    return "(?<![\\w:-])(?<$BINDING_GROUP>$markers)?(?:$alternatives)(?![\\w-])"
 }

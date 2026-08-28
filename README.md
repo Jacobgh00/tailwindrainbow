@@ -17,6 +17,9 @@ green              teal          purple   slate            coral        red
 
 - **Variant highlighting** in class attributes, class helper functions, tagged templates, and CSS
   `@apply` directives.
+- **Framework bindings** — `:class`, `v-bind:class`, and `x-bind:class`. A bound attribute holds an
+  expression, so the class names are read out of the strings inside it: `:class="{ 'lg:p-4': ok }"`
+  colors `lg:p-4` and leaves the braces and the condition alone.
 - **Two built-in themes** — `default` and `synthwave` — plus any number of your own, each started
   from one of them.
 - **User-defined colors.** Pick a color for any variant with a color picker, toggle bold, or switch

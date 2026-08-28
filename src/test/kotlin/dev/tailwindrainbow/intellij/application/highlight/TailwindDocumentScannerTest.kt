@@ -37,6 +37,50 @@ class TailwindDocumentScannerTest {
     }
 
     @Test
+    fun `finds classes in a bound class attribute`() {
+        val source = "<div :class=\"hover:bg-blue-500\"></div>"
+
+        assertEquals(listOf("hover:bg-blue-500"), scan(source, "vue").map { it.sliceOf(source) })
+    }
+
+    @Test
+    fun `finds classes in the long and Alpine binding forms`() {
+        val long = "<div v-bind:class=\"hover:bg-blue-500\"></div>"
+        val alpine = "<div x-bind:class=\"lg:text-xl\"></div>"
+
+        assertEquals(listOf("hover:bg-blue-500"), scan(long, "vue").map { it.sliceOf(long) })
+        assertEquals(listOf("lg:text-xl"), scan(alpine, "html").map { it.sliceOf(alpine) })
+    }
+
+    @Test
+    fun `a bound attribute colours the strings inside its expression`() {
+        val source = "<div :class=\"{ 'hover:bg-blue-500': ok, 'lg:text-xl': other }\"></div>"
+
+        assertEquals(
+            listOf("hover:bg-blue-500", "lg:text-xl"),
+            scan(source, "vue").map { it.sliceOf(source) },
+        )
+    }
+
+    @Test
+    fun `a bound attribute holding an array does not colour the array itself`() {
+        val source = "<div :class=\"['hover:bg-blue-500', extra]\"></div>"
+        val withArbitrary = theme.copy(arbitrary = TextStyle("#ffaa00", FontWeight.BOLD))
+
+        assertEquals(
+            listOf("hover:bg-blue-500"),
+            scan(source, "vue", theme = withArbitrary).map { it.sliceOf(source) },
+        )
+    }
+
+    @Test
+    fun `a binding marker does not open every attribute ending in class`() {
+        val source = "<div :superclass=\"hover:bg-blue-500\"></div>"
+
+        assertTrue(scan(source, "vue").isEmpty())
+    }
+
+    @Test
     fun `finds strings inside a Svelte class expression`() {
         val source = "<div class={active ? 'hover:bg-blue-500' : 'lg:text-xl'}></div>"
 

@@ -34,12 +34,35 @@ class TailwindDocumentScanner {
             tokens.filterNot { it.kind == TokenKind.COMMENT }.forEach { token ->
                 addAll(nestedAttributeSegments(token, detector, parser))
 
-                if (detector.holdsClassNames(text, token)) {
-                    addAll(parser.parse(token.content, token.contentStart))
+                when (detector.classify(text, token)) {
+                    ClassContent.NONE -> Unit
+                    ClassContent.CLASS_NAMES -> addAll(parser.parse(token.content, token.contentStart))
+                    ClassContent.EXPRESSION -> addAll(expressionSegments(token, profile, parser))
                 }
             }
         }.distinctBy { it.start to it.end }
             .sortedBy(HighlightSegment::start)
+    }
+
+    /**
+     * Reads the class names out of a bound attribute such as `:class="{ 'p-4': ok }"`.
+     *
+     * The value is an expression, so only its string literals can hold class names — found with the
+     * same lexer that finds strings in a document. An expression without any string is taken as a
+     * plain class list, which is how `:class="p-4"` still works.
+     */
+    private fun expressionSegments(
+        token: DocumentToken,
+        profile: SyntaxProfile,
+        parser: TailwindClassParser,
+    ): List<HighlightSegment> {
+        val strings = DocumentLexer(profile).tokenize(token.content).filterNot { it.kind == TokenKind.COMMENT }
+
+        if (strings.isEmpty()) {
+            return parser.parse(token.content, token.contentStart)
+        }
+
+        return strings.flatMap { parser.parse(it.content, token.contentStart + it.contentStart) }
     }
 
     /**
@@ -55,7 +78,7 @@ class TailwindDocumentScanner {
             val attribute = detector.attributeAssignment ?: return@buildList
 
             attribute.findAll(token.content).forEach { match ->
-                val quote = match.groupValues[1].single()
+                val quote = match.groups[QUOTE_GROUP]?.value?.single() ?: return@forEach
                 val valueStart = match.range.last + 1
                 val valueEnd = token.content.indexOfUnescaped(quote, valueStart)
 
