@@ -54,12 +54,7 @@ internal class ClassContextDetector(private val settings: ScanSettings) {
     private fun isTaggedTemplate(
         precedingText: String,
         token: DocumentToken,
-    ): Boolean {
-        if (token.kind != TokenKind.TEMPLATE) return false
-
-        val tag = TRAILING_IDENTIFIER.find(precedingText)?.groupValues?.get(1)
-        return tag in settings.templateTags
-    }
+    ): Boolean = token.kind == TokenKind.TEMPLATE && precedingText.tagChainHead() in settings.templateTags
 
     /** Walks left past balanced parentheses to the call this token sits inside, if any. */
     private fun isClassHelperArgument(
@@ -89,7 +84,6 @@ internal class ClassContextDetector(private val settings: ScanSettings) {
     private companion object {
         const val CONTEXT_WINDOW = 500
         const val HELPER_SEARCH_WINDOW = 2_000
-        val TRAILING_IDENTIFIER = Regex("([A-Za-z_$][\\w$]*)\\s*$")
     }
 }
 
@@ -99,14 +93,87 @@ private fun Regex?.matchesEndOf(text: String): Boolean = this?.containsMatchIn(t
 
 private fun Char.isIdentifierPart(): Boolean = isLetterOrDigit() || this == '_' || this == '$'
 
-private fun String.identifierBefore(endExclusive: Int): String? {
-    var end = endExclusive - 1
-    while (end >= 0 && this[end].isWhitespace()) end--
+private fun String.identifierBefore(endExclusive: Int): String? = identifierRangeBefore(endExclusive)?.let(::substring)
+
+/** Where the identifier ending at [endExclusive] begins, ignoring whitespace between the two. */
+private fun String.identifierRangeBefore(endExclusive: Int): IntRange? {
+    val end = lastNonWhitespace(endExclusive) ?: return null
 
     var start = end
     while (start >= 0 && this[start].isIdentifierPart()) start--
 
-    return substring(start + 1, end + 1).ifEmpty { null }
+    return if (start == end) null else start + 1..end
+}
+
+/**
+ * The identifier a tagged template hangs off, looking past whatever the tag carries: `` styled.div` ``,
+ * `` styled(Button)` ``, `` styled.div<Props>` ``, and `` styled.input.attrs({…})` `` all hang off
+ * `styled`.
+ *
+ * The head is what counts, not the member: `styled.div` is a styled-components template, while
+ * `logger.css` is a call on a logger that happens to share a name with a tag.
+ */
+private fun String.tagChainHead(): String? {
+    var end = skipWhatTheTagCarries(length) ?: return null
+    var head: String? = null
+
+    while (true) {
+        val identifier = identifierRangeBefore(end) ?: return head
+        head = substring(identifier)
+
+        // Keep walking only while the chain continues leftwards through a member access.
+        val dot = identifier.first - 1
+        if (dot < 0 || this[dot] != '.') return head
+
+        end = skipWhatTheTagCarries(dot) ?: return head
+    }
+}
+
+/**
+ * Where the identifier before [endExclusive] ends, once the component, type arguments, or attributes
+ * a tag may carry are stepped over: `(Button)`, `<Props>`, `({ type: 'text' })`.
+ */
+private fun String.skipWhatTheTagCarries(endExclusive: Int): Int? {
+    var end = endExclusive
+
+    while (true) {
+        val last = lastNonWhitespace(end) ?: return null
+
+        end =
+            when (this[last]) {
+                ')' -> openerOf(last, '(', ')') ?: return null
+                '>' -> openerOf(last, '<', '>') ?: return null
+                else -> return end
+            }
+    }
+}
+
+/** The index of the bracket that opens the one at [closeIndex], honouring nesting. */
+private fun String.openerOf(
+    closeIndex: Int,
+    opener: Char,
+    closer: Char,
+): Int? {
+    var depth = 0
+
+    for (index in closeIndex downTo 0) {
+        when (this[index]) {
+            closer -> depth++
+            opener -> {
+                depth--
+                if (depth == 0) return index
+            }
+        }
+    }
+
+    return null
+}
+
+private fun String.lastNonWhitespace(endExclusive: Int): Int? {
+    var index = endExclusive - 1
+    while (index >= 0 && this[index].isWhitespace()) index--
+
+    return index.takeIf { it >= 0 }
 }
 
 /**

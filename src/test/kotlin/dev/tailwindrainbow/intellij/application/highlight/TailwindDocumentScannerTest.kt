@@ -125,6 +125,41 @@ class TailwindDocumentScannerTest {
     }
 
     @Test
+    fun `finds classes in a tagged template`() {
+        val source = "const styles = tw`hover:bg-blue-500 lg:text-xl`"
+
+        assertEquals(
+            listOf("hover:bg-blue-500", "lg:text-xl"),
+            scan(source, "ts").map { it.sliceOf(source) },
+        )
+    }
+
+    @Test
+    fun `finds classes in a styled components member template`() {
+        val source = "const Button = styled.div`hover:bg-blue-500`"
+
+        assertEquals(listOf("hover:bg-blue-500"), scan(source, "ts").map { it.sliceOf(source) })
+    }
+
+    @Test
+    fun `finds classes when the tag carries a component, a type, or attributes`() {
+        val wrapped = "const Button = styled(BaseButton)`hover:bg-blue-500`"
+        val typed = "const Button = styled.div<Props>`hover:bg-blue-500`"
+        val withAttrs = "const Input = styled.input.attrs({ type: 'text' })`lg:text-xl`"
+
+        assertEquals(listOf("hover:bg-blue-500"), scan(wrapped, "ts").map { it.sliceOf(wrapped) })
+        assertEquals(listOf("hover:bg-blue-500"), scan(typed, "tsx").map { it.sliceOf(typed) })
+        assertEquals(listOf("lg:text-xl"), scan(withAttrs, "ts").map { it.sliceOf(withAttrs) })
+    }
+
+    @Test
+    fun `a template tagged by something else is left alone`() {
+        assertTrue(scan("const query = sql`hover:bg-blue-500`", "ts").isEmpty())
+        assertTrue(scan("const raw = String.raw`hover:bg-blue-500`", "ts").isEmpty())
+        assertTrue(scan("const value = wide ? `hover:bg-blue-500` : other", "ts").isEmpty())
+    }
+
+    @Test
     fun `finds class attributes inside an html template string`() {
         val source = "const template = `<div class=\"hover:bg-blue-500\"></div>`"
 
