@@ -2,19 +2,20 @@ package dev.tailwindrainbow.intellij.adapter.intellij.settings.ui
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.MutableCollectionComboBoxModel
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBLabel
-import com.intellij.util.ui.FormBuilder
+import com.intellij.ui.dsl.builder.Align
+import com.intellij.ui.dsl.builder.AlignX
+import com.intellij.ui.dsl.builder.panel
 import dev.tailwindrainbow.intellij.application.settings.SettingsForm
 import dev.tailwindrainbow.intellij.application.theme.ThemeProblem
 import dev.tailwindrainbow.intellij.application.theme.ThemeSpec
 import dev.tailwindrainbow.intellij.application.theme.describe
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
-import java.awt.FlowLayout
 import javax.swing.BoxLayout
 import javax.swing.JButton
-import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.SwingConstants
 
@@ -36,16 +37,20 @@ class SettingsPanel(
     private var editing = ""
     private var themes: List<ThemeSpec> = emptyList()
 
-    val component: JComponent =
-        FormBuilder.createFormBuilder()
-            .addComponent(enabled)
-            .addLabeledComponent(JBLabel("Theme:"), themeChooser())
-            .addSeparator()
-            .addComponent(recognition.component)
-            .addSeparator()
-            .addComponent(problems)
-            .addComponentFillVertically(themeEditor, 0)
-            .panel
+    val component: DialogPanel =
+        panel {
+            row { cell(enabled) }
+            row("Theme:") {
+                cell(theme)
+                cell(newTheme)
+                cell(deleteTheme)
+            }
+            separator()
+            row { cell(recognition.component).align(Align.FILL) }
+            separator()
+            row { cell(problems).align(AlignX.FILL) }
+            row { cell(themeEditor.component).align(Align.FILL) }.resizableRow()
+        }
 
     init {
         theme.addActionListener { showSelectedTheme() }
@@ -80,13 +85,6 @@ class SettingsPanel(
         theme.selectedItem = form.themeName
         showSelectedTheme()
     }
-
-    private fun themeChooser(): JPanel =
-        JPanel(FlowLayout(FlowLayout.LEFT, CHOOSER_GAP, 0)).apply {
-            add(theme)
-            add(newTheme)
-            add(deleteTheme)
-        }
 
     private fun selectedThemeName(): String = theme.selectedItem as? String ?: ""
 

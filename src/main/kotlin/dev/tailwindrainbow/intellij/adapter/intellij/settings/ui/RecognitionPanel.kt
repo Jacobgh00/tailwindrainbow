@@ -1,10 +1,12 @@
 package dev.tailwindrainbow.intellij.adapter.intellij.settings.ui
 
 import com.intellij.ui.components.JBCheckBox
-import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
-import com.intellij.util.ui.FormBuilder
+import com.intellij.ui.dsl.builder.AlignX
+import com.intellij.ui.dsl.builder.panel
 import dev.tailwindrainbow.intellij.application.settings.RecognitionForm
+import dev.tailwindrainbow.intellij.application.settings.classIdentifiersWarning
+import dev.tailwindrainbow.intellij.application.settings.maxFileSizeProblem
 import javax.swing.JComponent
 
 internal class RecognitionPanel {
@@ -19,16 +21,26 @@ internal class RecognitionPanel {
     private var rulesOffScreen: RecognitionForm? = null
 
     val component: JComponent =
-        FormBuilder.createFormBuilder()
-            .addComponent(ownedByProject)
-            .addComponentToRightColumn(JBLabel("Stored with the project, so a repository can share them"))
-            .addLabeledComponent(JBLabel("Maximum file size:"), maxFileSize)
-            .addLabeledComponent(JBLabel("Class identifiers:"), classIdentifiers)
-            .addLabeledComponent(JBLabel("Class functions:"), classFunctions)
-            .addLabeledComponent(JBLabel("Template tags:"), templateTags)
-            .addLabeledComponent(JBLabel("Ignored prefix modifiers:"), ignoredModifiers)
-            .addLabeledComponent(JBLabel("Supported file extensions:"), supportedExtensions)
-            .panel
+        panel {
+            row {
+                cell(ownedByProject)
+                    .comment("Stored with the project, so a repository can share them")
+            }
+            row("Maximum file size:") {
+                cell(maxFileSize)
+                    .align(AlignX.FILL)
+                    .validationOnInput { field -> maxFileSizeProblem(field.text)?.let { error(it) } }
+            }
+            row("Class identifiers:") {
+                cell(classIdentifiers)
+                    .align(AlignX.FILL)
+                    .validationOnInput { field -> classIdentifiersWarning(field.text)?.let { warning(it) } }
+            }
+            row("Class functions:") { cell(classFunctions).align(AlignX.FILL) }
+            row("Template tags:") { cell(templateTags).align(AlignX.FILL) }
+            row("Ignored prefix modifiers:") { cell(ignoredModifiers).align(AlignX.FILL) }
+            row("Supported file extensions:") { cell(supportedExtensions).align(AlignX.FILL) }
+        }
 
     init {
         ownedByProject.addActionListener { swap() }

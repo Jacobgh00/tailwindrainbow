@@ -1,8 +1,10 @@
 package dev.tailwindrainbow.intellij.adapter.intellij.settings.ui
 
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.options.ConfigurationException
 import com.intellij.openapi.options.SearchableConfigurable
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Disposer
 import dev.tailwindrainbow.intellij.adapter.intellij.highlighting.rehighlightOpenProjects
 import dev.tailwindrainbow.intellij.adapter.intellij.settings.TailwindRainbowProjectSettings
 import dev.tailwindrainbow.intellij.adapter.intellij.settings.TailwindRainbowSettings
@@ -17,6 +19,7 @@ import javax.swing.JComponent
 
 class TailwindRainbowSettingsConfigurable(private val project: Project) : SearchableConfigurable {
     private var panel: SettingsPanel? = null
+    private var validators: Disposable? = null
 
     private val forProject get() = TailwindRainbowProjectSettings.getInstance(project)
 
@@ -37,6 +40,8 @@ class TailwindRainbowSettingsConfigurable(private val project: Project) : Search
         created.write(currentForm())
         created.showProblems(settings.themes.problems())
         panel = created
+        validators = Disposer.newDisposable("TailwindRainbowFieldValidators")
+        created.component.registerValidators(validators!!)
 
         return created.component
     }
@@ -87,6 +92,8 @@ class TailwindRainbowSettingsConfigurable(private val project: Project) : Search
         }
 
     override fun disposeUIResources() {
+        validators?.let(Disposer::dispose)
+        validators = null
         panel = null
     }
 

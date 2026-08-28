@@ -8,6 +8,8 @@ import dev.tailwindrainbow.intellij.domain.theme.SegmentKind
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class SettingsFormMapperTest {
@@ -44,6 +46,29 @@ class SettingsFormMapperTest {
     @Test
     fun `an empty size field is rejected rather than defaulting silently`() {
         assertIs<FormResult.Invalid>(SettingsFormMapper.toSettings(form(maxFileSize = "")))
+    }
+
+    @Test
+    fun `the size field says what is wrong with it, before Apply is pressed`() {
+        assertNull(maxFileSizeProblem("1000"))
+
+        listOf("", " ", "0", "-1", "lots").forEach {
+            assertNotNull(maxFileSizeProblem(it), "'$it' should be refused")
+        }
+    }
+
+    @Test
+    fun `the form and the field report a bad size in the same words`() {
+        val result = SettingsFormMapper.toSettings(form(maxFileSize = "0"))
+
+        assertIs<FormResult.Invalid>(result)
+        assertEquals(maxFileSizeProblem("0"), result.message, "one rule, stated once")
+    }
+
+    @Test
+    fun `emptying the class identifiers is allowed, and warned about`() {
+        assertNull(classIdentifiersWarning("class"))
+        assertNotNull(classIdentifiersWarning(" "), "silently recognizing nothing is the confusing case")
     }
 
     @Test

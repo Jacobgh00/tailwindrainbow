@@ -31,6 +31,15 @@ sealed interface FormResult {
     data class Invalid(val message: String) : FormResult
 }
 
+fun maxFileSizeProblem(text: String): String? = if (text.toFileSizeOrNull() == null) SIZE_MESSAGE else null
+
+fun classIdentifiersWarning(text: String): String? =
+    if (text.isBlank()) "Nothing will be recognized in attributes such as class=\"…\"" else null
+
+private const val SIZE_MESSAGE = "Maximum file size must be a whole number greater than zero"
+
+private fun String.toFileSizeOrNull(): Int? = trim().toIntOrNull()?.takeIf { it > 0 }
+
 object SettingsFormMapper {
     fun toSettings(form: SettingsForm): FormResult {
         val scan = form.recognition.toScanSettings() ?: return FormResult.Invalid(SIZE_MESSAGE)
@@ -57,10 +66,8 @@ object SettingsFormMapper {
             themes = themes,
         )
 
-    private const val SIZE_MESSAGE = "Maximum file size must be a whole number greater than zero"
-
     private fun RecognitionForm.toScanSettings(): ScanSettings? {
-        val size = maxFileSize.trim().toIntOrNull()?.takeIf { it > 0 } ?: return null
+        val size = maxFileSize.toFileSizeOrNull() ?: return null
 
         return ScanSettings(
             maxFileSize = size,

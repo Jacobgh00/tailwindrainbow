@@ -2,7 +2,8 @@ package dev.tailwindrainbow.intellij.adapter.intellij.settings.ui
 
 import com.intellij.ui.ColorPanel
 import com.intellij.ui.ToolbarDecorator
-import com.intellij.ui.components.JBLabel
+import com.intellij.ui.dsl.builder.Align
+import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.JBUI
 import dev.tailwindrainbow.intellij.application.settings.RowOrigin
@@ -13,19 +14,18 @@ import dev.tailwindrainbow.intellij.application.theme.ThemeSpec
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
 import dev.tailwindrainbow.intellij.domain.theme.SegmentKind
 import dev.tailwindrainbow.intellij.domain.theme.isHexColor
-import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Component
 import java.awt.Font
-import javax.swing.BoxLayout
 import javax.swing.JButton
+import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.JTable
 import javax.swing.ListSelectionModel
 import javax.swing.table.AbstractTableModel
 import javax.swing.table.DefaultTableCellRenderer
 
-class ThemeEditorPanel(private val declaredVariants: () -> Set<String>) : JPanel(BorderLayout()) {
+class ThemeEditorPanel(private val declaredVariants: () -> Set<String>) {
     private var model = ThemeEditorModel(RainbowTheme())
 
     private val tableModel = RowTableModel()
@@ -42,25 +42,21 @@ class ThemeEditorPanel(private val declaredVariants: () -> Set<String>) : JPanel
     private val colorPanel = ColorPanel()
     private val resetButton = JButton("Reset to inherited")
 
-    init {
-        add(
-            JPanel().apply {
-                layout = BoxLayout(this, BoxLayout.Y_AXIS)
-                add(JBLabel("Colours for the selected theme — pick a row, then choose a colour:"))
-                add(JBLabel("A colour unreadable on your editor background is darkened or lightened to suit it."))
-            },
-            BorderLayout.NORTH,
-        )
-        add(tableWithToolbar(), BorderLayout.CENTER)
-        add(
-            JPanel().apply {
-                add(JBLabel("Colour:"))
-                add(colorPanel)
-                add(resetButton)
-            },
-            BorderLayout.SOUTH,
-        )
+    val component: JComponent =
+        panel {
+            row {
+                label("Colours for the selected theme — pick a row, then choose a colour:")
+                    .comment("A colour unreadable on your editor background is darkened or lightened to suit it.")
+            }
+            row { cell(tableWithToolbar()).align(Align.FILL) }.resizableRow()
+            row {
+                label("Colour:")
+                cell(colorPanel)
+                cell(resetButton)
+            }
+        }
 
+    init {
         colorPanel.addActionListener { applySelectedColour() }
         resetButton.addActionListener { resetSelected() }
         table.selectionModel.addListSelectionListener { syncControls() }
