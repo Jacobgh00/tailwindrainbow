@@ -2,7 +2,9 @@ package dev.tailwindrainbow.intellij.adapter.intellij.settings.ui
 
 import com.intellij.openapi.options.ConfigurationException
 import com.intellij.openapi.options.SearchableConfigurable
+import com.intellij.openapi.project.Project
 import dev.tailwindrainbow.intellij.adapter.intellij.highlighting.rehighlightOpenProjects
+import dev.tailwindrainbow.intellij.adapter.intellij.settings.TailwindRainbowProjectSettings
 import dev.tailwindrainbow.intellij.adapter.intellij.settings.TailwindRainbowSettings
 import dev.tailwindrainbow.intellij.application.settings.FormResult
 import dev.tailwindrainbow.intellij.application.settings.SettingsFormMapper
@@ -16,8 +18,10 @@ import javax.swing.JComponent
  * The widgets live in [SettingsPanel] and the validation in [SettingsFormMapper]; this owns only
  * the IDE's `isModified`/`apply`/`reset` lifecycle and the side effects that go with it.
  */
-class TailwindRainbowSettingsConfigurable : SearchableConfigurable {
+class TailwindRainbowSettingsConfigurable(private val project: Project) : SearchableConfigurable {
     private var panel: SettingsPanel? = null
+
+    private val forProject get() = TailwindRainbowProjectSettings.getInstance(project)
 
     override fun getId(): String = "dev.tailwindrainbow.intellij.settings"
 
@@ -32,7 +36,7 @@ class TailwindRainbowSettingsConfigurable : SearchableConfigurable {
                 basePalette = { name -> settings.themes.basePalette(name) },
             )
 
-        created.write(SettingsFormMapper.toForm(settings.current(), settings.themes.overrides()))
+        created.write(currentForm())
         created.showProblems(settings.themes.problems())
         panel = created
 
@@ -44,7 +48,8 @@ class TailwindRainbowSettingsConfigurable : SearchableConfigurable {
         when (val result = currentResult() ?: return false) {
             is FormResult.Valid ->
                 result.settings != TailwindRainbowSettings.getInstance().current() ||
-                    result.themes != TailwindRainbowSettings.getInstance().themes.overrides()
+                    result.themes != TailwindRainbowSettings.getInstance().themes.overrides() ||
+                    result.projectScan != forProject.recognition()
             is FormResult.Invalid -> true
         }
 
@@ -56,6 +61,7 @@ class TailwindRainbowSettingsConfigurable : SearchableConfigurable {
                 refuseIntroducedProblems(result.themes, settings.themes.overrides())
 
                 settings.update(result.settings, result.themes)
+                forProject.update(result.projectScan)
                 panel?.showProblems(settings.themes.problems())
                 rehighlightOpenProjects()
             }
@@ -78,10 +84,14 @@ class TailwindRainbowSettingsConfigurable : SearchableConfigurable {
     }
 
     override fun reset() {
-        val settings = TailwindRainbowSettings.getInstance()
-        panel?.write(SettingsFormMapper.toForm(settings.current(), settings.themes.overrides()))
-        panel?.showProblems(settings.themes.problems())
+        panel?.write(currentForm())
+        panel?.showProblems(TailwindRainbowSettings.getInstance().themes.problems())
     }
+
+    private fun currentForm() =
+        TailwindRainbowSettings.getInstance().let { settings ->
+            SettingsFormMapper.toForm(settings.current(), settings.themes.overrides(), forProject.recognition())
+        }
 
     override fun disposeUIResources() {
         panel = null

@@ -24,7 +24,7 @@ class TailwindRainbowAnnotator : Annotator {
 
         val extension = element.virtualFile?.extension ?: return
 
-        PluginComponents.highlightDocument().highlight(element.text, extension).forEach { segment ->
+        PluginComponents.highlightDocument(element.project).highlight(element.text, extension).forEach { segment ->
             holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
                 .range(TextRange(segment.start, segment.end))
                 .enforcedTextAttributes(segment.style.toTextAttributes())

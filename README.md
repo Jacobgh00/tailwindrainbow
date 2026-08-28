@@ -59,6 +59,12 @@ theme, so leaving with `Esc` changes nothing.
 
 **Settings | Editor | Tailwind Rainbow**
 
+Recognition — what the plugin looks at and how far — can belong to the project instead of the IDE.
+Tick **Use project settings for what is recognized** and those fields are stored in
+`.idea/tailwindRainbow.xml`, which a repository can commit so everyone who opens it recognizes the
+same helpers and file types. The theme and its colors always stay yours: a palette is a preference,
+not a property of the code. Unticking hands the rules back to your IDE-wide settings.
+
 **New…** creates a theme of your own, based on a built-in one. It stores only the colors you change,
 so everything you leave alone keeps following the base theme — including tokens added in later
 plugin versions. **Delete** removes a theme you made; built-in themes cannot be deleted.

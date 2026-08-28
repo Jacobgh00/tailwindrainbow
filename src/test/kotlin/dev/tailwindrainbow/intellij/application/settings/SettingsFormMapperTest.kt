@@ -92,6 +92,42 @@ class SettingsFormMapperTest {
     }
 
     @Test
+    fun `the project's own rules are read out separately from the user's`() {
+        val theirs = recognition(classFunctions = "twcx", supportedExtensions = "templ")
+
+        val result = SettingsFormMapper.toSettings(form(projectRecognition = theirs))
+
+        assertIs<FormResult.Valid>(result)
+        assertEquals(setOf("twcx"), result.projectScan?.classFunctions)
+        assertEquals(setOf("cn"), result.settings.scan.classFunctions, "the user's own rules are left alone")
+    }
+
+    @Test
+    fun `a project that follows the user stores nothing of its own`() {
+        val result = SettingsFormMapper.toSettings(form())
+
+        assertIs<FormResult.Valid>(result)
+        assertEquals(null, result.projectScan)
+    }
+
+    @Test
+    fun `a size the project cannot use is rejected just as the user's would be`() {
+        val result = SettingsFormMapper.toSettings(form(projectRecognition = recognition(maxFileSize = "none")))
+
+        assertIs<FormResult.Invalid>(result)
+    }
+
+    @Test
+    fun `project rules round trip back into the form`() {
+        val theirs = ScanSettings(classFunctions = setOf("twcx"))
+        val settings = HighlightSettings(enabled = true, themeName = "default", scan = ScanSettings())
+
+        val form = SettingsFormMapper.toForm(settings, projectScan = theirs)
+
+        assertEquals("twcx", form.projectRecognition?.classFunctions)
+    }
+
+    @Test
     fun `palettes round trip back into the form`() {
         val mine = ThemeSpec("synthwave", listOf(StyleEntry(SegmentKind.ARBITRARY, "", "#101010", 400)))
         val settings = HighlightSettings(enabled = true, themeName = "synthwave", scan = ScanSettings())
@@ -103,9 +139,19 @@ class SettingsFormMapperTest {
         maxFileSize: String = "1000",
         classFunctions: String = "cn",
         supportedExtensions: String = "html",
+        projectRecognition: RecognitionForm? = null,
     ) = SettingsForm(
         enabled = true,
         themeName = "default",
+        recognition = recognition(maxFileSize, classFunctions, supportedExtensions),
+        projectRecognition = projectRecognition,
+    )
+
+    private fun recognition(
+        maxFileSize: String = "1000",
+        classFunctions: String = "cn",
+        supportedExtensions: String = "html",
+    ) = RecognitionForm(
         maxFileSize = maxFileSize,
         classIdentifiers = "class",
         classFunctions = classFunctions,

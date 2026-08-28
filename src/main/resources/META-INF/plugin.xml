@@ -28,7 +28,7 @@
                 language=""
                 implementationClass="dev.tailwindrainbow.intellij.adapter.intellij.highlighting.TailwindRainbowAnnotator"/>
 
-        <applicationConfigurable
+        <projectConfigurable
                 parentId="editor"
                 instance="dev.tailwindrainbow.intellij.adapter.intellij.settings.ui.TailwindRainbowSettingsConfigurable"
                 id="dev.tailwindrainbow.intellij.settings"

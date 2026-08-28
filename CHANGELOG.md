@@ -32,6 +32,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Recognition of framework class bindings: `:class`, `v-bind:class`, and `x-bind:class`. The value
   of a bound attribute is treated as an expression, so class names are read from the strings inside
   it rather than from the surrounding braces, brackets, and conditions.
+- Project-level recognition settings. A project can keep its own class identifiers, helper
+  functions, template tags, ignored modifiers, file extensions, and maximum file size in
+  `.idea/tailwindRainbow.xml` for a repository to share, while the theme stays with the user.
 - A **Select Tailwind Rainbow Theme** action, found through Find Action, that switches themes
   without opening settings and previews each one in the editor while the list is open.
 - A `dev.tailwindrainbow.themeContributor` extension point, so other plugins can ship themes. A

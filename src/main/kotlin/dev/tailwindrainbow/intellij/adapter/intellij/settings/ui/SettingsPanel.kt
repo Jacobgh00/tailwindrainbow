@@ -5,7 +5,6 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.MutableCollectionComboBoxModel
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBLabel
-import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.FormBuilder
 import dev.tailwindrainbow.intellij.application.settings.SettingsForm
 import dev.tailwindrainbow.intellij.application.theme.ThemeProblem
@@ -37,12 +36,7 @@ class SettingsPanel(
     private val newTheme = JButton("New…")
     private val deleteTheme = JButton("Delete")
     private val problems = JPanel().apply { layout = BoxLayout(this, BoxLayout.Y_AXIS) }
-    private val maxFileSize = JBTextField()
-    private val classIdentifiers = JBTextField()
-    private val classFunctions = JBTextField()
-    private val templateTags = JBTextField()
-    private val ignoredModifiers = JBTextField()
-    private val supportedExtensions = JBTextField()
+    private val recognition = RecognitionPanel()
 
     /** The theme the editor is showing, which is not always the selected one — see [park]. */
     private var editing = ""
@@ -52,13 +46,8 @@ class SettingsPanel(
         FormBuilder.createFormBuilder()
             .addComponent(enabled)
             .addLabeledComponent(JBLabel("Theme:"), themeChooser())
-            .addLabeledComponent(JBLabel("Maximum file size:"), maxFileSize)
             .addSeparator()
-            .addLabeledComponent(JBLabel("Class identifiers:"), classIdentifiers)
-            .addLabeledComponent(JBLabel("Class functions:"), classFunctions)
-            .addLabeledComponent(JBLabel("Template tags:"), templateTags)
-            .addLabeledComponent(JBLabel("Ignored prefix modifiers:"), ignoredModifiers)
-            .addLabeledComponent(JBLabel("Supported file extensions:"), supportedExtensions)
+            .addComponent(recognition.component)
             .addSeparator()
             .addComponent(problems)
             .addComponentFillVertically(themeEditor, 0)
@@ -89,23 +78,14 @@ class SettingsPanel(
         SettingsForm(
             enabled = enabled.isSelected,
             themeName = selectedThemeName(),
-            maxFileSize = maxFileSize.text,
-            classIdentifiers = classIdentifiers.text,
-            classFunctions = classFunctions.text,
-            templateTags = templateTags.text,
-            ignoredPrefixModifiers = ignoredModifiers.text,
-            supportedExtensions = supportedExtensions.text,
+            recognition = recognition.applicationRules(),
+            projectRecognition = recognition.projectRules(),
             themes = park(),
         )
 
     fun write(form: SettingsForm) {
         enabled.isSelected = form.enabled
-        maxFileSize.text = form.maxFileSize
-        classIdentifiers.text = form.classIdentifiers
-        classFunctions.text = form.classFunctions
-        templateTags.text = form.templateTags
-        ignoredModifiers.text = form.ignoredPrefixModifiers
-        supportedExtensions.text = form.supportedExtensions
+        recognition.show(form.recognition, form.projectRecognition)
 
         themes = form.themes
         editing = ""
