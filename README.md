@@ -76,6 +76,10 @@ as long as it reads as one: `buttonClasses` and `cardClassName` are recognized, 
 Each list is comma-separated. Editing a color opens a color picker; **Reset** returns a single
 entry to its theme value without discarding your other overrides.
 
+If a stored theme holds an entry the plugin cannot use — a color that is not `#RRGGBB`, say, after
+the settings file was edited by hand — it is listed above the token table with what is wrong. The
+entry is skipped rather than applied, and its row stays in the table so it can be reset or removed.
+
 The token table lists what the selected theme colors, grouped by section. Use **+** to add a token,
 choosing whether it matches a variant prefix (`hover`, `focus-visible`, `min-*`) or a base class
 (`bg-*`, `text-lg`); patterns may use `*` as a wildcard, and the most specific pattern wins — a

@@ -30,13 +30,19 @@ data class TextStyle(
     val enabled: Boolean = true,
 ) {
     init {
-        require(HEX_COLOR.matches(color)) { "Color must use #RRGGBB format: $color" }
-    }
-
-    private companion object {
-        val HEX_COLOR = Regex("^#[0-9a-fA-F]{6}$")
+        require(color.isHexColor()) { "Color must use #RRGGBB format: $color" }
     }
 }
+
+private val HEX_COLOR = Regex("^#[0-9a-fA-F]{6}$")
+
+/**
+ * The one colour format the plugin accepts.
+ *
+ * Stated once because three layers ask the same question: the model enforcing its invariant, the
+ * parser reporting what it had to drop, and the settings screen deciding what it can paint.
+ */
+fun String.isHexColor(): Boolean = HEX_COLOR.matches(this)
 
 data class RainbowTheme(
     val prefix: Map<String, TextStyle> = emptyMap(),

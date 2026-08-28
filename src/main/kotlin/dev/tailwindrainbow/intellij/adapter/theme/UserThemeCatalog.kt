@@ -1,6 +1,7 @@
 package dev.tailwindrainbow.intellij.adapter.theme
 
 import dev.tailwindrainbow.intellij.application.port.ThemeCatalog
+import dev.tailwindrainbow.intellij.application.theme.ThemeProblem
 import dev.tailwindrainbow.intellij.application.theme.ThemeRepository
 import dev.tailwindrainbow.intellij.application.theme.ThemeSpec
 import dev.tailwindrainbow.intellij.application.theme.UserThemeSource
@@ -42,5 +43,6 @@ class UserThemeCatalog : ThemeCatalog {
      */
     fun builtIn(name: String): RainbowTheme = BuiltInThemes.themes()[name] ?: BuiltInThemes.default
 
-    fun problems(): List<String> = source.problems.map { "${it.themeName}: ${it.key} — ${it.message}" }
+    /** What the stored themes hold that the plugin cannot use. Raw: the settings screen words them. */
+    fun problems(): List<ThemeProblem> = source.problems
 }

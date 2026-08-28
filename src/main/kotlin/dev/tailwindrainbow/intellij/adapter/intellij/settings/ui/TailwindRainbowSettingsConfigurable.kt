@@ -7,6 +7,10 @@ import com.intellij.openapi.project.ProjectManager
 import dev.tailwindrainbow.intellij.adapter.intellij.settings.TailwindRainbowSettings
 import dev.tailwindrainbow.intellij.application.settings.FormResult
 import dev.tailwindrainbow.intellij.application.settings.SettingsFormMapper
+import dev.tailwindrainbow.intellij.application.theme.ThemeProblem
+import dev.tailwindrainbow.intellij.application.theme.ThemeSpec
+import dev.tailwindrainbow.intellij.application.theme.describe
+import dev.tailwindrainbow.intellij.application.theme.problemsIntroducedBy
 import javax.swing.JComponent
 
 /**
@@ -30,6 +34,7 @@ class TailwindRainbowSettingsConfigurable : SearchableConfigurable {
             )
 
         created.write(SettingsFormMapper.toForm(settings.current(), settings.themes.overrides()))
+        created.showProblems(settings.themes.problems())
         panel = created
 
         return created.component
@@ -48,7 +53,11 @@ class TailwindRainbowSettingsConfigurable : SearchableConfigurable {
         when (val result = currentResult() ?: return) {
             is FormResult.Invalid -> throw ConfigurationException(result.message)
             is FormResult.Valid -> {
-                TailwindRainbowSettings.getInstance().update(result.settings, result.themes)
+                val settings = TailwindRainbowSettings.getInstance()
+                refuseIntroducedProblems(result.themes, settings.themes.overrides())
+
+                settings.update(result.settings, result.themes)
+                panel?.showProblems(settings.themes.problems())
                 ProjectManager.getInstance().openProjects.forEach { project ->
                     DaemonCodeAnalyzer.getInstance(project).restart()
                 }
@@ -56,9 +65,25 @@ class TailwindRainbowSettingsConfigurable : SearchableConfigurable {
         }
     }
 
+    /**
+     * Entries already stored broken are listed rather than refused, so unrelated changes can still
+     * be saved; only what this edit would add is worth stopping.
+     */
+    private fun refuseIntroducedProblems(
+        pending: List<ThemeSpec>,
+        stored: List<ThemeSpec>,
+    ) {
+        val introduced = problemsIntroducedBy(pending, stored)
+
+        if (introduced.isNotEmpty()) {
+            throw ConfigurationException(introduced.joinToString("\n", transform = ThemeProblem::describe))
+        }
+    }
+
     override fun reset() {
         val settings = TailwindRainbowSettings.getInstance()
         panel?.write(SettingsFormMapper.toForm(settings.current(), settings.themes.overrides()))
+        panel?.showProblems(settings.themes.problems())
     }
 
     override fun disposeUIResources() {

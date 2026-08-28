@@ -141,6 +141,17 @@ class ThemeEditorModelTest {
     }
 
     @Test
+    fun `a malformed stored entry still appears as a row, so it can be repaired`() {
+        val broken =
+            model(ThemeSpec("mine", listOf(StyleEntry(SegmentKind.PREFIX, "hover", "not-a-colour", 700))))
+
+        val row = broken.rows().first { it.key == "hover" }
+
+        assertEquals("not-a-colour", row.style.color)
+        assertEquals(RowOrigin.OVERRIDDEN, row.origin, "hiding it would leave the user nothing to reset")
+    }
+
+    @Test
     fun `arbitrary and important carry a readable label instead of an empty key`() {
         val labels = model().rows().map { it.label }
 

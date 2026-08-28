@@ -1,5 +1,6 @@
 package dev.tailwindrainbow.intellij.adapter.intellij.settings.ui
 
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.MutableCollectionComboBoxModel
 import com.intellij.ui.components.JBCheckBox
@@ -7,12 +8,16 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.FormBuilder
 import dev.tailwindrainbow.intellij.application.settings.SettingsForm
+import dev.tailwindrainbow.intellij.application.theme.ThemeProblem
 import dev.tailwindrainbow.intellij.application.theme.ThemeSpec
+import dev.tailwindrainbow.intellij.application.theme.describe
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
 import java.awt.FlowLayout
+import javax.swing.BoxLayout
 import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JPanel
+import javax.swing.SwingConstants
 
 /**
  * Never validates, never persists, never touches the highlighter — that is the configurable's job.
@@ -31,6 +36,7 @@ class SettingsPanel(
     private val theme = ComboBox(themeNameModel)
     private val newTheme = JButton("New…")
     private val deleteTheme = JButton("Delete")
+    private val problems = JPanel().apply { layout = BoxLayout(this, BoxLayout.Y_AXIS) }
     private val maxFileSize = JBTextField()
     private val classIdentifiers = JBTextField()
     private val classFunctions = JBTextField()
@@ -54,6 +60,7 @@ class SettingsPanel(
             .addLabeledComponent(JBLabel("Ignored prefix modifiers:"), ignoredModifiers)
             .addLabeledComponent(JBLabel("Supported file extensions:"), supportedExtensions)
             .addSeparator()
+            .addComponent(problems)
             .addComponentFillVertically(themeEditor, 0)
             .panel
 
@@ -61,6 +68,21 @@ class SettingsPanel(
         theme.addActionListener { showSelectedTheme() }
         newTheme.addActionListener { createTheme() }
         deleteTheme.addActionListener { deleteSelectedTheme() }
+    }
+
+    /**
+     * Lists entries the stored themes hold that the plugin cannot use.
+     *
+     * They are dropped when a theme is read, so without this the colour simply would not appear and
+     * nothing would say why. Shown rather than thrown: the user did not necessarily cause them, and
+     * the rest of the screen still works.
+     */
+    fun showProblems(found: List<ThemeProblem>) {
+        problems.removeAll()
+        found.forEach { problems.add(JBLabel(it.describe(), AllIcons.General.Warning, SwingConstants.LEFT)) }
+        problems.isVisible = found.isNotEmpty()
+        problems.revalidate()
+        problems.repaint()
     }
 
     fun read(): SettingsForm =

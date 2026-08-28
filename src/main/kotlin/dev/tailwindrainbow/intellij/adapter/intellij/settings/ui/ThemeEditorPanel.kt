@@ -12,6 +12,7 @@ import dev.tailwindrainbow.intellij.application.settings.displayName
 import dev.tailwindrainbow.intellij.application.theme.ThemeSpec
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
 import dev.tailwindrainbow.intellij.domain.theme.SegmentKind
+import dev.tailwindrainbow.intellij.domain.theme.isHexColor
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Component
@@ -141,7 +142,7 @@ class ThemeEditorPanel : JPanel(BorderLayout()) {
         val row = selectedRow()
         colorPanel.isEnabled = row != null
         resetButton.isEnabled = row?.origin == RowOrigin.OVERRIDDEN
-        colorPanel.selectedColor = row?.style?.color?.let(Color::decode)
+        colorPanel.selectedColor = row?.style?.color?.takeIf(String::isHexColor)?.let(Color::decode)
     }
 
     private inner class RowTableModel : AbstractTableModel() {
@@ -200,7 +201,7 @@ class ThemeEditorPanel : JPanel(BorderLayout()) {
             column: Int,
         ): Component =
             super.getTableCellRendererComponent(table, value, selected, focused, row, column).also {
-                it.background = (value as? String)?.let(Color::decode) ?: table.background
+                it.background = (value as? String)?.takeIf(String::isHexColor)?.let(Color::decode) ?: table.background
                 it.foreground = it.background
             }
     }

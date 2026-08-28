@@ -4,6 +4,7 @@ import dev.tailwindrainbow.intellij.domain.theme.FontWeight
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
 import dev.tailwindrainbow.intellij.domain.theme.SegmentKind
 import dev.tailwindrainbow.intellij.domain.theme.TextStyle
+import dev.tailwindrainbow.intellij.domain.theme.isHexColor
 
 data class ParsedTheme(
     val name: String,
@@ -50,7 +51,7 @@ object ThemeParser {
     }
 
     private fun StyleEntry.toTextStyle(): TextStyle? {
-        if (!HEX_COLOR.matches(color)) return null
+        if (!color.isHexColor()) return null
         if (!FontWeight.isValid(fontWeight)) return null
         if (section.isKeyed && key.isBlank()) return null
 
@@ -60,7 +61,7 @@ object ThemeParser {
     private fun StyleEntry.problem(themeName: String): ThemeProblem {
         val reason =
             when {
-                !HEX_COLOR.matches(color) -> "color must use #RRGGBB format, was '$color'"
+                !color.isHexColor() -> "color must use #RRGGBB format, was '$color'"
                 !FontWeight.isValid(fontWeight) ->
                     "font weight must be one of ${FontWeight.ALL.sorted()}, was $fontWeight"
                 else -> "a ${section.name.lowercase()} entry needs a key"
@@ -68,6 +69,4 @@ object ThemeParser {
 
         return ThemeProblem(themeName, section, key, reason)
     }
-
-    private val HEX_COLOR = Regex("^#[0-9a-fA-F]{6}$")
 }

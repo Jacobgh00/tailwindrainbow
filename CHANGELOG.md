@@ -32,6 +32,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Recognition of framework class bindings: `:class`, `v-bind:class`, and `x-bind:class`. The value
   of a bound attribute is treated as an expression, so class names are read from the strings inside
   it rather than from the surrounding braces, brackets, and conditions.
+- Reporting of theme entries the plugin cannot use. They were dropped silently before, so a color
+  that never appeared had nothing to explain it; they are now listed in the settings screen, and an
+  edit that would add a new one is refused with the reason.
 - Themes of your own. A new theme is based on a built-in one and stores only the colors you change,
   so the rest keeps following its base.
 - Switching a single theme entry off. The token keeps its color and can be switched back on, which
