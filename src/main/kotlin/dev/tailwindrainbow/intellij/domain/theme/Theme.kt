@@ -37,6 +37,15 @@ private val HEX_COLOR = Regex("^#[0-9a-fA-F]{6}$")
 
 fun String.isHexColor(): Boolean = HEX_COLOR.matches(this)
 
+fun String.toHexColorOrNull(): String? {
+    val digits = trim().removePrefix("#").lowercase()
+    val expanded = if (digits.length == SHORTHAND_DIGITS) digits.flatMap { listOf(it, it) }.joinToString("") else digits
+
+    return "#$expanded".takeIf(String::isHexColor)
+}
+
+private const val SHORTHAND_DIGITS = 3
+
 data class RainbowTheme(
     val prefix: Map<String, TextStyle> = emptyMap(),
     val base: Map<String, TextStyle> = emptyMap(),

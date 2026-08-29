@@ -46,7 +46,7 @@ class ThemeEditorModel private constructor(
         overrides = overrides?.entries.orEmpty().associateBy { EntryKey(it.section, it.key) },
     )
 
-    fun rows(): List<ThemeEditorRow> {
+    fun rows(section: SegmentKind? = null): List<ThemeEditorRow> {
         val inheritedEntries = inherited.entries()
         val addedKeys = overrides.keys - inheritedEntries.map { it.first }.toSet()
 
@@ -54,7 +54,7 @@ class ThemeEditorModel private constructor(
             inheritedEntries.map { (entry, style) -> rowOf(entry, overrides[entry], style) } +
                 addedKeys.map { rowOf(it, overrides[it], inheritedStyle = null) }
 
-        return rows.sortedBy(ThemeEditorRow::section)
+        return rows.filter { section == null || it.section == section }.sortedBy(ThemeEditorRow::section)
     }
 
     fun holds(

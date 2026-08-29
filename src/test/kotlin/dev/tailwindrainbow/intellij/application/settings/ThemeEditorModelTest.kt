@@ -141,6 +141,15 @@ class ThemeEditorModelTest {
     }
 
     @Test
+    fun `rows can be narrowed to one section`() {
+        val model = model().add(SegmentKind.BASE, "text-*")
+
+        assertEquals(listOf("hover", "focus"), model.rows(SegmentKind.PREFIX).map { it.key })
+        assertEquals(listOf("bg-*", "text-*"), model.rows(SegmentKind.BASE).map { it.key })
+        assertEquals(6, model.rows().size, "asking for everything still returns everything")
+    }
+
+    @Test
     fun `a malformed stored entry still appears as a row, so it can be repaired`() {
         val broken =
             model(ThemeSpec("mine", listOf(StyleEntry(SegmentKind.PREFIX, "hover", "not-a-colour", 700))))
