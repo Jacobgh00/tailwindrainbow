@@ -14,4 +14,4 @@ internal fun TextStyle.toTextAttributes(background: Color): TextAttributes =
         fontType = if (fontWeight.value >= BOLD_WEIGHT_THRESHOLD) Font.BOLD else Font.PLAIN
     }
 
-private fun Color.toHex(): String = "#%02x%02x%02x".format(red, green, blue)
+internal fun Color.toHex(): String = "#%02x%02x%02x".format(red, green, blue)

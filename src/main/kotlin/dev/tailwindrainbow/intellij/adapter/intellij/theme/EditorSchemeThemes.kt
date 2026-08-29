@@ -3,12 +3,12 @@ package dev.tailwindrainbow.intellij.adapter.intellij.theme
 import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.editor.colors.EditorColorsScheme
 import com.intellij.openapi.editor.colors.TextAttributesKey
+import dev.tailwindrainbow.intellij.adapter.intellij.highlighting.toHex
 import dev.tailwindrainbow.intellij.adapter.theme.Palette
 import dev.tailwindrainbow.intellij.application.port.ThemeSource
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
 import dev.tailwindrainbow.intellij.domain.theme.lightened
 import dev.tailwindrainbow.intellij.domain.theme.shades
-import java.awt.Color
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors as Syntax
 
 object EditorSchemeThemes : ThemeSource {
@@ -54,6 +54,4 @@ private class SchemeColours(private val scheme: EditorColorsScheme) {
     fun of(vararg keys: TextAttributesKey): String =
         keys.firstNotNullOfOrNull { scheme.getAttributes(it)?.foregroundColor }?.toHex()
             ?: scheme.defaultForeground.toHex()
-
-    private fun Color.toHex(): String = "#%02x%02x%02x".format(red, green, blue)
 }

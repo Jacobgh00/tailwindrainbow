@@ -6,6 +6,7 @@ import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.ColorIcon
 import com.intellij.util.ui.JBUI
 import dev.tailwindrainbow.intellij.adapter.intellij.TailwindRainbowBundle.message
+import dev.tailwindrainbow.intellij.adapter.intellij.highlighting.toHex
 import dev.tailwindrainbow.intellij.adapter.intellij.highlighting.toTextAttributes
 import dev.tailwindrainbow.intellij.application.settings.RowStyle
 import dev.tailwindrainbow.intellij.application.settings.ThemeEditorRow
@@ -24,10 +25,6 @@ import javax.swing.ListSelectionModel
 import javax.swing.table.AbstractTableModel
 import javax.swing.table.DefaultTableCellRenderer
 
-/**
- * The theme, shown as itself: every token is drawn in the colour it assigns, and the colour is chosen
- * in the row rather than in a control somewhere below the table.
- */
 internal class TokenTable(
     private val rowsOf: () -> List<ThemeEditorRow>,
     private val restyle: (ThemeEditorRow, RowStyle) -> Unit,
@@ -158,10 +155,6 @@ internal class TokenTable(
             }
     }
 
-    /**
-     * Paints the token in the colour that row assigns, adapted to whatever it is sitting on the way the
-     * editor adapts it — so the table cannot disagree with the file.
-     */
     private inner class TokenRenderer : DefaultTableCellRenderer() {
         override fun getTableCellRendererComponent(
             table: JTable,
@@ -205,8 +198,6 @@ internal class TokenTable(
                 )
 
         val SWITCHES = setOf(BOLD, ENABLED)
-
-        fun Color.toHex(): String = "#%02x%02x%02x".format(red, green, blue)
 
         fun RowStyle.painted(background: Color): Color? =
             color
