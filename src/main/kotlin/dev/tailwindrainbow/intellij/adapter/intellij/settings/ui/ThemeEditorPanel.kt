@@ -165,10 +165,12 @@ class ThemeEditorPanel(private val declaredVariants: () -> Set<String>) {
         tableModel.fireTableDataChanged()
     }
 
-    private fun select(
+    fun select(
         section: SegmentKind,
         key: String,
     ) {
+        sectionFilter.item = null
+
         val index = shownRows.indexOfFirst { it.section == section && it.key == key }
         if (index < 0) return
 

@@ -15,7 +15,7 @@ class HighlightDocumentService(
         fileExtension: String,
     ): List<HighlightSegment> {
         val current = settings.current()
-        if (!current.enabled) return emptyList()
+        if (current.statusFor(fileExtension, text.length) != ScanStatus.SCANNED) return emptyList()
 
         return scanner.scan(
             text = text,

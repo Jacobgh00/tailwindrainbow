@@ -36,10 +36,17 @@
                 id="dev.tailwindrainbow.intellij.settings"
                 bundle="messages.TailwindRainbowBundle"
                 key="configurable.displayName"/>
+
+        <statusBarWidgetFactory id="dev.tailwindrainbow.statusBar"
+                                implementation="dev.tailwindrainbow.intellij.adapter.intellij.statusbar.TailwindStatusWidgetFactory"
+                                order="after positionWidget"/>
     </extensions>
 
     <actions>
         <action id="dev.tailwindrainbow.SelectTheme"
                 class="dev.tailwindrainbow.intellij.adapter.intellij.actions.SelectThemeAction"/>
+
+        <action id="dev.tailwindrainbow.ExplainColouring"
+                class="dev.tailwindrainbow.intellij.adapter.intellij.actions.ExplainColouringAction"/>
     </actions>
 </idea-plugin>
