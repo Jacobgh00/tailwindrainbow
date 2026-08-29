@@ -29,6 +29,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Adding and removing theme tokens, so a variant no built-in theme lists can be colored. Base-class
   patterns such as `bg-*` can be added too, coloring the utility itself alongside its variants;
   built-in themes ship none, so this stays opt-in.
+- The theme editor shows a live preview: a sample class list painted with the theme as you edit it,
+  including the adjustment that keeps colors readable on your editor background. The sample is
+  editable, so classes pasted from your own code can be tried against the palette; nothing typed
+  there is saved, and **Restore sample** brings the original back.
 - A color, a bold setting, and an on/off switch per token. Switching one off leaves it uncolored
   while keeping the color you picked, which is the difference between silencing a variant and
   deleting it.

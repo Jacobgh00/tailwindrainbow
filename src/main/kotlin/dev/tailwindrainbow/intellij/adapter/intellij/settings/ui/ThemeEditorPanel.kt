@@ -3,6 +3,7 @@ package dev.tailwindrainbow.intellij.adapter.intellij.settings.ui
 import com.intellij.ui.ColorPanel
 import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.dsl.builder.Align
+import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.JBUI
@@ -40,6 +41,7 @@ class ThemeEditorPanel(private val declaredVariants: () -> Set<String>) {
             columnModel.getColumn(TOKEN).cellRenderer = TokenRenderer()
         }
 
+    private val preview = ThemePreviewPane()
     private val colorPanel = ColorPanel()
     private val resetButton = JButton(message("editor.reset"))
 
@@ -55,9 +57,18 @@ class ThemeEditorPanel(private val declaredVariants: () -> Set<String>) {
                 cell(colorPanel)
                 cell(resetButton)
             }
+            row {
+                cell(preview.component)
+                    .align(AlignX.FILL)
+                    .comment(message("editor.preview.comment"))
+            }
+            row {
+                link(message("editor.preview.restore")) { preview.restoreSample() }
+            }
         }
 
     init {
+        tableModel.addTableModelListener { preview.show(model.palette()) }
         colorPanel.addActionListener { applySelectedColour() }
         resetButton.addActionListener { resetSelected() }
         table.selectionModel.addListSelectionListener { syncControls() }
