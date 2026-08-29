@@ -2,16 +2,35 @@
 <idea-plugin>
     <id>dev.tailwindrainbow</id>
     <name>Tailwind Rainbow</name>
-    <vendor url="https://github.com/Jacobgh00/tailwindRainbow">Jacobgh00</vendor>
+    <vendor url="https://github.com/Jacobgh00/tailwindrainbow">Jacobgh00</vendor>
 
     <description><![CDATA[
-        Colorizes Tailwind CSS variant prefixes so long class lists stay readable.
-        <p>Each variant — <code>hover</code>, <code>focus</code>, <code>sm</code>, <code>dark</code>,
-        arbitrary values such as <code>[&amp;>*]</code>, and the <code>!</code> important modifier —
-        is painted in its own color, making the structure of a class list visible at a glance.</p>
-        <p>Works in HTML, JSX/TSX, Vue, Svelte, Astro, PHP, and in CSS <code>@apply</code> directives.
-        Colors, themes, and the recognized attributes, helper functions, and file types are configurable
-        under <b>Settings | Editor | Tailwind Rainbow</b>.</p>
+        Colors Tailwind CSS variant prefixes so a long class list stays readable.
+        <p>Every variant is painted in its own color, with related variants sharing one, so the
+        structure of a class list is visible at a glance instead of having to be read word by word:
+        <code>hover</code>, <code>focus</code>, <code>sm</code>, <code>dark</code>, container queries
+        such as <code>@md</code>, attribute variants such as <code>data-[state=open]</code>,
+        arbitrary variants such as <code>[&amp;>*]</code>, and the <code>!</code> important modifier
+        wherever Tailwind allows it.</p>
+        <p><b>Where it reads class names.</b> Class attributes and framework bindings
+        (<code>class</code>, <code>className</code>, <code>:class</code>, <code>v-bind:class</code>,
+        <code>x-bind:class</code>), class helper functions (<code>cn</code>, <code>clsx</code>,
+        <code>cva</code>, <code>twMerge</code>, …), tagged templates including
+        <code>styled.div`…`</code>, values assigned to a class-shaped name, and CSS
+        <code>@apply</code> directives. Out of the box that covers HTML, JSX/TSX, Vue, Svelte, Astro,
+        PHP and stylesheets — and the list of file types is a setting rather than a promise.</p>
+        <p><b>What you can change.</b> Four themes ship: two decorative ones, a palette built on the
+        Okabe–Ito colors so the variant families stay apart for color-blind readers, and one that
+        takes its colors from your editor's own syntax scheme and follows it when you switch. Build
+        your own on top of any of them — pick colors in the table, add variants no theme lists, switch
+        entries off — or import a theme from the VS Code Tailwind Rainbow extension. Which attributes,
+        helper functions and file types are scanned is configurable, and a project can keep its own
+        answers and commit them. Colors that would not contrast with your editor background are
+        adjusted until they do.</p>
+        <p><b>What it deliberately does not do.</b> It does not sort, rewrite or complete class names,
+        and it does not color utility classes out of the box: variants stop standing out once
+        everything else is colored too, so base-class coloring is something you opt into.</p>
+        <p>Everything lives under <b>Settings | Editor | Tailwind Rainbow</b>.</p>
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>

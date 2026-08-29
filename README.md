@@ -27,10 +27,15 @@ green              teal          purple   slate            coral        red
   `@apply` directive ends where CSS says it does rather than at the end of a line, and the built-in
   themes color what v4 added — container queries, `data-*`, `aria-*`, `supports-*`, `nth-*`, `open`,
   `inert` and `starting`.
-- **Two built-in themes** — `default` and `synthwave` — plus any number of your own, each started
-  from one of them. Both color every variant Tailwind documents, with related variants sharing a
-  color: `focus-visible` is the color of `focus`, and every pointer and motion query is the color of
-  `dark`.
+- **Four built-in themes** — `default`, `synthwave`, `colour-blind` and `editor scheme` — plus any
+  number of your own, each started from one of them. Every declared theme colors every variant
+  Tailwind documents, with related variants sharing a color: `focus-visible` is the color of `focus`,
+  and every pointer and motion query is the color of `dark`.
+- **A palette for color-blind readers.** `colour-blind` is built on the Okabe–Ito colors, one hue per
+  variant family, and a test simulates protanopia, deuteranopia and tritanopia to hold the families
+  apart.
+- **A theme that follows your editor.** `editor scheme` takes its colors from the IDE's own syntax
+  colors — keyword, string, number, metadata — and recomputes when you switch color scheme.
 - **User-defined colors.** Pick a color for any variant with a color picker, toggle bold, or switch
   an entry off so that variant is left alone. Overrides are stored per entry, so a theme you
   customize keeps inheriting everything you did not touch.
@@ -75,6 +80,10 @@ would rather not know.
 **Explain Tailwind Colouring at Caret**, also through Find Action, says which theme entry colours the
 class under the caret — useful when a wildcard matched something unexpected, or when a variant is not
 colored and you want to know whether the theme lists it at all.
+
+**Copy Tailwind Rainbow Diagnostics** puts the plugin version, the IDE build, the theme in use, the
+recognition rules and whether the current file was scanned — with the reason when it was not — on the
+clipboard. It is the whole content of a useful bug report in one paste.
 
 The status bar shows the active theme and opens the same chooser when clicked. When a file is not
 being colored it says so there instead of naming a theme, and its tooltip gives the reason — the
