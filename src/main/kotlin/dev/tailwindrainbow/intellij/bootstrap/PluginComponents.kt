@@ -1,5 +1,6 @@
 package dev.tailwindrainbow.intellij.bootstrap
 
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import dev.tailwindrainbow.intellij.adapter.intellij.settings.TailwindRainbowProjectSettings
 import dev.tailwindrainbow.intellij.adapter.intellij.settings.TailwindRainbowSettings
@@ -15,6 +16,7 @@ object PluginComponents {
         return HighlightDocumentService(
             settings = { application.current().withProjectRecognition(forProject.recognition()) },
             themes = application,
+            cancellation = { ProgressManager.checkCanceled() },
         )
     }
 }

@@ -1,11 +1,13 @@
 package dev.tailwindrainbow.intellij.application.highlight
 
+import dev.tailwindrainbow.intellij.application.port.Cancellation
 import dev.tailwindrainbow.intellij.domain.highlight.HighlightSegment
 import dev.tailwindrainbow.intellij.domain.theme.FontWeight
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
 import dev.tailwindrainbow.intellij.domain.theme.TextStyle
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class TailwindDocumentScannerTest {
@@ -158,6 +160,19 @@ class TailwindDocumentScannerTest {
     }
 
     @Test
+    fun `an identifier a user configured is still recognised, whatever its shape`() {
+        val settings = ScanSettings(classIdentifiers = setOf("wrapper", "wrapperClasses", "tw"))
+        val source = "<div wrapper=\"hover:bg-blue-500\"></div>"
+        val nested = "const wrapperClasses = 'lg:text-xl'"
+
+        assertEquals(
+            listOf("hover:bg-blue-500"),
+            scanner.scan(source, "html", settings, theme).map { it.sliceOf(source) },
+        )
+        assertEquals(listOf("lg:text-xl"), scanner.scan(nested, "ts", settings, theme).map { it.sliceOf(nested) })
+    }
+
+    @Test
     fun `does not colour an unrelated string that merely looks like Tailwind`() {
         val source = "const documentation = 'hover:bg-blue-500'"
 
@@ -277,11 +292,29 @@ class TailwindDocumentScannerTest {
         assertTrue(scanner.scan("<div title=\"hover:block\"></div>", "html", settings, theme).isEmpty())
     }
 
+    @Test
+    fun `a long scan can be interrupted part-way rather than only once it has finished`() {
+        val source = "<div class=\"hover:bg-blue-500\"></div>\n".repeat(100)
+        var checks = 0
+        val cancelAfterFirstToken =
+            Cancellation {
+                checks++
+                if (checks == 2) throw ScanCancelled()
+            }
+
+        assertFailsWith<ScanCancelled> {
+            scanner.scan(source, "html", ScanSettings(), theme, cancelAfterFirstToken)
+        }
+        assertTrue(checks < 100, "cancellation must stop the scan, not be noticed after every token was read")
+    }
+
     private fun scan(
         source: String,
         extension: String,
         theme: RainbowTheme = this.theme,
     ): List<HighlightSegment> = scanner.scan(source, extension, ScanSettings(), theme)
 }
+
+private class ScanCancelled : RuntimeException()
 
 private fun HighlightSegment.sliceOf(source: String): String = source.substring(start, end)

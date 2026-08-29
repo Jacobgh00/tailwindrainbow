@@ -8,6 +8,7 @@ internal enum class ClassContent {
 
 internal class ClassContextDetector(private val settings: ScanSettings) {
     private val identifierAlternation = settings.classIdentifiers.identifierPattern()
+    private val identifierWords = settings.classIdentifiers.searchWords()
 
     val attributeAssignment = identifierAlternation?.let { Regex("(?i)$it\\s*=\\s*(?<$QUOTE_GROUP>[\"'])") }
 
@@ -22,17 +23,21 @@ internal class ClassContextDetector(private val settings: ScanSettings) {
     ): ClassContent {
         val precedingText = text.substring((token.start - CONTEXT_WINDOW).coerceAtLeast(0), token.start)
 
-        attributeValue?.find(precedingText)?.let { attribute ->
-            return if (attribute.isBound) ClassContent.EXPRESSION else ClassContent.CLASS_NAMES
+        if (namesAnIdentifier(precedingText)) {
+            attributeValue?.find(precedingText)?.let { attribute ->
+                return if (attribute.isBound) ClassContent.EXPRESSION else ClassContent.CLASS_NAMES
+            }
         }
 
         val holdsClassNames =
-            assignedValue.matchesEndOf(precedingText) ||
+            (namesAnIdentifier(precedingText) && assignedValue.matchesEndOf(precedingText)) ||
                 isTaggedTemplate(precedingText, token) ||
                 isClassHelperArgument(text, token.start)
 
         return if (holdsClassNames) ClassContent.CLASS_NAMES else ClassContent.NONE
     }
+
+    private fun namesAnIdentifier(text: String) = identifierWords.any { text.contains(it, ignoreCase = true) }
 
     private fun isTaggedTemplate(
         precedingText: String,
