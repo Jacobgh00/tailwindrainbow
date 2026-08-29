@@ -8,11 +8,19 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
+import com.intellij.psi.util.CachedValueProvider
+import com.intellij.psi.util.CachedValuesManager
+import com.intellij.psi.util.PsiModificationTracker
 import dev.tailwindrainbow.intellij.application.variants.variantsDeclaredIn
 
 @Service(Service.Level.PROJECT)
 class ProjectVariants(private val project: Project) {
     fun declared(): Set<String> =
+        CachedValuesManager.getManager(project).getCachedValue(project) {
+            CachedValueProvider.Result.create(read(), PsiModificationTracker.MODIFICATION_COUNT)
+        }
+
+    private fun read(): Set<String> =
         ReadAction.compute<Set<String>, RuntimeException> {
             val scope = ProjectScope.getContentScope(project)
 

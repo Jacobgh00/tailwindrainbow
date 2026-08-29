@@ -62,6 +62,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   recognized attributes, functions, template tags, ignored prefix modifiers, and file extensions.
 - Project-level recognition settings. A project can keep its own answers in
   `.idea/tailwindRainbow.xml` for a repository to share, while the theme stays with the user.
+- An inspection that reports a variant your project declares but your theme has no color for, with a
+  quick fix that adds it — so a custom variant is not silently uncolored.
 - Variants your project declares are offered when adding a token, read from `@custom-variant` and
   `--breakpoint-*` in Tailwind v4 stylesheets and from `addVariant(…)` and `screens` in a v3 config.
 - Reporting of theme entries the plugin cannot use: a banner in the settings screen says how many

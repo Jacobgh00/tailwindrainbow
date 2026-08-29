@@ -37,6 +37,15 @@
                 bundle="messages.TailwindRainbowBundle"
                 key="configurable.displayName"/>
 
+        <localInspection language=""
+                         implementationClass="dev.tailwindrainbow.intellij.adapter.intellij.inspection.UncolouredVariantInspection"
+                         bundle="messages.TailwindRainbowBundle"
+                         key="inspection.uncoloured.name"
+                         groupPath="Tailwind Rainbow"
+                         groupName="Tailwind Rainbow"
+                         level="WEAK WARNING"
+                         enabledByDefault="true"/>
+
         <statusBarWidgetFactory id="dev.tailwindrainbow.statusBar"
                                 implementation="dev.tailwindrainbow.intellij.adapter.intellij.statusbar.TailwindStatusWidgetFactory"
                                 order="after positionWidget"/>

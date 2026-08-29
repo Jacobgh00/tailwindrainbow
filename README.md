@@ -67,6 +67,11 @@ Then **Settings | Plugins | ⚙ | Install Plugin from Disk…** and choose
 previews each one in the editor as you arrow through it. The preview is discarded unless you pick a
 theme, so leaving with `Esc` changes nothing.
 
+A variant your project declares — through `@custom-variant`, `addVariant(…)` or a custom screen — that
+your theme has no color for is reported as a weak warning where it is used, with a quick fix that adds
+it to the theme. Switch it off under **Settings | Editor | Inspections | Tailwind Rainbow** if you
+would rather not know.
+
 **Explain Tailwind Colouring at Caret**, also through Find Action, says which theme entry colours the
 class under the caret — useful when a wildcard matched something unexpected, or when a variant is not
 colored and you want to know whether the theme lists it at all.

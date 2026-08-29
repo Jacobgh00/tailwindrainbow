@@ -125,7 +125,7 @@ class ThemeEditorModel private constructor(
 private const val BOLD = 700
 private const val NORMAL = 400
 
-private const val ADDED_TOKEN_COLOR = "#808080"
+internal const val ADDED_TOKEN_COLOR = "#808080"
 
 private fun rowOf(
     entry: EntryKey,

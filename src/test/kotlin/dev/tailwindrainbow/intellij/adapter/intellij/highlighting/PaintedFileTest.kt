@@ -31,6 +31,14 @@ abstract class PaintedFileTest {
             WriteIntentReadAction.compute<List<Painted>, Throwable> { paint(fileName, text) }
         }
 
+    fun file(
+        fileName: String,
+        text: String,
+    ): PsiFile =
+        runInEdtAndGet {
+            WriteIntentReadAction.compute<PsiFile, Throwable> { write(fileName, text) }
+        }
+
     private fun paint(
         fileName: String,
         text: String,
