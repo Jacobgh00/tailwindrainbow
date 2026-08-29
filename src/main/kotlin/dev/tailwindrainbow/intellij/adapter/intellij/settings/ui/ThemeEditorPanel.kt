@@ -38,6 +38,9 @@ import javax.swing.table.DefaultTableCellRenderer
 
 class ThemeEditorPanel(private val declaredVariants: () -> Set<String>) {
     private var model = ThemeEditorModel(RainbowTheme())
+    private var inherited = RainbowTheme()
+
+    val palette: RainbowTheme get() = model.palette()
 
     private val tableModel = RowTableModel()
     private val table =
@@ -99,6 +102,7 @@ class ThemeEditorPanel(private val declaredVariants: () -> Set<String>) {
         inherited: RainbowTheme,
         overrides: ThemeSpec?,
     ) {
+        this.inherited = inherited
         model = ThemeEditorModel(inherited, overrides)
         table.clearSelection()
         tableModel.fireTableDataChanged()

@@ -26,6 +26,23 @@ class SettingsPanel(
     private val theme = ComboBox(themeNameModel)
     private val newTheme = JButton(message("settings.theme.new"))
     private val deleteTheme = JButton(message("settings.theme.delete"))
+    private val importTheme =
+        JButton(message("themeFile.import")).apply {
+            addActionListener {
+                val imported = chooseThemesToImport(this)
+                if (imported.isNotEmpty()) {
+                    themes = themes.merging(imported)
+                    editing = ""
+                    themeNameModel.replaceAll(baseNames + themes.map(ThemeSpec::name).filterNot { it in baseNames })
+                    theme.selectedItem = imported.first().name
+                    showSelectedTheme()
+                }
+            }
+        }
+    private val exportTheme =
+        JButton(message("themeFile.export")).apply {
+            addActionListener { exportTheme(this, selectedThemeName(), themeEditor.palette) }
+        }
     private val problems =
         ThemeProblemsBanner(
             onShow = { problem ->
@@ -50,6 +67,8 @@ class SettingsPanel(
                 cell(theme)
                 cell(newTheme)
                 cell(deleteTheme)
+                cell(importTheme)
+                cell(exportTheme)
             }
             separator()
             row { cell(recognition.component).align(Align.FILL) }
@@ -142,3 +161,6 @@ private fun List<ThemeSpec>.withoutEntriesFor(problems: List<ThemeProblem>): Lis
                 },
         )
     }
+
+private fun List<ThemeSpec>.merging(imported: List<ThemeSpec>): List<ThemeSpec> =
+    filterNot { existing -> imported.any { it.name == existing.name } } + imported
