@@ -3,7 +3,9 @@ package dev.tailwindrainbow.intellij.adapter.intellij.variants
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.InvalidVirtualFileAccessException
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
@@ -11,6 +13,7 @@ import com.intellij.psi.search.ProjectScope
 import com.intellij.psi.util.PsiModificationTracker
 import com.intellij.util.concurrency.AppExecutorUtil
 import dev.tailwindrainbow.intellij.application.variants.variantsDeclaredIn
+import java.io.IOException
 import java.util.concurrent.atomic.AtomicBoolean
 
 @Service(Service.Level.PROJECT)
@@ -70,7 +73,16 @@ class ProjectVariants(private val project: Project) {
     private fun styleSheets(scope: GlobalSearchScope): List<VirtualFile> =
         STYLESHEET_EXTENSIONS.flatMap { extension -> FilenameIndex.getAllFilesByExt(project, extension, scope) }
 
-    private fun VirtualFile.readText(): String = runCatching { String(contentsToByteArray()) }.getOrDefault("")
+    private fun VirtualFile.readText(): String =
+        try {
+            String(contentsToByteArray())
+        } catch (unreadable: IOException) {
+            thisLogger().debug("Skipped ${'$'}path", unreadable)
+            ""
+        } catch (gone: InvalidVirtualFileAccessException) {
+            thisLogger().debug("Skipped ${'$'}path", gone)
+            ""
+        }
 
     companion object {
         private const val NEVER_READ = -1L
