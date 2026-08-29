@@ -1,6 +1,7 @@
 package dev.tailwindrainbow.intellij.adapter.intellij.inspection
 
 import com.intellij.codeInspection.InspectionManager
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.testFramework.runInEdtAndGet
 import dev.tailwindrainbow.intellij.adapter.intellij.highlighting.PaintedFileTest
 import dev.tailwindrainbow.intellij.adapter.intellij.settings.TailwindRainbowSettings
@@ -43,7 +44,11 @@ class UncolouredVariantInspectionTest : PaintedFileTest() {
         val before = runInEdtAndGet { UncolouredVariantInspection().checkFile(page, manager, false) }
         assertEquals(1, before?.size)
 
-        runInEdtAndGet { AddTokenQuickFix("theme-midnight").applyFix(project.get(), before!!.single()) }
+        runInEdtAndGet {
+            WriteCommandAction.runWriteCommandAction(project.get()) {
+                AddTokenQuickFix("theme-midnight").applyFix(project.get(), before!!.single())
+            }
+        }
 
         val after = runInEdtAndGet { UncolouredVariantInspection().checkFile(page, manager, false) }
         assertTrue(after.isNullOrEmpty(), "the theme now colours it")
