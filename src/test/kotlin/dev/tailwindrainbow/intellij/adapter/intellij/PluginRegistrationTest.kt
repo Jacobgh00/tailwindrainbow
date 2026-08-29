@@ -35,17 +35,22 @@ class PluginRegistrationTest {
         }
 
     @Test
-    fun `both actions are registered, and take their text from the bundle`() {
-        val select = ActionManager.getInstance().getAction("dev.tailwindrainbow.SelectTheme")
-        val explain = ActionManager.getInstance().getAction("dev.tailwindrainbow.ExplainColouring")
+    fun `every action is registered, and takes its text from the bundle`() {
+        val texts = ACTION_IDS.map { ActionManager.getInstance().getAction(it).templatePresentation.text }
 
-        assertEquals("Select Tailwind Rainbow Theme", select.templatePresentation.text)
-        assertEquals("Explain Tailwind Colouring at Caret", explain.templatePresentation.text)
+        assertEquals(
+            listOf(
+                "Select Tailwind Rainbow Theme",
+                "Explain Tailwind Colouring at Caret",
+                "Copy Tailwind Rainbow Diagnostics",
+            ),
+            texts,
+        )
     }
 
     @Test
     fun `an action asked about nothing at all answers without failing`() {
-        listOf("dev.tailwindrainbow.SelectTheme", "dev.tailwindrainbow.ExplainColouring").forEach { id ->
+        ACTION_IDS.forEach { id ->
             val action = ActionManager.getInstance().getAction(id)
             val event =
                 AnActionEvent.createEvent(
@@ -87,5 +92,14 @@ class PluginRegistrationTest {
             assertFalse(configurable.isModified, "a screen nobody has touched has nothing to apply")
             configurable.disposeUIResources()
         }
+    }
+
+    private companion object {
+        val ACTION_IDS =
+            listOf(
+                "dev.tailwindrainbow.SelectTheme",
+                "dev.tailwindrainbow.ExplainColouring",
+                "dev.tailwindrainbow.CopyDiagnostics",
+            )
     }
 }

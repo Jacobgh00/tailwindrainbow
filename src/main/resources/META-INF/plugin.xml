@@ -46,6 +46,11 @@
                          level="WEAK WARNING"
                          enabledByDefault="true"/>
 
+        <notificationGroup id="Tailwind Rainbow"
+                           displayType="BALLOON"
+                           bundle="messages.TailwindRainbowBundle"
+                           key="notification.group.name"/>
+
         <statusBarWidgetFactory id="dev.tailwindrainbow.statusBar"
                                 implementation="dev.tailwindrainbow.intellij.adapter.intellij.statusbar.TailwindStatusWidgetFactory"
                                 order="after positionWidget"/>
@@ -57,5 +62,8 @@
 
         <action id="dev.tailwindrainbow.ExplainColouring"
                 class="dev.tailwindrainbow.intellij.adapter.intellij.actions.ExplainColouringAction"/>
+
+        <action id="dev.tailwindrainbow.CopyDiagnostics"
+                class="dev.tailwindrainbow.intellij.adapter.intellij.actions.CopyDiagnosticsAction"/>
     </actions>
 </idea-plugin>

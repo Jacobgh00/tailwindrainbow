@@ -9,6 +9,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- A **Copy Tailwind Rainbow Diagnostics** action, which puts the plugin version, the IDE build, the
+  theme in use, the recognition rules and whether they come from the project, and the current file's
+  scan status on the clipboard — the whole content of a useful bug report, in one paste.
+- Log entries at the points that used to fail silently: a theme entry dropped for being malformed, and
+  a file handed back unpainted because it was too large, had an unrecognized extension, or because
+  coloring is switched off. They land in `idea.log`, so a bug report can say what happened after the
+  fact.
 - Every variant Tailwind documents now has a color in both built-in themes, related variants sharing
   one: the focus family, the of-type selectors, the remaining form states, pseudo-elements such as
   `marker` and `selection`, the preference and pointer media queries, and text direction.

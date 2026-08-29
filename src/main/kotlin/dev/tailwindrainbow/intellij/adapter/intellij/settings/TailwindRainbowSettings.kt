@@ -5,6 +5,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.util.xmlb.XmlSerializerUtil
 import com.intellij.util.xmlb.annotations.XCollection
 import dev.tailwindrainbow.intellij.adapter.intellij.settings.persistence.StoredTheme
@@ -15,6 +16,7 @@ import dev.tailwindrainbow.intellij.application.port.HighlightSettings
 import dev.tailwindrainbow.intellij.application.port.SettingsProvider
 import dev.tailwindrainbow.intellij.application.port.ThemeCatalog
 import dev.tailwindrainbow.intellij.application.theme.ThemeSpec
+import dev.tailwindrainbow.intellij.application.theme.describe
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
 
 @Service(Service.Level.APP)
@@ -36,7 +38,7 @@ class TailwindRainbowSettings :
     @Synchronized
     override fun loadState(state: StoredState) {
         XmlSerializerUtil.copyBean(state, storedState)
-        themes.refresh(storedSpecs())
+        refreshThemes()
     }
 
     override fun themeNamed(name: String): RainbowTheme = themes.themeNamed(name)
@@ -82,7 +84,12 @@ class TailwindRainbowSettings :
         storedState.ignoredPrefixModifiers = snapshot.scan.ignoredPrefixModifiers.sorted().toMutableList()
         storedState.supportedExtensions = snapshot.scan.supportedExtensions.sorted().toMutableList()
         storedState.themes = userThemes.mapTo(mutableListOf(), StoredTheme::of)
-        this.themes.refresh(storedSpecs())
+        refreshThemes()
+    }
+
+    private fun refreshThemes() {
+        themes.refresh(storedSpecs())
+        themes.problems().forEach { thisLogger().warn("Theme entry dropped — ${it.describe()}") }
     }
 
     private fun storedSpecs(): List<ThemeSpec> = storedState.themes.map(StoredTheme::toSpec)

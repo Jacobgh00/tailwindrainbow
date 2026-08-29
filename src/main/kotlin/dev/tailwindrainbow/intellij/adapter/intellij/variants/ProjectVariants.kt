@@ -77,10 +77,10 @@ class ProjectVariants(private val project: Project) {
         try {
             String(contentsToByteArray())
         } catch (unreadable: IOException) {
-            thisLogger().debug("Skipped ${'$'}path", unreadable)
+            thisLogger().debug("Skipped $path", unreadable)
             ""
         } catch (gone: InvalidVirtualFileAccessException) {
-            thisLogger().debug("Skipped ${'$'}path", gone)
+            thisLogger().debug("Skipped $path", gone)
             ""
         }
 

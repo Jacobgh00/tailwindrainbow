@@ -1,6 +1,7 @@
 package dev.tailwindrainbow.intellij.application.highlight
 
 import dev.tailwindrainbow.intellij.application.port.HighlightSettings
+import dev.tailwindrainbow.intellij.application.port.ScanLog
 import dev.tailwindrainbow.intellij.application.port.SettingsProvider
 import dev.tailwindrainbow.intellij.domain.theme.FontWeight
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
@@ -64,6 +65,36 @@ class HighlightDocumentServiceTest {
         val service = serviceWith(settings(scan = ScanSettings(maxFileSize = 10)))
 
         assertTrue(service.highlight(html, "html").isEmpty())
+    }
+
+    @Test
+    fun `a document skipped for its size says so, rather than looking like a document with no classes`() {
+        var reported: ScanStatus? = null
+        val service =
+            HighlightDocumentService(
+                settings = { settings(scan = ScanSettings(maxFileSize = 10)) },
+                themes = { theme },
+                log = { _, status -> reported = status },
+            )
+
+        service.highlight(html, "html")
+
+        assertEquals(ScanStatus.TOO_LARGE, reported)
+    }
+
+    @Test
+    fun `a document that was scanned reports no skip`() {
+        var reported: ScanStatus? = null
+        val service =
+            HighlightDocumentService(
+                settings = { settings() },
+                themes = { theme },
+                log = ScanLog { _, status -> reported = status },
+            )
+
+        service.highlight(html, "html")
+
+        assertEquals(null, reported, "nothing was skipped, so nothing should be reported")
     }
 
     private fun serviceWith(current: HighlightSettings) = HighlightDocumentService({ current }, { theme })
