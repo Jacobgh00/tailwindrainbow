@@ -15,7 +15,7 @@ import com.intellij.testFramework.junit5.fixture.moduleFixture
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import com.intellij.testFramework.junit5.fixture.sourceRootFixture
 
-data class Painted(val text: String, val color: String)
+data class Painted(val text: String, val color: String, val start: Int, val end: Int)
 
 @TestApplication
 abstract class PaintedFileTest {
@@ -40,7 +40,14 @@ abstract class PaintedFileTest {
 
         return try {
             CodeInsightTestFixtureImpl.instantiateAndRun(file, editor, IntArray(0), false)
-                .map { Painted(text.substring(it.startOffset, it.endOffset), it.forcedTextAttributes.hex()) }
+                .map {
+                    Painted(
+                        text = text.substring(it.startOffset, it.endOffset),
+                        color = it.forcedTextAttributes.hex(),
+                        start = it.startOffset,
+                        end = it.endOffset,
+                    )
+                }
         } finally {
             EditorFactory.getInstance().releaseEditor(editor)
         }
