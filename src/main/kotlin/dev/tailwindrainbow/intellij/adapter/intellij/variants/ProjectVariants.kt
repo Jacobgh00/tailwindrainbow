@@ -8,17 +8,51 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
-import com.intellij.psi.util.CachedValueProvider
-import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
+import com.intellij.util.concurrency.AppExecutorUtil
 import dev.tailwindrainbow.intellij.application.variants.variantsDeclaredIn
+import java.util.concurrent.atomic.AtomicBoolean
 
 @Service(Service.Level.PROJECT)
 class ProjectVariants(private val project: Project) {
-    fun declared(): Set<String> =
-        CachedValuesManager.getManager(project).getCachedValue(project) {
-            CachedValueProvider.Result.create(read(), PsiModificationTracker.MODIFICATION_COUNT)
-        }
+    @Volatile
+    private var known: Set<String> = emptySet()
+
+    @Volatile
+    private var knownAt: Long = NEVER_READ
+
+    private val reading = AtomicBoolean(false)
+
+    fun declared(): Set<String> {
+        scheduleUnlessCurrent()
+
+        return known
+    }
+
+    fun refresh(): Set<String> {
+        val found = ReadAction.compute<Set<String>, RuntimeException> { read() }
+
+        remember(found)
+
+        return found
+    }
+
+    private fun scheduleUnlessCurrent() {
+        if (knownAt == modificationCount() || !reading.compareAndSet(false, true)) return
+
+        ReadAction.nonBlocking<Set<String>> { read() }
+            .expireWith(project)
+            .submit(AppExecutorUtil.getAppExecutorService())
+            .onSuccess(::remember)
+            .onProcessed { reading.set(false) }
+    }
+
+    private fun remember(found: Set<String>) {
+        known = found
+        knownAt = modificationCount()
+    }
+
+    private fun modificationCount(): Long = PsiModificationTracker.getInstance(project).modificationCount
 
     private fun read(): Set<String> =
         ReadAction.compute<Set<String>, RuntimeException> {
@@ -39,6 +73,7 @@ class ProjectVariants(private val project: Project) {
     private fun VirtualFile.readText(): String = runCatching { String(contentsToByteArray()) }.getOrDefault("")
 
     companion object {
+        private const val NEVER_READ = -1L
         private const val MAX_FILES = 200
         private const val MAX_FILE_SIZE = 200_000L
 

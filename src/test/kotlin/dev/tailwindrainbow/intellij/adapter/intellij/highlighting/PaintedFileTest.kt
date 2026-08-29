@@ -48,6 +48,7 @@ abstract class PaintedFileTest {
 
         return try {
             CodeInsightTestFixtureImpl.instantiateAndRun(file, editor, IntArray(0), false)
+                .filter { it.forcedTextAttributes != null }
                 .map {
                     Painted(
                         text = text.substring(it.startOffset, it.endOffset),

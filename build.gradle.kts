@@ -150,6 +150,8 @@ tasks {
             "false",
         )
 
+        systemProperty("ide.slow.operations.assertion", "true")
+
         systemProperty(
             "java.util.prefs.userRoot",
             layout

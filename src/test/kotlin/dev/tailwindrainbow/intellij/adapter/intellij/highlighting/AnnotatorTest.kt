@@ -33,7 +33,9 @@ class AnnotatorTest : PaintedFileTest() {
 
     @Test
     fun `a file of a type nobody asked for is left alone`() {
-        assertTrue(painted("Notes.kt", """val markup = "<div class=\"hover:bg-blue-500\"></div>"""").isEmpty())
+        val painted = painted("Notes.kt", """val markup = "<div class=\"hover:bg-blue-500\"></div>"""")
+
+        assertTrue(painted.isEmpty(), "painted: $painted")
     }
 
     @Test

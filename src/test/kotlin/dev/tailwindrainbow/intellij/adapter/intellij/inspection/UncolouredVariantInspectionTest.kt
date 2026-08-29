@@ -22,7 +22,7 @@ class UncolouredVariantInspectionTest : PaintedFileTest() {
         file("app.css", "@custom-variant is-dragging (&:where(.is-dragging *));")
         val page = file("uses.html", """<div class="is-dragging:opacity-50 hover:underline"></div>""")
 
-        assertTrue("is-dragging" in ProjectVariants.getInstance(project.get()).declared(), "declared")
+        assertTrue("is-dragging" in ProjectVariants.getInstance(project.get()).refresh(), "declared")
 
         val problems =
             runInEdtAndGet {
@@ -37,6 +37,7 @@ class UncolouredVariantInspectionTest : PaintedFileTest() {
     fun `once the quick fix has run, the variant has a colour and nothing is reported`() {
         file("fixed.css", "@custom-variant theme-midnight (&:where([data-theme=midnight] *));")
         val page = file("fixed.html", """<div class="theme-midnight:bg-black"></div>""")
+        ProjectVariants.getInstance(project.get()).refresh()
         val manager = InspectionManager.getInstance(project.get())
 
         val before = runInEdtAndGet { UncolouredVariantInspection().checkFile(page, manager, false) }
