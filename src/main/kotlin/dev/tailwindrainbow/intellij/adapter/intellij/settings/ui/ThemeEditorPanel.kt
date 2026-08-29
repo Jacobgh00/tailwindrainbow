@@ -36,8 +36,12 @@ import javax.swing.ListSelectionModel
 import javax.swing.table.AbstractTableModel
 import javax.swing.table.DefaultTableCellRenderer
 
-class ThemeEditorPanel(private val declaredVariants: () -> Set<String>) {
+class ThemeEditorPanel(
+    private val declaredVariants: () -> Set<String>,
+    private val themeName: () -> String,
+) {
     private var model = ThemeEditorModel(RainbowTheme())
+    private var inherited = RainbowTheme()
 
     private val tableModel = RowTableModel()
     private val table =
@@ -99,6 +103,7 @@ class ThemeEditorPanel(private val declaredVariants: () -> Set<String>) {
         inherited: RainbowTheme,
         overrides: ThemeSpec?,
     ) {
+        this.inherited = inherited
         model = ThemeEditorModel(inherited, overrides)
         table.clearSelection()
         tableModel.fireTableDataChanged()
@@ -116,6 +121,14 @@ class ThemeEditorPanel(private val declaredVariants: () -> Set<String>) {
             .setRemoveAction { removeSelectedToken() }
             .setRemoveActionUpdater { selectedRow()?.origin == RowOrigin.ADDED }
             .addExtraAction(resetAction())
+            .addExtraAction(exportThemeAction(table, themeName) { model.palette() })
+            .addExtraAction(
+                importThemeAction(table) { imported ->
+                    model = ThemeEditorModel(inherited, imported)
+                    tableModel.fireTableDataChanged()
+                    syncControls()
+                },
+            )
             .disableUpDownActions()
             .createPanel()
 

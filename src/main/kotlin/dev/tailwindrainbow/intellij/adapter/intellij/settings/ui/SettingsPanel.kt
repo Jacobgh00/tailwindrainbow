@@ -20,7 +20,7 @@ class SettingsPanel(
     private val basePalette: (String) -> RainbowTheme,
     declaredVariants: () -> Set<String>,
 ) {
-    private val themeEditor = ThemeEditorPanel(declaredVariants)
+    private val themeEditor = ThemeEditorPanel(declaredVariants) { editing }
     private val enabled = JBCheckBox(message("settings.enable"))
     private val themeNameModel = MutableCollectionComboBoxModel(themeNames.toMutableList())
     private val theme = ComboBox(themeNameModel)
