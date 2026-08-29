@@ -1,5 +1,7 @@
 import org.jetbrains.changelog.Changelog
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.models.ProductRelease
 
 plugins {
     id("org.jetbrains.kotlin.jvm")
@@ -12,6 +14,13 @@ plugins {
 group = "dev.tailwindrainbow"
 version = "0.1.0"
 
+val minimumIntellijVersion = "2025.2"
+
+val pluginVerificationTarget =
+    providers
+        .gradleProperty("pluginVerificationTarget")
+        .orElse("baseline")
+
 kotlin {
     jvmToolchain(21)
 
@@ -21,7 +30,10 @@ kotlin {
 }
 
 configurations.testRuntimeClasspath {
-    exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib")
+    exclude(
+        group = "org.jetbrains.kotlin",
+        module = "kotlin-stdlib",
+    )
 }
 
 dependencies {
@@ -30,7 +42,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.13.4")
 
     intellijPlatform {
-        intellijIdeaCommunity("2025.2.6.2")
+        intellijIdeaCommunity(minimumIntellijVersion)
         testFramework(TestFrameworkType.Platform)
         testFramework(TestFrameworkType.JUnit5)
     }
@@ -39,52 +51,113 @@ dependencies {
 intellijPlatform {
     buildSearchableOptions = false
 
+    pluginConfiguration {
+        ideaVersion {
+            sinceBuild = "252"
+            untilBuild = provider { null }
+        }
+
+        /*
+         * CHANGELOG.md remains the single source of release notes.
+         *
+         * Use the matching version when it exists. Otherwise, use the
+         * Unreleased section so development builds still contain useful notes.
+         */
+        val pluginVersion = project.version.toString()
+
+        changeNotes =
+            changelog.instance.map { log ->
+                val item =
+                    if (log.has(pluginVersion)) {
+                        log.get(pluginVersion)
+                    } else {
+                        log.unreleasedItem
+                    } ?: error(
+                        "CHANGELOG.md has no $pluginVersion section " +
+                            "and no Unreleased section",
+                    )
+
+                log.renderItem(
+                    item
+                        .withHeader(false)
+                        .withEmptySections(false),
+                    Changelog.OutputType.HTML,
+                )
+            }
+    }
+
+    pluginVerification {
+        ides {
+            when (val target = pluginVerificationTarget.get()) {
+                "baseline" -> current()
+
+                "latest" ->
+                    latest {
+                        types =
+                            listOf(
+                                IntelliJPlatformType.IntellijIdeaCommunity,
+                            )
+
+                        channels =
+                            listOf(
+                                ProductRelease.Channel.RELEASE,
+                            )
+                    }
+
+                else ->
+                    throw GradleException(
+                        "Unsupported pluginVerificationTarget '$target'. " +
+                            "Expected 'baseline' or 'latest'.",
+                    )
+            }
+        }
+    }
+
     signing {
-        certificateChain = providers.environmentVariable("CERTIFICATE_CHAIN")
-        privateKey = providers.environmentVariable("PRIVATE_KEY")
-        password = providers.environmentVariable("PRIVATE_KEY_PASSWORD")
+        certificateChain =
+            providers.environmentVariable("CERTIFICATE_CHAIN")
+
+        privateKey =
+            providers.environmentVariable("PRIVATE_KEY")
+
+        password =
+            providers.environmentVariable("PRIVATE_KEY_PASSWORD")
     }
 
     publishing {
-        token = providers.environmentVariable("PUBLISH_TOKEN")
+        token =
+            providers.environmentVariable("PUBLISH_TOKEN")
+
+        channels = listOf("default")
     }
 }
 
-// CHANGELOG.md is the single source of the release notes. Keeping them out of plugin.xml means
-// the Marketplace "What's New" tab cannot drift from the file reviewers actually read.
 changelog {
-    repositoryUrl = "https://github.com/Jacobgh00/tailwindrainbow"
+    repositoryUrl =
+        "https://github.com/Jacobgh00/tailwindrainbow"
+}
+
+detekt {
+    parallel = true
 }
 
 tasks {
     test {
         useJUnitPlatform()
-        systemProperty("junit.jupiter.extensions.autodetection.enabled", "false")
-        systemProperty("java.util.prefs.userRoot", layout.buildDirectory.dir("test-prefs").get().asFile.absolutePath)
-    }
 
-    patchPluginXml {
-        // Reads through changelog.instance rather than the extension itself: the extension is a
-        // script object, and capturing one in a provider breaks the configuration cache.
-        //
-        // Falls back to the Unreleased section so a build cut before the version is stamped still
-        // carries notes, rather than shipping an empty What's New tab.
-        val pluginVersion = project.version.toString()
-        changeNotes =
-            changelog.instance.map { log ->
-                val item =
-                    (if (log.has(pluginVersion)) log.get(pluginVersion) else log.unreleasedItem)
-                        ?: error("CHANGELOG.md has no $pluginVersion section and no Unreleased section")
-                log.renderItem(
-                    item.withHeader(false).withEmptySections(false),
-                    Changelog.OutputType.HTML,
-                )
-            }
+        systemProperty(
+            "junit.jupiter.extensions.autodetection.enabled",
+            "false",
+        )
 
-        sinceBuild.set("252")
-        // No upper bound: the plugin uses only stable platform API (one Annotator, one
-        // Configurable). Setting untilBuild would stop it loading on the next IDE release
-        // until a new version shipped, for no benefit.
-        untilBuild.set(provider { null })
+        systemProperty(
+            "java.util.prefs.userRoot",
+            layout
+                .buildDirectory
+                .dir("test-prefs")
+                .get()
+                .asFile
+                .absolutePath,
+        )
     }
 }
