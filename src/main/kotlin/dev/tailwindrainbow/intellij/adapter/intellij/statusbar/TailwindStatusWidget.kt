@@ -30,7 +30,11 @@ internal class TailwindStatusWidget(project: Project) : EditorBasedStatusBarPopu
         val settings = effectiveSettings()
         val status = settings.statusFor(file.extension.orEmpty(), lengthOf(file))
 
-        return WidgetState(tooltip(status, settings, file), text(status, settings), true)
+        return WidgetState(
+            widgetTooltip(status, settings.themeName, file.extension.orEmpty(), settings.scan.maxFileSize),
+            widgetText(status, settings.themeName),
+            true,
+        )
     }
 
     private fun effectiveSettings(): HighlightSettings =
@@ -40,26 +44,27 @@ internal class TailwindStatusWidget(project: Project) : EditorBasedStatusBarPopu
 
     private fun lengthOf(file: VirtualFile): Int =
         FileDocumentManager.getInstance().getCachedDocument(file)?.textLength ?: file.length.toInt()
-
-    private fun text(
-        status: ScanStatus,
-        settings: HighlightSettings,
-    ): String =
-        when (status) {
-            ScanStatus.DISABLED -> message("widget.text.disabled")
-            ScanStatus.NOT_SUPPORTED, ScanStatus.TOO_LARGE -> message("widget.text.unscanned")
-            ScanStatus.SCANNED -> message("widget.text.theme", settings.themeName)
-        }
-
-    private fun tooltip(
-        status: ScanStatus,
-        settings: HighlightSettings,
-        file: VirtualFile,
-    ): String =
-        when (status) {
-            ScanStatus.DISABLED -> message("widget.tooltip.disabled")
-            ScanStatus.NOT_SUPPORTED -> message("widget.tooltip.notSupported", file.extension.orEmpty())
-            ScanStatus.TOO_LARGE -> message("widget.tooltip.tooLarge", settings.scan.maxFileSize)
-            ScanStatus.SCANNED -> message("widget.tooltip.scanned", settings.themeName)
-        }
 }
+
+internal fun widgetText(
+    status: ScanStatus,
+    themeName: String,
+): String =
+    when (status) {
+        ScanStatus.DISABLED -> message("widget.text.disabled")
+        ScanStatus.NOT_SUPPORTED, ScanStatus.TOO_LARGE -> message("widget.text.unscanned")
+        ScanStatus.SCANNED -> message("widget.text.theme", themeName)
+    }
+
+internal fun widgetTooltip(
+    status: ScanStatus,
+    themeName: String,
+    fileExtension: String,
+    maxFileSize: Int,
+): String =
+    when (status) {
+        ScanStatus.DISABLED -> message("widget.tooltip.disabled")
+        ScanStatus.NOT_SUPPORTED -> message("widget.tooltip.notSupported", fileExtension)
+        ScanStatus.TOO_LARGE -> message("widget.tooltip.tooLarge", maxFileSize)
+        ScanStatus.SCANNED -> message("widget.tooltip.scanned", themeName)
+    }
