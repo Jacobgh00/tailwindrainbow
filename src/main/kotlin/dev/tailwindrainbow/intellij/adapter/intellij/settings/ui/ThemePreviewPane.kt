@@ -3,6 +3,7 @@ package dev.tailwindrainbow.intellij.adapter.intellij.settings.ui
 import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.editor.colors.EditorFontType
 import com.intellij.util.ui.JBUI
+import dev.tailwindrainbow.intellij.adapter.intellij.TailwindRainbowBundle.message
 import dev.tailwindrainbow.intellij.adapter.intellij.highlighting.toTextAttributes
 import dev.tailwindrainbow.intellij.application.settings.PREVIEW_SAMPLE
 import dev.tailwindrainbow.intellij.application.settings.previewSegments
@@ -24,6 +25,7 @@ internal class ThemePreviewPane {
         JTextPane().apply {
             border = JBUI.Borders.empty(PADDING)
             text = PREVIEW_SAMPLE
+            accessibleContext.accessibleName = message("editor.preview.name")
         }
 
     private var theme = RainbowTheme()

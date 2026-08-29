@@ -7,7 +7,7 @@ import com.intellij.ui.CollectionComboBoxModel
 import com.intellij.ui.MutableCollectionComboBoxModel
 import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.components.JBLabel
-import com.intellij.util.ui.FormBuilder
+import com.intellij.ui.dsl.builder.panel
 import dev.tailwindrainbow.intellij.adapter.intellij.TailwindRainbowBundle.message
 import dev.tailwindrainbow.intellij.application.settings.displayName
 import dev.tailwindrainbow.intellij.domain.theme.SegmentKind
@@ -21,6 +21,7 @@ internal class AddTokenDialog(
     private val section = ComboBox(CollectionComboBoxModel(sections))
     private val suggestions = MutableCollectionComboBoxModel<String>()
     private val key = ComboBox(suggestions).apply { isEditable = true }
+    private val suggestionsHint = JBLabel()
 
     val selectedSection: SegmentKind get() = section.item ?: SegmentKind.PREFIX
     val enteredKey: String get() = key.editor.item?.toString()?.trim().orEmpty()
@@ -45,15 +46,20 @@ internal class AddTokenDialog(
 
         suggestions.replaceAll(offered)
         key.editor.item = typed
+
+        suggestionsHint.isVisible = selectedSection == SegmentKind.PREFIX
+        suggestionsHint.text =
+            if (offered.isEmpty()) message("dialog.addToken.noSuggestions") else message("dialog.addToken.suggestions")
     }
 
     override fun createCenterPanel(): JComponent =
-        FormBuilder.createFormBuilder()
-            .addLabeledComponent(JBLabel(message("dialog.addToken.section")), section)
-            .addLabeledComponent(JBLabel(message("dialog.addToken.token")), key)
-            .addComponentToRightColumn(JBLabel(message("dialog.addToken.example")))
-            .addComponentToRightColumn(JBLabel(message("dialog.addToken.suggestions")))
-            .panel
+        panel {
+            row(message("dialog.addToken.section")) { cell(section) }
+            row(message("dialog.addToken.token")) {
+                cell(key).comment(message("dialog.addToken.example"))
+            }
+            row("") { cell(suggestionsHint) }
+        }
 
     override fun getPreferredFocusedComponent(): JComponent = key
 

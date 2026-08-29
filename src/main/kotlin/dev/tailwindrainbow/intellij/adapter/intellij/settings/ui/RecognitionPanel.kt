@@ -9,6 +9,7 @@ import dev.tailwindrainbow.intellij.adapter.intellij.TailwindRainbowBundle.messa
 import dev.tailwindrainbow.intellij.application.settings.RecognitionForm
 import dev.tailwindrainbow.intellij.application.settings.classIdentifiersWarning
 import dev.tailwindrainbow.intellij.application.settings.maxFileSizeProblem
+import dev.tailwindrainbow.intellij.application.settings.supportedExtensionsWarning
 import javax.swing.JComponent
 
 internal class RecognitionPanel {
@@ -41,7 +42,11 @@ internal class RecognitionPanel {
             row(message("settings.recognition.classFunctions")) { cell(classFunctions).align(AlignX.FILL) }
             row(message("settings.recognition.templateTags")) { cell(templateTags).align(AlignX.FILL) }
             row(message("settings.recognition.ignoredModifiers")) { cell(ignoredModifiers).align(AlignX.FILL) }
-            row(message("settings.recognition.extensions")) { cell(supportedExtensions).align(AlignX.FILL) }
+            row(message("settings.recognition.extensions")) {
+                cell(supportedExtensions)
+                    .align(AlignX.FILL)
+                    .validationOnInput { field -> supportedExtensionsWarning(field.text)?.let { warning(it) } }
+            }
         }
 
     init {

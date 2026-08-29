@@ -33,6 +33,9 @@ sealed interface FormResult {
 
 fun maxFileSizeProblem(text: String): String? = if (text.toFileSizeOrNull() == null) SIZE_MESSAGE else null
 
+fun supportedExtensionsWarning(text: String): String? =
+    if (text.isBlank()) "No file types are scanned, so nothing will be coloured anywhere" else null
+
 fun classIdentifiersWarning(text: String): String? =
     if (text.isBlank()) "Nothing will be recognized in attributes such as class=\"…\"" else null
 

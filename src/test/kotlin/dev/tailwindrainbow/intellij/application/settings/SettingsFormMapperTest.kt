@@ -82,6 +82,12 @@ class SettingsFormMapperTest {
     }
 
     @Test
+    fun `emptying the file extensions is allowed, and warned about`() {
+        assertNull(supportedExtensionsWarning("html, vue"))
+        assertNotNull(supportedExtensionsWarning(""), "an empty list colours nothing anywhere")
+    }
+
+    @Test
     fun `emptying the class identifiers is allowed, and warned about`() {
         assertNull(classIdentifiersWarning("class"))
         assertNotNull(classIdentifiersWarning(" "), "silently recognizing nothing is the confusing case")

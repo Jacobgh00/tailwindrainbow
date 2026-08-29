@@ -48,8 +48,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   instead of being a long comma-separated line. A file extension written with a leading dot is stored
   the way a file reports it, and Apply shows the stored, deduplicated list back.
 - Settings are validated as they are typed: a maximum file size that is not a positive number is
-  reported under the field rather than when Apply is pressed, and emptying the class identifiers says
-  what it will cost.
+  reported under the field rather than when Apply is pressed, and emptying the class identifiers or
+  the file extensions says what it will cost.
 - Settings under **Editor | Tailwind Rainbow** for the theme, the maximum file size to scan, and the
   recognized attributes, functions, template tags, ignored prefix modifiers, and file extensions.
 - Project-level recognition settings. A project can keep its own answers in

@@ -4,9 +4,8 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.CollectionComboBoxModel
-import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
-import com.intellij.util.ui.FormBuilder
+import com.intellij.ui.dsl.builder.panel
 import dev.tailwindrainbow.intellij.adapter.intellij.TailwindRainbowBundle.message
 import javax.swing.JComponent
 
@@ -27,11 +26,12 @@ internal class NewThemeDialog(
     }
 
     override fun createCenterPanel(): JComponent =
-        FormBuilder.createFormBuilder()
-            .addLabeledComponent(JBLabel(message("dialog.newTheme.name")), name)
-            .addLabeledComponent(JBLabel(message("dialog.newTheme.base")), base)
-            .addComponentToRightColumn(JBLabel(message("dialog.newTheme.comment")))
-            .panel
+        panel {
+            row(message("dialog.newTheme.name")) { cell(name) }
+            row(message("dialog.newTheme.base")) {
+                cell(base).comment(message("dialog.newTheme.comment"))
+            }
+        }
 
     override fun getPreferredFocusedComponent(): JComponent = name
 
