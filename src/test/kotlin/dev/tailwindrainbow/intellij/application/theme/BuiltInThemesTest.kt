@@ -19,17 +19,27 @@ class BuiltInThemesTest {
     }
 
     @Test
-    fun `synthwave and default disagree on most shared prefixes`() {
-        val default = BuiltInThemes.default
-        val synthwave = BuiltInThemes.synthwave
-        val shared = default.prefix.keys intersect synthwave.prefix.keys
-        val differing = shared.count { default.prefix[it] != synthwave.prefix[it] }
+    fun `no two themes agree on most of what they colour`() {
+        val themes = BuiltInThemes.themes().entries.toList()
 
-        assertTrue(
-            differing > shared.size / 2,
-            "only $differing of ${shared.size} shared prefixes differ; the themes look alike",
-        )
-        assertNotEquals(default.arbitrary, synthwave.arbitrary)
+        themes.forEachIndexed { index, (name, theme) ->
+            themes.drop(index + 1).forEach { (otherName, other) ->
+                val shared = theme.prefix.keys intersect other.prefix.keys
+                val differing = shared.count { theme.prefix[it] != other.prefix[it] }
+
+                assertTrue(
+                    differing > shared.size / 2,
+                    "$name and $otherName agree on ${shared.size - differing} of ${shared.size} " +
+                        "prefixes; switching between them would barely show",
+                )
+                assertNotEquals(
+                    theme.arbitrary,
+                    other.arbitrary,
+                    "$name and $otherName share a colour " +
+                        "for arbitrary variants",
+                )
+            }
+        }
     }
 
     @Test

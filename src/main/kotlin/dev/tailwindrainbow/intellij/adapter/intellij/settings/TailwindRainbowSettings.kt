@@ -10,6 +10,7 @@ import com.intellij.util.xmlb.XmlSerializerUtil
 import com.intellij.util.xmlb.annotations.XCollection
 import dev.tailwindrainbow.intellij.adapter.intellij.settings.persistence.StoredTheme
 import dev.tailwindrainbow.intellij.adapter.intellij.theme.ContributedThemes
+import dev.tailwindrainbow.intellij.adapter.intellij.theme.EditorSchemeThemes
 import dev.tailwindrainbow.intellij.adapter.theme.UserThemeCatalog
 import dev.tailwindrainbow.intellij.application.highlight.ScanSettings
 import dev.tailwindrainbow.intellij.application.port.HighlightSettings
@@ -30,7 +31,7 @@ class TailwindRainbowSettings :
     @Volatile
     private var previewedTheme: String? = null
 
-    val themes = UserThemeCatalog(ContributedThemes)
+    val themes = UserThemeCatalog(ContributedThemes, EditorSchemeThemes)
 
     @Synchronized
     override fun getState(): StoredState = storedState
@@ -86,6 +87,9 @@ class TailwindRainbowSettings :
         storedState.themes = userThemes.mapTo(mutableListOf(), StoredTheme::of)
         refreshThemes()
     }
+
+    @Synchronized
+    fun reloadThemes() = refreshThemes()
 
     private fun refreshThemes() {
         themes.refresh(storedSpecs())

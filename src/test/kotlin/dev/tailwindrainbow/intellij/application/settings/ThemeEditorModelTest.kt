@@ -49,6 +49,37 @@ class ThemeEditorModelTest {
     }
 
     @Test
+    fun `a query keeps only the rows whose token contains it`() {
+        val rows = model().rows(query = "ov")
+
+        assertEquals(listOf("hover"), rows.map { it.key })
+    }
+
+    @Test
+    fun `a query ignores case and surrounding space, because a search field collects both`() {
+        assertEquals(listOf("hover"), model().rows(query = "  HOVER ").map { it.key })
+    }
+
+    @Test
+    fun `a query matches the label of a section that has no token of its own`() {
+        val rows = model().rows(query = "important")
+
+        assertEquals(listOf(SegmentKind.IMPORTANT), rows.map { it.section })
+    }
+
+    @Test
+    fun `a query and a section filter apply together`() {
+        val model = model().add(SegmentKind.BASE, "hover-me")
+
+        assertEquals(listOf("hover-me"), model.rows(SegmentKind.BASE, "hover").map { it.key })
+    }
+
+    @Test
+    fun `a blank query hides nothing`() {
+        assertEquals(model().rows().size, model().rows(query = "   ").size)
+    }
+
+    @Test
     fun `an untouched row shows the inherited colour and is only inherited`() {
         val row = model().rows().first { it.key == "hover" }
 

@@ -46,7 +46,10 @@ class ThemeEditorModel private constructor(
         overrides = overrides?.entries.orEmpty().associateBy { EntryKey(it.section, it.key) },
     )
 
-    fun rows(section: SegmentKind? = null): List<ThemeEditorRow> {
+    fun rows(
+        section: SegmentKind? = null,
+        query: String = "",
+    ): List<ThemeEditorRow> {
         val inheritedEntries = inherited.entries()
         val addedKeys = overrides.keys - inheritedEntries.map { it.first }.toSet()
 
@@ -54,7 +57,10 @@ class ThemeEditorModel private constructor(
             inheritedEntries.map { (entry, style) -> rowOf(entry, overrides[entry], style) } +
                 addedKeys.map { rowOf(it, overrides[it], inheritedStyle = null) }
 
-        return rows.filter { section == null || it.section == section }.sortedBy(ThemeEditorRow::section)
+        return rows
+            .filter { section == null || it.section == section }
+            .filter { it.matches(query) }
+            .sortedBy(ThemeEditorRow::section)
     }
 
     fun holds(
@@ -126,6 +132,12 @@ private const val BOLD = 700
 private const val NORMAL = 400
 
 internal const val ADDED_TOKEN_COLOR = "#808080"
+
+private fun ThemeEditorRow.matches(query: String): Boolean {
+    val wanted = query.trim()
+
+    return wanted.isEmpty() || label.contains(wanted, ignoreCase = true)
+}
 
 private fun rowOf(
     entry: EntryKey,

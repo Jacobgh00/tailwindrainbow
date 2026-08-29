@@ -25,6 +25,11 @@
                         dynamic="true"/>
     </extensionPoints>
 
+    <applicationListeners>
+        <listener class="dev.tailwindrainbow.intellij.adapter.intellij.theme.EditorSchemeListener"
+                  topic="com.intellij.openapi.editor.colors.EditorColorsListener"/>
+    </applicationListeners>
+
     <extensions defaultExtensionNs="com.intellij">
         <annotator
                 language=""
