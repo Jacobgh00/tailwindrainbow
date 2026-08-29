@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
 
 permissions:
@@ -21,6 +21,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up Java
         uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
@@ -28,11 +30,22 @@ jobs:
           distribution: temurin
           java-version: "21"
 
-      - name: Setup Gradle
+      # IntelliJ distributions make the Gradle dependency and transform caches
+      # too large for a standard GitHub runner when restored and extracted.
+      - name: Set up Gradle
         uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+        with:
+          cache-disabled: true
 
       - name: Verify
-        run: ./gradlew ktlintCheck detekt test verifyPlugin --build-cache
+        run: >-
+          ./gradlew
+          ktlintCheck
+          detekt
+          test
+          verifyPlugin
+          --no-build-cache
+          --console=plain
 
       - name: Upload plugin distribution
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -53,5 +66,7 @@ jobs:
             build/test-results/**
             build/reports/detekt/**
             build/reports/ktlint/**
+            build/reports/pluginVerifier/**
+            build/reports/problems/**
           if-no-files-found: ignore
           retention-days: 7
