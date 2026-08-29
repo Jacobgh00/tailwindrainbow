@@ -107,7 +107,8 @@ will actually paint them. The sample is editable: paste classes from your own co
 land, or to find out that a variant is not colored because no token matches it. Nothing typed there
 is saved, and **Restore sample** brings the original back.
 
-The token table lists what the selected theme colors, grouped by section. Each row shows its color as
+The token table lists what the selected theme colors, grouped by section. Type to search it, or use
+**Show** to narrow it to one section. Each row shows its color as
 a swatch and a hex value that can be edited in place — with or without the hash, and `#fff` style
 shorthand is expanded — or picked with the color picker below. **Reset**, in the table's toolbar,
 returns a single entry to its theme value without discarding your other overrides. Unticking **Enabled** leaves a token uncolored while keeping the color you picked, so it
