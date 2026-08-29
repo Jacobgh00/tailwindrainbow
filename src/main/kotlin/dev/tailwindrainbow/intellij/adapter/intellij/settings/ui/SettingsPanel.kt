@@ -9,6 +9,7 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.panel
+import dev.tailwindrainbow.intellij.adapter.intellij.TailwindRainbowBundle.message
 import dev.tailwindrainbow.intellij.application.settings.SettingsForm
 import dev.tailwindrainbow.intellij.application.theme.ThemeProblem
 import dev.tailwindrainbow.intellij.application.theme.ThemeSpec
@@ -26,11 +27,11 @@ class SettingsPanel(
     declaredVariants: () -> Set<String>,
 ) {
     private val themeEditor = ThemeEditorPanel(declaredVariants)
-    private val enabled = JBCheckBox("Enable Tailwind Rainbow")
+    private val enabled = JBCheckBox(message("settings.enable"))
     private val themeNameModel = MutableCollectionComboBoxModel(themeNames.toMutableList())
     private val theme = ComboBox(themeNameModel)
-    private val newTheme = JButton("New…")
-    private val deleteTheme = JButton("Delete")
+    private val newTheme = JButton(message("settings.theme.new"))
+    private val deleteTheme = JButton(message("settings.theme.delete"))
     private val problems = JPanel().apply { layout = BoxLayout(this, BoxLayout.Y_AXIS) }
     private val recognition = RecognitionPanel()
 
@@ -40,7 +41,7 @@ class SettingsPanel(
     val component: DialogPanel =
         panel {
             row { cell(enabled) }
-            row("Theme:") {
+            row(message("settings.theme")) {
                 cell(theme)
                 cell(newTheme)
                 cell(deleteTheme)

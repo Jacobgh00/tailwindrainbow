@@ -5,6 +5,7 @@ import com.intellij.openapi.options.ConfigurationException
 import com.intellij.openapi.options.SearchableConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
+import dev.tailwindrainbow.intellij.adapter.intellij.TailwindRainbowBundle.message
 import dev.tailwindrainbow.intellij.adapter.intellij.highlighting.rehighlightOpenProjects
 import dev.tailwindrainbow.intellij.adapter.intellij.settings.TailwindRainbowProjectSettings
 import dev.tailwindrainbow.intellij.adapter.intellij.settings.TailwindRainbowSettings
@@ -25,7 +26,7 @@ class TailwindRainbowSettingsConfigurable(private val project: Project) : Search
 
     override fun getId(): String = "dev.tailwindrainbow.intellij.settings"
 
-    override fun getDisplayName(): String = "Tailwind Rainbow"
+    override fun getDisplayName(): String = message("configurable.displayName")
 
     override fun createComponent(): JComponent {
         val settings = TailwindRainbowSettings.getInstance()

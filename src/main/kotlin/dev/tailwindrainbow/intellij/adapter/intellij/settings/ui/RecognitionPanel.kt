@@ -5,13 +5,14 @@ import com.intellij.ui.components.JBTextField
 import com.intellij.ui.components.fields.ExpandableTextField
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.panel
+import dev.tailwindrainbow.intellij.adapter.intellij.TailwindRainbowBundle.message
 import dev.tailwindrainbow.intellij.application.settings.RecognitionForm
 import dev.tailwindrainbow.intellij.application.settings.classIdentifiersWarning
 import dev.tailwindrainbow.intellij.application.settings.maxFileSizeProblem
 import javax.swing.JComponent
 
 internal class RecognitionPanel {
-    private val ownedByProject = JBCheckBox("Use project settings for what is recognized")
+    private val ownedByProject = JBCheckBox(message("settings.recognition.project"))
     private val maxFileSize = JBTextField()
     private val classIdentifiers = listField()
     private val classFunctions = listField()
@@ -25,22 +26,22 @@ internal class RecognitionPanel {
         panel {
             row {
                 cell(ownedByProject)
-                    .comment("Stored with the project, so a repository can share them")
+                    .comment(message("settings.recognition.project.comment"))
             }
-            row("Maximum file size:") {
+            row(message("settings.recognition.maxFileSize")) {
                 cell(maxFileSize)
                     .align(AlignX.FILL)
                     .validationOnInput { field -> maxFileSizeProblem(field.text)?.let { error(it) } }
             }
-            row("Class identifiers:") {
+            row(message("settings.recognition.classIdentifiers")) {
                 cell(classIdentifiers)
                     .align(AlignX.FILL)
                     .validationOnInput { field -> classIdentifiersWarning(field.text)?.let { warning(it) } }
             }
-            row("Class functions:") { cell(classFunctions).align(AlignX.FILL) }
-            row("Template tags:") { cell(templateTags).align(AlignX.FILL) }
-            row("Ignored prefix modifiers:") { cell(ignoredModifiers).align(AlignX.FILL) }
-            row("Supported file extensions:") { cell(supportedExtensions).align(AlignX.FILL) }
+            row(message("settings.recognition.classFunctions")) { cell(classFunctions).align(AlignX.FILL) }
+            row(message("settings.recognition.templateTags")) { cell(templateTags).align(AlignX.FILL) }
+            row(message("settings.recognition.ignoredModifiers")) { cell(ignoredModifiers).align(AlignX.FILL) }
+            row(message("settings.recognition.extensions")) { cell(supportedExtensions).align(AlignX.FILL) }
         }
 
     init {

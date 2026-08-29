@@ -6,6 +6,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.JBPopupListener
 import com.intellij.openapi.ui.popup.LightweightWindowEvent
+import dev.tailwindrainbow.intellij.adapter.intellij.TailwindRainbowBundle.message
 import dev.tailwindrainbow.intellij.adapter.intellij.highlighting.rehighlightOpenProjects
 import dev.tailwindrainbow.intellij.adapter.intellij.settings.TailwindRainbowSettings
 
@@ -22,7 +23,7 @@ class SelectThemeAction : AnAction() {
 
         JBPopupFactory.getInstance()
             .createPopupChooserBuilder(settings.themes.names().toList())
-            .setTitle("Tailwind Rainbow Theme")
+            .setTitle(message("popup.selectTheme.title"))
             .setSelectedValue(settings.current().themeName, true)
             .setItemSelectedCallback { name -> preview(settings, name) }
             .setItemChosenCallback { name -> choose(settings, name) }

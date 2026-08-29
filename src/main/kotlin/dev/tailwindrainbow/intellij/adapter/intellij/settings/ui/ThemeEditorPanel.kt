@@ -6,6 +6,7 @@ import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.JBUI
+import dev.tailwindrainbow.intellij.adapter.intellij.TailwindRainbowBundle.message
 import dev.tailwindrainbow.intellij.application.settings.RowOrigin
 import dev.tailwindrainbow.intellij.application.settings.ThemeEditorModel
 import dev.tailwindrainbow.intellij.application.settings.ThemeEditorRow
@@ -40,17 +41,17 @@ class ThemeEditorPanel(private val declaredVariants: () -> Set<String>) {
         }
 
     private val colorPanel = ColorPanel()
-    private val resetButton = JButton("Reset to inherited")
+    private val resetButton = JButton(message("editor.reset"))
 
     val component: JComponent =
         panel {
             row {
-                label("Colours for the selected theme — pick a row, then choose a colour:")
-                    .comment("A colour unreadable on your editor background is darkened or lightened to suit it.")
+                label(message("editor.header"))
+                    .comment(message("editor.header.comment"))
             }
             row { cell(tableWithToolbar()).align(Align.FILL) }.resizableRow()
             row {
-                label("Colour:")
+                label(message("editor.colour"))
                 cell(colorPanel)
                 cell(resetButton)
             }
@@ -226,7 +227,15 @@ class ThemeEditorPanel(private val declaredVariants: () -> Set<String>) {
         const val COLOR = 2
         const val BOLD = 3
         const val ENABLED = 4
-        val COLUMN_NAMES = arrayOf("Section", "Token", "Colour", "Bold", "Enabled")
+        val COLUMN_NAMES
+            get() =
+                arrayOf(
+                    message("editor.column.section"),
+                    message("editor.column.token"),
+                    message("editor.column.colour"),
+                    message("editor.column.bold"),
+                    message("editor.column.enabled"),
+                )
 
         val SWITCHES = setOf(BOLD, ENABLED)
 
