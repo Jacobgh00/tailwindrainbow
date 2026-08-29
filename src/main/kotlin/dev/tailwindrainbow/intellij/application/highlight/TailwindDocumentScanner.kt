@@ -13,7 +13,7 @@ class TailwindDocumentScanner {
     ): List<HighlightSegment> {
         val extension = fileExtension.lowercase()
 
-        if (text.length > settings.maxFileSize || extension !in settings.supportedExtensions) {
+        if (settings.statusFor(extension, text.length) != ScanStatus.SCANNED) {
             return emptyList()
         }
 

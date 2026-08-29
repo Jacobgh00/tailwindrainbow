@@ -63,6 +63,11 @@ Then **Settings | Plugins | ⚙ | Install Plugin from Disk…** and choose
 previews each one in the editor as you arrow through it. The preview is discarded unless you pick a
 theme, so leaving with `Esc` changes nothing.
 
+The status bar shows the active theme and opens the same chooser when clicked. When a file is not
+being colored it says so there instead of naming a theme, and its tooltip gives the reason — the
+file's extension is not in the supported list, the file is past the size limit, or the plugin is
+switched off.
+
 ## Configuration
 
 **Settings | Editor | Tailwind Rainbow**

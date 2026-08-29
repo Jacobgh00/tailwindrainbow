@@ -6,9 +6,9 @@ import com.intellij.openapi.options.SearchableConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import dev.tailwindrainbow.intellij.adapter.intellij.TailwindRainbowBundle.message
-import dev.tailwindrainbow.intellij.adapter.intellij.highlighting.rehighlightOpenProjects
 import dev.tailwindrainbow.intellij.adapter.intellij.settings.TailwindRainbowProjectSettings
 import dev.tailwindrainbow.intellij.adapter.intellij.settings.TailwindRainbowSettings
+import dev.tailwindrainbow.intellij.adapter.intellij.settingsChanged
 import dev.tailwindrainbow.intellij.adapter.intellij.variants.ProjectVariants
 import dev.tailwindrainbow.intellij.application.settings.FormResult
 import dev.tailwindrainbow.intellij.application.settings.SettingsFormMapper
@@ -67,7 +67,7 @@ class TailwindRainbowSettingsConfigurable(private val project: Project) : Search
                 forProject.update(result.projectScan)
                 panel?.showStoredRecognition(currentForm())
                 panel?.showProblems(settings.themes.problems())
-                rehighlightOpenProjects()
+                settingsChanged()
             }
         }
     }

@@ -36,6 +36,10 @@
                 id="dev.tailwindrainbow.intellij.settings"
                 bundle="messages.TailwindRainbowBundle"
                 key="configurable.displayName"/>
+
+        <statusBarWidgetFactory id="dev.tailwindrainbow.statusBar"
+                                implementation="dev.tailwindrainbow.intellij.adapter.intellij.statusbar.TailwindStatusWidgetFactory"
+                                order="after positionWidget"/>
     </extensions>
 
     <actions>
