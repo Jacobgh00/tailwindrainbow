@@ -66,8 +66,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   same theme chooser as the action.
 - A **Select Tailwind Rainbow Theme** action, found through Find Action, that switches themes
   without opening settings and previews each one in the editor while the list is open.
-- Themes can be exported to a file and imported back from the theme editor's toolbar. The file uses
-  the same shape as the VS Code extension's theme setting, so a palette can move between the two.
+- Themes can be exported to a file and imported back, beside the theme selector. Import reads both a
+  theme this plugin exported and a VS Code `settings.json` — every theme under `tailwindRainbow.themes`
+  comes across, so a palette tuned in the VS Code extension moves in one dialog.
 - A `dev.tailwindrainbow.themeContributor` extension point, so other plugins can ship themes. A
   contributed theme can be based on a built-in one, can be the base of a user theme, and is
   overridden entry by entry by the user's own colors.

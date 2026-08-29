@@ -36,12 +36,11 @@ import javax.swing.ListSelectionModel
 import javax.swing.table.AbstractTableModel
 import javax.swing.table.DefaultTableCellRenderer
 
-class ThemeEditorPanel(
-    private val declaredVariants: () -> Set<String>,
-    private val themeName: () -> String,
-) {
+class ThemeEditorPanel(private val declaredVariants: () -> Set<String>) {
     private var model = ThemeEditorModel(RainbowTheme())
     private var inherited = RainbowTheme()
+
+    val palette: RainbowTheme get() = model.palette()
 
     private val tableModel = RowTableModel()
     private val table =
@@ -121,14 +120,6 @@ class ThemeEditorPanel(
             .setRemoveAction { removeSelectedToken() }
             .setRemoveActionUpdater { selectedRow()?.origin == RowOrigin.ADDED }
             .addExtraAction(resetAction())
-            .addExtraAction(exportThemeAction(table, themeName) { model.palette() })
-            .addExtraAction(
-                importThemeAction(table) { imported ->
-                    model = ThemeEditorModel(inherited, imported)
-                    tableModel.fireTableDataChanged()
-                    syncControls()
-                },
-            )
             .disableUpDownActions()
             .createPanel()
 

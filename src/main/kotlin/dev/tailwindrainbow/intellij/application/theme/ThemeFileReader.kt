@@ -6,13 +6,16 @@ import com.google.gson.JsonParser
 import dev.tailwindrainbow.intellij.domain.theme.FontWeight
 import dev.tailwindrainbow.intellij.domain.theme.SegmentKind
 
-fun themeFromFile(json: String): ThemeSpec? {
-    val root = runCatching { JsonParser.parseString(json).asJsonObject }.getOrNull() ?: return null
-    val name = root.keySet().firstOrNull() ?: return null
-    val sections = root.getAsJsonObjectOrNull(name) ?: return null
+fun themesFromFile(json: String): List<ThemeSpec> {
+    val root = runCatching { JsonParser.parseString(json).asJsonObject }.getOrNull() ?: return emptyList()
+    val themes = root.getAsJsonObjectOrNull(VS_CODE_THEMES) ?: root
 
-    return ThemeSpec(name, sections.toEntries())
+    return themes.keySet().mapNotNull { name ->
+        themes.getAsJsonObjectOrNull(name)?.let { ThemeSpec(name, it.toEntries()) }
+    }
 }
+
+private const val VS_CODE_THEMES = "tailwindRainbow.themes"
 
 private fun JsonObject.toEntries(): List<StyleEntry> =
     buildList {

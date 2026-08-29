@@ -128,10 +128,11 @@ Use **+** to add a token, choosing whether it matches a variant prefix (`hover`,
 specific pattern wins — a `bg-blue-500` entry beats `bg-*`. **−** removes a token you added; tokens
 that come from the theme are reset rather than removed.
 
-The toolbar also exports the selected theme to a file and imports one back. The file holds the
-theme's colors in the same shape the VS Code extension uses for its `tailwindRainbow.themes` setting,
-so a palette can move between the two. An export is self-contained — every color the theme shows,
-rather than only the ones you changed — and an import replaces the colors of the selected theme.
+**Export** writes the selected theme to a file, and **Import** reads themes back in under their own
+names. The file holds colors in the same shape the VS Code extension uses for its
+`tailwindRainbow.themes` setting, so a palette can move between the two editors — and Import accepts
+a whole VS Code `settings.json`, bringing across every theme defined in it. An export is
+self-contained: every color the theme shows, rather than only the ones you changed.
 
 Adding a token offers the variants your project declares for itself — `@custom-variant` and
 `--breakpoint-*` in a Tailwind v4 stylesheet, `addVariant(…)` and `screens` in a v3 config — so a

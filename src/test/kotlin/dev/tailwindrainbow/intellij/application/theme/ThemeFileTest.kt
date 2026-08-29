@@ -6,7 +6,6 @@ import dev.tailwindrainbow.intellij.domain.theme.SegmentKind
 import dev.tailwindrainbow.intellij.domain.theme.TextStyle
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class ThemeFileTest {
@@ -20,7 +19,7 @@ class ThemeFileTest {
 
     @Test
     fun `a palette survives being written out and read back`() {
-        val read = themeFromFile(palette.toThemeFile("midnight"))
+        val read = themesFromFile(palette.toThemeFile("midnight")).singleOrNull()
 
         assertEquals("midnight", read?.name)
         assertEquals(
@@ -59,7 +58,7 @@ class ThemeFileTest {
             }
             """.trimIndent()
 
-        val read = checkNotNull(themeFromFile(theirs))
+        val read = checkNotNull(themesFromFile(theirs).singleOrNull())
 
         assertEquals("myTheme", read.name)
         assertEquals(700, read.entries.first { it.key == "hover" }.fontWeight, "named weights are read")
@@ -69,16 +68,16 @@ class ThemeFileTest {
 
     @Test
     fun `a file that is not a theme is refused rather than throwing`() {
-        assertNull(themeFromFile("not json at all"))
-        assertNull(themeFromFile("[]"))
-        assertNull(themeFromFile("{}"))
+        assertTrue(themesFromFile("not json at all").isEmpty())
+        assertTrue(themesFromFile("[]").isEmpty())
+        assertTrue(themesFromFile("{}").isEmpty())
     }
 
     @Test
     fun `an entry the plugin cannot use is reported, not thrown, exactly as a stored one is`() {
         val broken = """{ "mine": { "prefix": { "hover": { "color": "rebeccapurple" } } } }"""
 
-        val spec = checkNotNull(themeFromFile(broken))
+        val spec = checkNotNull(themesFromFile(broken).singleOrNull())
         val problems = SpecThemeSource(listOf(spec)).problems
 
         assertEquals(1, problems.size)
