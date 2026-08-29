@@ -101,6 +101,12 @@ property of the code.
 so everything you leave alone keeps following the base theme — including tokens added in later
 plugin versions. **Delete** removes a theme you made; built-in themes cannot be deleted.
 
+A preview under the table shows a sample class list painted with the theme as you edit it, including
+the adjustment made for your editor background — so the colors you pick are shown the way the editor
+will actually paint them. The sample is editable: paste classes from your own code to see how they
+land, or to find out that a variant is not colored because no token matches it. Nothing typed there
+is saved, and **Restore sample** brings the original back.
+
 The token table lists what the selected theme colors, grouped by section. Editing a color opens a
 color picker, and **Reset** returns a single entry to its theme value without discarding your other
 overrides. Unticking **Enabled** leaves a token uncolored while keeping the color you picked, so it

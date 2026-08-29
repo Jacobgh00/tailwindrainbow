@@ -8,6 +8,7 @@ import com.intellij.ui.MutableCollectionComboBoxModel
 import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.FormBuilder
+import dev.tailwindrainbow.intellij.adapter.intellij.TailwindRainbowBundle.message
 import dev.tailwindrainbow.intellij.application.settings.displayName
 import dev.tailwindrainbow.intellij.domain.theme.SegmentKind
 import javax.swing.JComponent
@@ -25,8 +26,8 @@ internal class AddTokenDialog(
     val enteredKey: String get() = key.editor.item?.toString()?.trim().orEmpty()
 
     init {
-        title = "Add Token"
-        setOKButtonText("Add")
+        title = message("dialog.addToken.title")
+        setOKButtonText(message("dialog.addToken.ok"))
         section.renderer = SimpleListCellRenderer.create("") { it.displayName }
         section.addActionListener { offerSuggestions() }
         init()
@@ -48,19 +49,19 @@ internal class AddTokenDialog(
 
     override fun createCenterPanel(): JComponent =
         FormBuilder.createFormBuilder()
-            .addLabeledComponent(JBLabel("Section:"), section)
-            .addLabeledComponent(JBLabel("Token:"), key)
-            .addComponentToRightColumn(JBLabel("For example hover, focus-visible, min-*, or bg-*"))
-            .addComponentToRightColumn(JBLabel("Variants your project declares are offered in the list"))
+            .addLabeledComponent(JBLabel(message("dialog.addToken.section")), section)
+            .addLabeledComponent(JBLabel(message("dialog.addToken.token")), key)
+            .addComponentToRightColumn(JBLabel(message("dialog.addToken.example")))
+            .addComponentToRightColumn(JBLabel(message("dialog.addToken.suggestions")))
             .panel
 
     override fun getPreferredFocusedComponent(): JComponent = key
 
     override fun doValidate(): ValidationInfo? =
         when {
-            enteredKey.isEmpty() -> ValidationInfo("Enter a token", key)
+            enteredKey.isEmpty() -> ValidationInfo(message("dialog.addToken.empty"), key)
             isTaken(selectedSection, enteredKey) ->
-                ValidationInfo("'$enteredKey' is already in the ${selectedSection.displayName} section", key)
+                ValidationInfo(message("dialog.addToken.duplicate", enteredKey, selectedSection.displayName), key)
             else -> null
         }
 

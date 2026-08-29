@@ -7,6 +7,7 @@ import com.intellij.ui.CollectionComboBoxModel
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.FormBuilder
+import dev.tailwindrainbow.intellij.adapter.intellij.TailwindRainbowBundle.message
 import javax.swing.JComponent
 
 internal class NewThemeDialog(
@@ -20,24 +21,24 @@ internal class NewThemeDialog(
     val selectedBase: String get() = base.item ?: bases.first()
 
     init {
-        title = "New Theme"
-        setOKButtonText("Create")
+        title = message("dialog.newTheme.title")
+        setOKButtonText(message("dialog.newTheme.ok"))
         init()
     }
 
     override fun createCenterPanel(): JComponent =
         FormBuilder.createFormBuilder()
-            .addLabeledComponent(JBLabel("Name:"), name)
-            .addLabeledComponent(JBLabel("Based on:"), base)
-            .addComponentToRightColumn(JBLabel("Colours you do not change keep following the base theme"))
+            .addLabeledComponent(JBLabel(message("dialog.newTheme.name")), name)
+            .addLabeledComponent(JBLabel(message("dialog.newTheme.base")), base)
+            .addComponentToRightColumn(JBLabel(message("dialog.newTheme.comment")))
             .panel
 
     override fun getPreferredFocusedComponent(): JComponent = name
 
     override fun doValidate(): ValidationInfo? =
         when {
-            enteredName.isEmpty() -> ValidationInfo("Enter a name", name)
-            isTaken(enteredName) -> ValidationInfo("A theme called '$enteredName' already exists", name)
+            enteredName.isEmpty() -> ValidationInfo(message("dialog.newTheme.empty"), name)
+            isTaken(enteredName) -> ValidationInfo(message("dialog.newTheme.duplicate", enteredName), name)
             else -> null
         }
 

@@ -29,12 +29,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Adding and removing theme tokens, so a variant no built-in theme lists can be colored. Base-class
   patterns such as `bg-*` can be added too, coloring the utility itself alongside its variants;
   built-in themes ship none, so this stays opt-in.
+- The theme editor shows a live preview: a sample class list painted with the theme as you edit it,
+  including the adjustment that keeps colors readable on your editor background. The sample is
+  editable, so classes pasted from your own code can be tried against the palette; nothing typed
+  there is saved, and **Restore sample** brings the original back.
 - A color, a bold setting, and an on/off switch per token. Switching one off leaves it uncolored
   while keeping the color you picked, which is the difference between silencing a variant and
   deleting it.
 - Colors adapt to the editor background: one that would be unreadable against it is darkened or
   lightened, keeping its hue, until it meets the WCAG AA contrast ratio. One that already reads is
   used exactly as chosen.
+- The recognition lists can be edited one value per line: each field expands into a small editor
+  instead of being a long comma-separated line. A file extension written with a leading dot is stored
+  the way a file reports it, and Apply shows the stored, deduplicated list back.
+- Settings are validated as they are typed: a maximum file size that is not a positive number is
+  reported under the field rather than when Apply is pressed, and emptying the class identifiers says
+  what it will cost.
 - Settings under **Editor | Tailwind Rainbow** for the theme, the maximum file size to scan, and the
   recognized attributes, functions, template tags, ignored prefix modifiers, and file extensions.
 - Project-level recognition settings. A project can keep its own answers in

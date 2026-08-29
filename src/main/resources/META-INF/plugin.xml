@@ -16,6 +16,8 @@
 
     <depends>com.intellij.modules.platform</depends>
 
+    <resource-bundle>messages.TailwindRainbowBundle</resource-bundle>
+
     <extensionPoints>
         <!-- Other plugins contribute themes here; see adapter.theme.ThemeContributor. -->
         <extensionPoint name="themeContributor"
@@ -32,13 +34,12 @@
                 parentId="editor"
                 instance="dev.tailwindrainbow.intellij.adapter.intellij.settings.ui.TailwindRainbowSettingsConfigurable"
                 id="dev.tailwindrainbow.intellij.settings"
-                displayName="Tailwind Rainbow"/>
+                bundle="messages.TailwindRainbowBundle"
+                key="configurable.displayName"/>
     </extensions>
 
     <actions>
         <action id="dev.tailwindrainbow.SelectTheme"
-                class="dev.tailwindrainbow.intellij.adapter.intellij.actions.SelectThemeAction"
-                text="Select Tailwind Rainbow Theme"
-                description="Switch the palette used to colour Tailwind variants, previewing as you go"/>
+                class="dev.tailwindrainbow.intellij.adapter.intellij.actions.SelectThemeAction"/>
     </actions>
 </idea-plugin>

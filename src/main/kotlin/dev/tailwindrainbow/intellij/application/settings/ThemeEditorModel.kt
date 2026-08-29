@@ -2,9 +2,11 @@ package dev.tailwindrainbow.intellij.application.settings
 
 import dev.tailwindrainbow.intellij.application.theme.StyleEntry
 import dev.tailwindrainbow.intellij.application.theme.ThemeSpec
+import dev.tailwindrainbow.intellij.domain.theme.FontWeight
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
 import dev.tailwindrainbow.intellij.domain.theme.SegmentKind
 import dev.tailwindrainbow.intellij.domain.theme.TextStyle
+import dev.tailwindrainbow.intellij.domain.theme.isHexColor
 
 enum class RowOrigin {
     INHERITED,
@@ -106,6 +108,17 @@ class ThemeEditorModel private constructor(
 
     fun spec(name: String): ThemeSpec = ThemeSpec(name, overrides.values.toList())
 
+    fun palette(): RainbowTheme {
+        val styles = rows().mapNotNull { row -> row.style.toTextStyle()?.let { row.section to (row.key to it) } }
+
+        return RainbowTheme(
+            prefix = styles.sectionOf(SegmentKind.PREFIX),
+            base = styles.sectionOf(SegmentKind.BASE),
+            arbitrary = styles.singleOf(SegmentKind.ARBITRARY),
+            important = styles.singleOf(SegmentKind.IMPORTANT),
+        )
+    }
+
     private fun withOverrides(overrides: Map<EntryKey, StyleEntry>) = ThemeEditorModel(inherited, overrides)
 }
 
@@ -133,6 +146,15 @@ private fun rowOf(
             },
     )
 }
+
+private typealias SectionedStyles = List<Pair<SegmentKind, Pair<String, TextStyle>>>
+
+private fun SectionedStyles.sectionOf(section: SegmentKind) = filter { it.first == section }.associate { it.second }
+
+private fun SectionedStyles.singleOf(section: SegmentKind) = firstOrNull { it.first == section }?.second?.second
+
+private fun RowStyle.toTextStyle(): TextStyle? =
+    if (color.isHexColor()) TextStyle(color, FontWeight.of(if (bold) BOLD else NORMAL), enabled) else null
 
 private fun TextStyle.toEntry(entry: EntryKey) = StyleEntry(entry.section, entry.key, color, fontWeight.value, enabled)
 

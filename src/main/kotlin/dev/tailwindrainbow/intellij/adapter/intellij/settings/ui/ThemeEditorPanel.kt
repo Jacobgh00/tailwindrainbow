@@ -2,9 +2,12 @@ package dev.tailwindrainbow.intellij.adapter.intellij.settings.ui
 
 import com.intellij.ui.ColorPanel
 import com.intellij.ui.ToolbarDecorator
-import com.intellij.ui.components.JBLabel
+import com.intellij.ui.dsl.builder.Align
+import com.intellij.ui.dsl.builder.AlignX
+import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.JBUI
+import dev.tailwindrainbow.intellij.adapter.intellij.TailwindRainbowBundle.message
 import dev.tailwindrainbow.intellij.application.settings.RowOrigin
 import dev.tailwindrainbow.intellij.application.settings.ThemeEditorModel
 import dev.tailwindrainbow.intellij.application.settings.ThemeEditorRow
@@ -13,19 +16,18 @@ import dev.tailwindrainbow.intellij.application.theme.ThemeSpec
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
 import dev.tailwindrainbow.intellij.domain.theme.SegmentKind
 import dev.tailwindrainbow.intellij.domain.theme.isHexColor
-import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Component
 import java.awt.Font
-import javax.swing.BoxLayout
 import javax.swing.JButton
+import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.JTable
 import javax.swing.ListSelectionModel
 import javax.swing.table.AbstractTableModel
 import javax.swing.table.DefaultTableCellRenderer
 
-class ThemeEditorPanel(private val declaredVariants: () -> Set<String>) : JPanel(BorderLayout()) {
+class ThemeEditorPanel(private val declaredVariants: () -> Set<String>) {
     private var model = ThemeEditorModel(RainbowTheme())
 
     private val tableModel = RowTableModel()
@@ -39,28 +41,34 @@ class ThemeEditorPanel(private val declaredVariants: () -> Set<String>) : JPanel
             columnModel.getColumn(TOKEN).cellRenderer = TokenRenderer()
         }
 
+    private val preview = ThemePreviewPane()
     private val colorPanel = ColorPanel()
-    private val resetButton = JButton("Reset to inherited")
+    private val resetButton = JButton(message("editor.reset"))
+
+    val component: JComponent =
+        panel {
+            row {
+                label(message("editor.header"))
+                    .comment(message("editor.header.comment"))
+            }
+            row { cell(tableWithToolbar()).align(Align.FILL) }.resizableRow()
+            row {
+                label(message("editor.colour"))
+                cell(colorPanel)
+                cell(resetButton)
+            }
+            row {
+                cell(preview.component)
+                    .align(AlignX.FILL)
+                    .comment(message("editor.preview.comment"))
+            }
+            row {
+                link(message("editor.preview.restore")) { preview.restoreSample() }
+            }
+        }
 
     init {
-        add(
-            JPanel().apply {
-                layout = BoxLayout(this, BoxLayout.Y_AXIS)
-                add(JBLabel("Colours for the selected theme — pick a row, then choose a colour:"))
-                add(JBLabel("A colour unreadable on your editor background is darkened or lightened to suit it."))
-            },
-            BorderLayout.NORTH,
-        )
-        add(tableWithToolbar(), BorderLayout.CENTER)
-        add(
-            JPanel().apply {
-                add(JBLabel("Colour:"))
-                add(colorPanel)
-                add(resetButton)
-            },
-            BorderLayout.SOUTH,
-        )
-
+        tableModel.addTableModelListener { preview.show(model.palette()) }
         colorPanel.addActionListener { applySelectedColour() }
         resetButton.addActionListener { resetSelected() }
         table.selectionModel.addListSelectionListener { syncControls() }
@@ -230,7 +238,15 @@ class ThemeEditorPanel(private val declaredVariants: () -> Set<String>) : JPanel
         const val COLOR = 2
         const val BOLD = 3
         const val ENABLED = 4
-        val COLUMN_NAMES = arrayOf("Section", "Token", "Colour", "Bold", "Enabled")
+        val COLUMN_NAMES
+            get() =
+                arrayOf(
+                    message("editor.column.section"),
+                    message("editor.column.token"),
+                    message("editor.column.colour"),
+                    message("editor.column.bold"),
+                    message("editor.column.enabled"),
+                )
 
         val SWITCHES = setOf(BOLD, ENABLED)
 
