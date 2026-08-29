@@ -58,6 +58,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `--breakpoint-*` in Tailwind v4 stylesheets and from `addVariant(…)` and `screens` in a v3 config.
 - Reporting of theme entries the plugin cannot use, listed in the settings screen with what is wrong
   rather than dropped in silence; an edit that would add a new one is refused with the reason.
+- An **Explain Tailwind Colouring at Caret** action that says which theme entry colours the class
+  under the caret, or that nothing matches it.
 - A status bar widget showing the active theme, or saying that the current file is not scanned and
   why — the file's extension is not in the list, or it is past the size limit. Clicking it opens the
   same theme chooser as the action.

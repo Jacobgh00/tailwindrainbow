@@ -45,5 +45,8 @@
     <actions>
         <action id="dev.tailwindrainbow.SelectTheme"
                 class="dev.tailwindrainbow.intellij.adapter.intellij.actions.SelectThemeAction"/>
+
+        <action id="dev.tailwindrainbow.ExplainColouring"
+                class="dev.tailwindrainbow.intellij.adapter.intellij.actions.ExplainColouringAction"/>
     </actions>
 </idea-plugin>
