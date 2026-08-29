@@ -35,6 +35,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Colors adapt to the editor background: one that would be unreadable against it is darkened or
   lightened, keeping its hue, until it meets the WCAG AA contrast ratio. One that already reads is
   used exactly as chosen.
+- The recognition lists can be edited one value per line: each field expands into a small editor
+  instead of being a long comma-separated line. A file extension written with a leading dot is stored
+  the way a file reports it, and Apply shows the stored, deduplicated list back.
 - Settings are validated as they are typed: a maximum file size that is not a positive number is
   reported under the field rather than when Apply is pressed, and emptying the class identifiers says
   what it will cost.

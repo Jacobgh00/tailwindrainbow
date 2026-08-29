@@ -75,6 +75,10 @@ class SettingsPanel(
             themes = park(),
         )
 
+    fun showStoredRecognition(form: SettingsForm) {
+        recognition.show(form.recognition, form.projectRecognition)
+    }
+
     fun write(form: SettingsForm) {
         enabled.isSelected = form.enabled
         recognition.show(form.recognition, form.projectRecognition)

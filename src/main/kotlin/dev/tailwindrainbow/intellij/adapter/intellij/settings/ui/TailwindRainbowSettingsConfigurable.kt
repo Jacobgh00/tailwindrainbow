@@ -64,6 +64,7 @@ class TailwindRainbowSettingsConfigurable(private val project: Project) : Search
 
                 settings.update(result.settings, result.themes)
                 forProject.update(result.projectScan)
+                panel?.showStoredRecognition(currentForm())
                 panel?.showProblems(settings.themes.problems())
                 rehighlightOpenProjects()
             }

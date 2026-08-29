@@ -75,7 +75,7 @@ object SettingsFormMapper {
             classFunctions = classFunctions.toValues(),
             templateTags = templateTags.toValues(),
             ignoredPrefixModifiers = ignoredPrefixModifiers.toValues(),
-            supportedExtensions = supportedExtensions.toValues().map(String::lowercase).toSet(),
+            supportedExtensions = supportedExtensions.toValues().map { it.toFileExtension() }.toSet(),
         )
     }
 
@@ -90,6 +90,8 @@ object SettingsFormMapper {
         )
 
     private fun String.toValues(): Set<String> = split(',').map(String::trim).filter(String::isNotEmpty).toSet()
+
+    private fun String.toFileExtension(): String = lowercase().removePrefix(".")
 
     private fun Set<String>.toText(): String = joinToString(", ")
 }

@@ -30,6 +30,22 @@ class SettingsFormMapperTest {
     }
 
     @Test
+    fun `an extension written with a dot is stored the way a file reports it`() {
+        val result = SettingsFormMapper.toSettings(form(supportedExtensions = ".vue, VUE, vue"))
+
+        assertIs<FormResult.Valid>(result)
+        assertEquals(setOf("vue"), result.settings.scan.supportedExtensions, "a file's extension has no dot")
+    }
+
+    @Test
+    fun `the same value entered twice collapses to one`() {
+        val result = SettingsFormMapper.toSettings(form(classFunctions = "cn, clsx, cn ,  clsx"))
+
+        assertIs<FormResult.Valid>(result)
+        assertEquals(setOf("cn", "clsx"), result.settings.scan.classFunctions)
+    }
+
+    @Test
     fun `a non numeric size is rejected with a message, not an exception`() {
         val result = SettingsFormMapper.toSettings(form(maxFileSize = "lots"))
 

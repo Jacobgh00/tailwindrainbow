@@ -2,6 +2,7 @@ package dev.tailwindrainbow.intellij.adapter.intellij.settings.ui
 
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBTextField
+import com.intellij.ui.components.fields.ExpandableTextField
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.panel
 import dev.tailwindrainbow.intellij.application.settings.RecognitionForm
@@ -12,11 +13,11 @@ import javax.swing.JComponent
 internal class RecognitionPanel {
     private val ownedByProject = JBCheckBox("Use project settings for what is recognized")
     private val maxFileSize = JBTextField()
-    private val classIdentifiers = JBTextField()
-    private val classFunctions = JBTextField()
-    private val templateTags = JBTextField()
-    private val ignoredModifiers = JBTextField()
-    private val supportedExtensions = JBTextField()
+    private val classIdentifiers = listField()
+    private val classFunctions = listField()
+    private val templateTags = listField()
+    private val ignoredModifiers = listField()
+    private val supportedExtensions = listField()
 
     private var rulesOffScreen: RecognitionForm? = null
 
@@ -66,6 +67,12 @@ internal class RecognitionPanel {
         rulesOffScreen = current
     }
 
+    private fun listField() =
+        ExpandableTextField(
+            { text -> text.split(SEPARATOR).map(String::trim).filter(String::isNotEmpty).toMutableList() },
+            { values -> values.joinToString("$SEPARATOR ") },
+        )
+
     private fun rulesOffScreen() = rulesOffScreen ?: onScreen()
 
     private fun onScreen() =
@@ -77,6 +84,10 @@ internal class RecognitionPanel {
             ignoredPrefixModifiers = ignoredModifiers.text,
             supportedExtensions = supportedExtensions.text,
         )
+
+    private companion object {
+        const val SEPARATOR = ","
+    }
 
     private fun write(rules: RecognitionForm) {
         maxFileSize.text = rules.maxFileSize
