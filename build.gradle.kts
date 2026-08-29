@@ -104,10 +104,26 @@ intellijPlatform {
                             )
                     }
 
+                "wide" ->
+                    latest {
+                        types =
+                            listOf(
+                                IntelliJPlatformType.IntellijIdeaCommunity,
+                                IntelliJPlatformType.IntellijIdeaUltimate,
+                                IntelliJPlatformType.WebStorm,
+                                IntelliJPlatformType.PhpStorm,
+                            )
+
+                        channels =
+                            listOf(
+                                ProductRelease.Channel.RELEASE,
+                            )
+                    }
+
                 else ->
                     throw GradleException(
                         "Unsupported pluginVerificationTarget '$target'. " +
-                            "Expected 'baseline' or 'latest'.",
+                            "Expected 'baseline', 'latest', or 'wide'.",
                     )
             }
         }
@@ -141,7 +157,43 @@ detekt {
     parallel = true
 }
 
+/*
+ * The diagnostics report names the plugin version. Asking the platform for it means
+ * asking the plugin descriptor, and every method that answers is either marked internal
+ * or deprecated — the Plugin Verifier reports all three against 2026.2. The version is
+ * known here, so it is written into a resource instead, which also lets a test read it.
+ */
+val pluginVersionResource =
+    tasks.register("pluginVersionResource") {
+        val version = project.version.toString()
+        val output =
+            layout
+                .buildDirectory
+                .file("generated/version/tailwind-rainbow-version.txt")
+
+        inputs.property("version", version)
+        outputs.file(output)
+
+        doLast {
+            output.get().asFile.writeText(version)
+        }
+    }
+
+sourceSets {
+    main {
+        resources.srcDir(
+            layout
+                .buildDirectory
+                .dir("generated/version"),
+        )
+    }
+}
+
 tasks {
+    processResources {
+        dependsOn(pluginVersionResource)
+    }
+
     test {
         useJUnitPlatform()
 

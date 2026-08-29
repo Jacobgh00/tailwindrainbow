@@ -7,6 +7,7 @@ import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiFile
 import dev.tailwindrainbow.intellij.adapter.intellij.TailwindRainbowBundle.message
+import dev.tailwindrainbow.intellij.adapter.intellij.scannedExtension
 import dev.tailwindrainbow.intellij.adapter.intellij.settings.TailwindRainbowProjectSettings
 import dev.tailwindrainbow.intellij.adapter.intellij.settings.TailwindRainbowSettings
 import dev.tailwindrainbow.intellij.adapter.intellij.variants.ProjectVariants
@@ -19,13 +20,15 @@ class UncolouredVariantInspection : LocalInspectionTool() {
         manager: InspectionManager,
         isOnTheFly: Boolean,
     ): Array<ProblemDescriptor>? {
-        val extension = file.virtualFile?.extension ?: return null
+        val extension = file.scannedExtension() ?: return null
         val settings = TailwindRainbowSettings.getInstance()
         val effective =
             settings.current()
                 .withProjectRecognition(TailwindRainbowProjectSettings.getInstance(file.project).recognition())
 
-        if (!effective.enabled) return null
+        if (!effective.enabled) {
+            return null
+        }
 
         val declared = ProjectVariants.getInstance(file.project).declared()
         val theme = settings.themes.themeNamed(effective.themeName)

@@ -1,9 +1,7 @@
 package dev.tailwindrainbow.intellij.bootstrap
 
-import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.diagnostic.thisLogger
-import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -19,7 +17,7 @@ import dev.tailwindrainbow.intellij.application.port.HighlightSettings
 import dev.tailwindrainbow.intellij.application.settings.withProjectRecognition
 
 object PluginComponents {
-    private val PLUGIN = PluginId.getId("dev.tailwindrainbow")
+    private const val VERSION_RESOURCE = "/tailwind-rainbow-version.txt"
 
     fun highlightDocument(project: Project): HighlightDocument =
         HighlightDocumentService(
@@ -59,7 +57,12 @@ object PluginComponents {
         return ScannedFile(extension, settings.statusFor(extension, file.scannedLength()))
     }
 
-    private fun pluginVersion(): String = PluginManagerCore.getPlugin(PLUGIN)?.version ?: "unknown"
+    /**
+     * Read from a resource the build writes, not from the plugin descriptor: every platform method
+     * that hands one out is either marked internal or deprecated in 2026.2.
+     */
+    private fun pluginVersion(): String =
+        javaClass.getResourceAsStream(VERSION_RESOURCE)?.use { it.reader().readText().trim() } ?: "unknown"
 
     private fun runningIde(): String = with(ApplicationInfo.getInstance()) { "$fullApplicationName ($build)" }
 }

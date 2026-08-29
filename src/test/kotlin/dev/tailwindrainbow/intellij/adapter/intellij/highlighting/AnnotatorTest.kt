@@ -67,6 +67,20 @@ class AnnotatorTest : PaintedFileTest() {
     }
 
     @Test
+    fun `a file the user is editing that was never on disk is painted like any other`() {
+        val painted = paintedInMemory("sample.html", """<div class="hover:bg-blue-500"></div>""")
+
+        assertEquals(listOf("hover:bg-blue-500"), painted.map { it.text })
+    }
+
+    @Test
+    fun `a file nobody can edit is painted like any other`() {
+        val painted = paintedReadOnly("library.html", """<div class="hover:bg-blue-500"></div>""")
+
+        assertEquals(listOf("hover:bg-blue-500"), painted.map { it.text })
+    }
+
+    @Test
     fun `switching the plugin off paints nothing at all`() {
         settings.update(HighlightSettings(enabled = false, themeName = stored.themeName, scan = stored.scan))
 

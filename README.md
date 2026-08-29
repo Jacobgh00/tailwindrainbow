@@ -229,9 +229,21 @@ cancellation, and highlight lifetime. The plugin does not manage the markup mode
 ./gradlew build           # compile, lint, test
 ./gradlew runIde          # launch a sandbox IDE with the plugin installed
 ./gradlew buildPlugin     # produce the distributable zip
-./gradlew verifyPlugin    # run the JetBrains Plugin Verifier
+./gradlew verifyPlugin    # run the JetBrains Plugin Verifier against the IDE this builds against
 ./gradlew patchChangelog  # promote Unreleased to the current version, before a release
 ```
+
+The plugin declares only `com.intellij.modules.platform`, so it loads in every JetBrains IDE.
+`-PpluginVerificationTarget=wide` verifies it against the ones whose users write Tailwind — IntelliJ
+IDEA Community and Ultimate, WebStorm, and PhpStorm — at their latest release:
+
+```bash
+./gradlew verifyPlugin -PpluginVerificationTarget=wide
+```
+
+Each IDE is a separate download of about a gigabyte, so that target is not part of the build that
+runs on every pull request. It runs weekly, on demand through the **Wide verification** workflow, and
+as part of a release unless the release is dispatched with wide verification turned off.
 
 Release notes are generated from [CHANGELOG.md](CHANGELOG.md). `patchPluginXml` renders the
 section matching the current version — or `Unreleased` if that version has not been stamped yet —

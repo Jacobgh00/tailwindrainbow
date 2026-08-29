@@ -9,6 +9,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- A description for the **Tailwind variant with no colour** inspection, shown beside it under
+  **Settings | Editor | Inspections**.
+- Colouring in files that were never written to disk — an in-memory copy the IDE makes for an
+  intention preview, and anything else the editor holds without a file behind it. The file type is
+  now read from the editor's own copy rather than from disk.
 - A **Copy Tailwind Rainbow Diagnostics** action, which puts the plugin version, the IDE build, the
   theme in use, the recognition rules and whether they come from the project, and the current file's
   scan status on the clipboard — the whole content of a useful bug report, in one paste.

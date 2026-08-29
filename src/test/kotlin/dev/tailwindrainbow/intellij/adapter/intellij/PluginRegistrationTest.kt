@@ -10,6 +10,7 @@ import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.junit5.fixture.extensionPointFixture
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import com.intellij.testFramework.runInEdtAndWait
+import dev.tailwindrainbow.intellij.adapter.intellij.inspection.UncolouredVariantInspection
 import dev.tailwindrainbow.intellij.adapter.intellij.settings.ui.TailwindRainbowSettingsConfigurable
 import dev.tailwindrainbow.intellij.adapter.intellij.statusbar.TAILWIND_STATUS_WIDGET_ID
 import dev.tailwindrainbow.intellij.adapter.intellij.theme.ContributedThemes
@@ -65,6 +66,20 @@ class PluginRegistrationTest {
 
             assertFalse(event.presentation.isEnabled, "$id has nothing to act on")
         }
+    }
+
+    /**
+     * The IDE looks the description up by the inspection's short name, and reports an inspection
+     * without one. `loadDescription()` itself cannot be used here: it resolves the file through the
+     * plugin's own class loader, which a headless test application does not attribute to the plugin.
+     */
+    @Test
+    fun `the inspection carries the description the IDE shows beside it`() {
+        val shortName = UncolouredVariantInspection().shortName
+        val description = javaClass.getResource("/inspectionDescriptions/$shortName.html")
+
+        assertNotNull(description, "no inspectionDescriptions/$shortName.html for the settings tree to show")
+        assertTrue(description.readText().isNotBlank())
     }
 
     @Test
