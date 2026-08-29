@@ -21,8 +21,10 @@ class TailwindDocumentScanner {
 
         val profile = SyntaxProfile.of(extension)
         val tokens = DocumentLexer(profile).tokenize(text)
-        val parser = TailwindClassParser(ThemeMatcher(theme, settings.ignoredPrefixModifiers))
+        val matcher = ThemeMatcher(theme, settings.ignoredPrefixModifiers)
+        val parser = TailwindClassParser(matcher)
         val detector = ClassContextDetector(settings)
+        val shape = ClassListShape(matcher)
 
         return buildList {
             if (profile.hasApplyDirectives) {
@@ -34,7 +36,7 @@ class TailwindDocumentScanner {
                 addAll(nestedAttributeSegments(token, detector, parser))
 
                 when (detector.classify(text, token)) {
-                    ClassContent.NONE -> Unit
+                    ClassContent.NONE -> addAll(standaloneSegments(token, settings, shape, parser))
                     ClassContent.CLASS_NAMES -> addAll(parser.parse(token.content, token.contentStart))
                     ClassContent.EXPRESSION -> addAll(expressionSegments(token, profile, parser))
                 }
@@ -42,6 +44,18 @@ class TailwindDocumentScanner {
         }.distinctBy { it.start to it.end }
             .sortedBy(HighlightSegment::start)
     }
+
+    private fun standaloneSegments(
+        token: DocumentToken,
+        settings: ScanSettings,
+        shape: ClassListShape,
+        parser: TailwindClassParser,
+    ): List<HighlightSegment> =
+        if (settings.readsClassLikeStrings && shape.readsAsClassList(token.content)) {
+            parser.parse(token.content, token.contentStart)
+        } else {
+            emptyList()
+        }
 
     private fun expressionSegments(
         token: DocumentToken,

@@ -7,6 +7,7 @@ data class ScanSettings(
     val templateTags: Set<String> = DEFAULT_TEMPLATE_TAGS,
     val ignoredPrefixModifiers: Set<String> = DEFAULT_IGNORED_PREFIX_MODIFIERS,
     val supportedExtensions: Set<String> = DEFAULT_SUPPORTED_EXTENSIONS,
+    val readsClassLikeStrings: Boolean = true,
 ) {
     init {
         require(maxFileSize > 0) { "Maximum file size must be positive" }

@@ -89,6 +89,11 @@ class ScanInvariantsTest {
                 """<div class="${"hover:".repeat(2_000)}">""",
                 """<div class="${"a".repeat(10_000)}:bg-red-500">""",
                 " <div class=\"hover:bg-red-500\">",
+                "const classes: Foo<<<<<<<< = { a: 'hover:bg-red-500' }",
+                "const classes: (((((((( = { a: 'hover:bg-red-500' }",
+                "const classes${":".repeat(2_000)} = ['hover:bg-red-500']",
+                "const classes: ${"<".repeat(2_000)} = ['hover:bg-red-500']",
+                "const classes: ${"Foo<".repeat(1_000)} = ['hover:bg-red-500']",
             )
     }
 }

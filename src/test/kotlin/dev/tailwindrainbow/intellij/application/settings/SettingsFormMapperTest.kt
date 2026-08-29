@@ -205,5 +205,6 @@ class SettingsFormMapperTest {
         templateTags = "tw",
         ignoredPrefixModifiers = "group",
         supportedExtensions = supportedExtensions,
+        readsClassLikeStrings = true,
     )
 }

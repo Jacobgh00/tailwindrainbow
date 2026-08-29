@@ -20,6 +20,7 @@ internal class RecognitionPanel {
     private val templateTags = listField()
     private val ignoredModifiers = listField()
     private val supportedExtensions = listField()
+    private val readsClassLikeStrings = JBCheckBox(message("settings.recognition.classLikeStrings"))
 
     private var rulesOffScreen: RecognitionForm? = null
 
@@ -46,6 +47,10 @@ internal class RecognitionPanel {
                 cell(supportedExtensions)
                     .align(AlignX.FILL)
                     .validationOnInput { field -> supportedExtensionsWarning(field.text)?.let { warning(it) } }
+            }
+            row {
+                cell(readsClassLikeStrings)
+                    .comment(message("settings.recognition.classLikeStrings.comment"))
             }
         }
 
@@ -89,6 +94,7 @@ internal class RecognitionPanel {
             templateTags = templateTags.text,
             ignoredPrefixModifiers = ignoredModifiers.text,
             supportedExtensions = supportedExtensions.text,
+            readsClassLikeStrings = readsClassLikeStrings.isSelected,
         )
 
     private companion object {
@@ -102,5 +108,6 @@ internal class RecognitionPanel {
         templateTags.text = rules.templateTags
         ignoredModifiers.text = rules.ignoredPrefixModifiers
         supportedExtensions.text = rules.supportedExtensions
+        readsClassLikeStrings.isSelected = rules.readsClassLikeStrings
     }
 }

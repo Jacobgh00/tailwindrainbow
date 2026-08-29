@@ -83,7 +83,7 @@ class TailwindClassParser(private val themeMatcher: ThemeMatcher) {
     }
 }
 
-private data class ClassPart(val value: String, val offset: Int) {
+internal data class ClassPart(val value: String, val offset: Int) {
     val end: Int get() = offset + value.length
 
     fun withoutFirstCharacter() = ClassPart(value.drop(1), offset + 1)
@@ -111,9 +111,9 @@ private fun List<ClassPart>.replacingFirst(part: ClassPart) = listOf(part) + dro
 
 private fun List<ClassPart>.replacingLast(part: ClassPart) = dropLast(1) + part
 
-private data class ClassWord(val value: String, val start: Int)
+internal data class ClassWord(val value: String, val start: Int)
 
-private fun String.classWords(): List<ClassWord> {
+internal fun String.classWords(): List<ClassWord> {
     val content = this
 
     return buildList {
@@ -140,7 +140,7 @@ private fun String.classWords(): List<ClassWord> {
     }
 }
 
-private fun String.splitOnUnnestedColons(startOffset: Int): List<ClassPart> {
+internal fun String.splitOnUnnestedColons(startOffset: Int): List<ClassPart> {
     val className = this
 
     return buildList {

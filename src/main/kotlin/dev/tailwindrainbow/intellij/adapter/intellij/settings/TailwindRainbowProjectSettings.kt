@@ -33,6 +33,7 @@ class TailwindRainbowProjectSettings : PersistentStateComponent<TailwindRainbowP
             templateTags = storedState.templateTags.toSet(),
             ignoredPrefixModifiers = storedState.ignoredPrefixModifiers.toSet(),
             supportedExtensions = storedState.supportedExtensions.toSet(),
+            readsClassLikeStrings = storedState.readsClassLikeStrings,
         )
     }
 
@@ -47,6 +48,7 @@ class TailwindRainbowProjectSettings : PersistentStateComponent<TailwindRainbowP
         storedState.templateTags = effective.templateTags.sorted().toMutableList()
         storedState.ignoredPrefixModifiers = effective.ignoredPrefixModifiers.sorted().toMutableList()
         storedState.supportedExtensions = effective.supportedExtensions.sorted().toMutableList()
+        storedState.readsClassLikeStrings = effective.readsClassLikeStrings
     }
 
     class StoredState {
@@ -59,6 +61,7 @@ class TailwindRainbowProjectSettings : PersistentStateComponent<TailwindRainbowP
             ScanSettings.DEFAULT_IGNORED_PREFIX_MODIFIERS.sorted().toMutableList()
         var supportedExtensions: MutableList<String> =
             ScanSettings.DEFAULT_SUPPORTED_EXTENSIONS.sorted().toMutableList()
+        var readsClassLikeStrings: Boolean = ScanSettings().readsClassLikeStrings
     }
 
     companion object {

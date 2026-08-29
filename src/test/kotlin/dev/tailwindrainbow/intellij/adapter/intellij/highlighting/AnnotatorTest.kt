@@ -57,7 +57,13 @@ class AnnotatorTest : PaintedFileTest() {
     @Test
     fun `when the project keeps its own recognition rules, those are the ones applied`() {
         TailwindRainbowProjectSettings.getInstance(project.get())
-            .update(ScanSettings(classFunctions = setOf("twcx"), supportedExtensions = setOf("ts")))
+            .update(
+                ScanSettings(
+                    classFunctions = setOf("twcx"),
+                    supportedExtensions = setOf("ts"),
+                    readsClassLikeStrings = false,
+                ),
+            )
 
         val source = "const a = twcx('hover:bg-blue-500')\nconst b = clsx('lg:text-xl')"
 

@@ -7,6 +7,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Class names are read from a string that reads as a class list on its own, so an object no attribute,
+  helper or class-shaped name claims — `const sizeByAlignment: ReadonlyRecord<Alignment, string> =
+  { left: 'w-full md:max-w-1/2' }` — is coloured for what it holds rather than for what it is called.
+  A string qualifies only when *every* word in it is a Tailwind class and at least one carries a variant
+  the theme knows, which is what keeps prose that merely mentions a class — `'see hover:bg-blue-500 for
+  details'` — and colons that are not variants — `'10:30'`, `'user:profile:title'`, a URL — out of it.
+  It runs only on the strings the existing rules already turned down, so what was recognised before is
+  recognised the same way and costs the same. **Colour strings that read as a class list**, under
+  *Settings | Editor | Tailwind Rainbow*, switches it off.
+
 ### Changed
 
 - Files that merely mention something class-shaped — a `class` declaration, `classList`, the word in a
@@ -16,6 +28,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- A declaration that carries a type annotation is read like one that does not, so
+  `const alignmentClasses: ReadonlyRecord<Alignment, string> = { left: 'md:float-left' }` is coloured.
+  The name had to sit against the `=` to be recognised, and an annotation stands between the two — which
+  left the typed lookup tables a TypeScript codebase is mostly made of uncoloured. Reading the name is
+  now a walk rather than a pattern, so `string[]`, `Record<K, V>`, a generic default, an arrow in the
+  annotation, and an annotation written over several lines all read the same.
 - Class names nested more than one level inside a value assigned to a class-shaped name are read, so
   `const classes = [['hover:p-4']]` and `const buttonClasses = { size: { small: 'hover:px-4' } }` are
   coloured. The release notes promised arrays and objects; only their first level was read.

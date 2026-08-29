@@ -11,6 +11,7 @@ data class RecognitionForm(
     val templateTags: String,
     val ignoredPrefixModifiers: String,
     val supportedExtensions: String,
+    val readsClassLikeStrings: Boolean,
 )
 
 data class SettingsForm(
@@ -79,6 +80,7 @@ object SettingsFormMapper {
             templateTags = templateTags.toValues(),
             ignoredPrefixModifiers = ignoredPrefixModifiers.toValues(),
             supportedExtensions = supportedExtensions.toValues().map { it.toFileExtension() }.toSet(),
+            readsClassLikeStrings = readsClassLikeStrings,
         )
     }
 
@@ -90,6 +92,7 @@ object SettingsFormMapper {
             templateTags = templateTags.toText(),
             ignoredPrefixModifiers = ignoredPrefixModifiers.toText(),
             supportedExtensions = supportedExtensions.toText(),
+            readsClassLikeStrings = readsClassLikeStrings,
         )
 
     private fun String.toValues(): Set<String> = split(',').map(String::trim).filter(String::isNotEmpty).toSet()

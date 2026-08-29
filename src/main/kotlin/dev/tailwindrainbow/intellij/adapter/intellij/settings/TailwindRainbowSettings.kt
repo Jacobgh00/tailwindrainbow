@@ -57,6 +57,7 @@ class TailwindRainbowSettings :
                     templateTags = storedState.templateTags.toSet(),
                     ignoredPrefixModifiers = storedState.ignoredPrefixModifiers.toSet(),
                     supportedExtensions = storedState.supportedExtensions.toSet(),
+                    readsClassLikeStrings = storedState.readsClassLikeStrings,
                 ),
         )
 
@@ -84,6 +85,7 @@ class TailwindRainbowSettings :
         storedState.templateTags = snapshot.scan.templateTags.sorted().toMutableList()
         storedState.ignoredPrefixModifiers = snapshot.scan.ignoredPrefixModifiers.sorted().toMutableList()
         storedState.supportedExtensions = snapshot.scan.supportedExtensions.sorted().toMutableList()
+        storedState.readsClassLikeStrings = snapshot.scan.readsClassLikeStrings
         storedState.themes = userThemes.mapTo(mutableListOf(), StoredTheme::of)
         refreshThemes()
     }
@@ -113,6 +115,7 @@ class TailwindRainbowSettings :
 
         var supportedExtensions: MutableList<String> =
             ScanSettings.DEFAULT_SUPPORTED_EXTENSIONS.sorted().toMutableList()
+        var readsClassLikeStrings: Boolean = ScanSettings().readsClassLikeStrings
     }
 
     companion object {

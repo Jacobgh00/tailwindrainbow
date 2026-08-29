@@ -79,7 +79,7 @@ class TailwindDocumentScannerTest {
     fun `a binding marker does not open every attribute ending in class`() {
         val source = "<div :superclass=\"hover:bg-blue-500\"></div>"
 
-        assertTrue(scan(source, "vue").isEmpty())
+        assertTrue(scanSyntaxOnly(source, "vue").isEmpty())
     }
 
     @Test
@@ -111,7 +111,7 @@ class TailwindDocumentScannerTest {
 
     @Test
     fun `a method call on something unrelated is left alone`() {
-        assertTrue(scan("logger.add('hover:bg-blue-500')", "ts").isEmpty())
+        assertTrue(scanSyntaxOnly("logger.add('hover:bg-blue-500')", "ts").isEmpty())
     }
 
     @Test
@@ -136,8 +136,8 @@ class TailwindDocumentScannerTest {
 
     @Test
     fun `a collection assigned to something else is left alone`() {
-        assertTrue(scan("const documentation = ['hover:bg-blue-500']", "ts").isEmpty())
-        assertTrue(scan("const notes = { first: 'hover:bg-blue-500' }", "ts").isEmpty())
+        assertTrue(scanSyntaxOnly("const documentation = ['hover:bg-blue-500']", "ts").isEmpty())
+        assertTrue(scanSyntaxOnly("const notes = { first: 'hover:bg-blue-500' }", "ts").isEmpty())
     }
 
     @Test
@@ -155,8 +155,8 @@ class TailwindDocumentScannerTest {
         val compound = "const cardClassName = 'hover:bg-blue-500'"
 
         assertEquals(listOf("hover:bg-blue-500"), scan(compound, "ts").map { it.sliceOf(compound) })
-        assertTrue(scan("const superclass = 'hover:bg-blue-500'", "ts").isEmpty())
-        assertTrue(scan("const query = `hover:bg-blue-500`", "ts").isEmpty())
+        assertTrue(scanSyntaxOnly("const superclass = 'hover:bg-blue-500'", "ts").isEmpty())
+        assertTrue(scanSyntaxOnly("const query = `hover:bg-blue-500`", "ts").isEmpty())
     }
 
     @Test
@@ -173,17 +173,58 @@ class TailwindDocumentScannerTest {
     }
 
     @Test
-    fun `does not colour an unrelated string that merely looks like Tailwind`() {
+    fun `a standalone string that reads as a class list is coloured wherever it sits`() {
         val source = "const documentation = 'hover:bg-blue-500'"
 
-        assertTrue(scan(source, "ts").isEmpty())
+        assertEquals(listOf("hover:bg-blue-500"), scan(source, "ts").map { it.sliceOf(source) })
+        assertTrue(scanSyntaxOnly(source, "ts").isEmpty(), "no syntax rule claims it; the content does")
+    }
+
+    @Test
+    fun `a class list in an object no name or call claims is read`() {
+        val source =
+            "const sizeByAlignment: ReadonlyRecord<\n" +
+                "  ArticleContentModel.Image[\"alignment\"],\n" +
+                "  string\n" +
+                "> = {\n" +
+                "  center: \"w-full lg:px-1 lg:max-w-prose\",\n" +
+                "  left: \"w-full hover:max-w-1/2\",\n" +
+                "}"
+
+        assertEquals(
+            listOf("lg:px-1", "lg:max-w-prose", "hover:max-w-1/2"),
+            scan(source, "ts").map { it.sliceOf(source) },
+        )
+    }
+
+    @Test
+    fun `prose that merely mentions a class is left alone`() {
+        assertTrue(scan("const note = 'see hover:bg-blue-500 for details'", "ts").isEmpty())
+        assertTrue(scan("const note = 'Verhalten: hover:aktiv'", "ts").isEmpty())
+        assertTrue(scan("const note = 'hover:aktiv'", "ts").isEmpty(), "a known variant over a word is not a class")
+    }
+
+    @Test
+    fun `punctuation that is not a variant is left alone`() {
+        assertTrue(scan("const url = 'https://example.com:8080/path'", "ts").isEmpty())
+        assertTrue(scan("const at = '10:30'", "ts").isEmpty())
+        assertTrue(scan("const key = 'user:profile:title'", "ts").isEmpty())
+        assertTrue(scan("const path = 'C:/Users/x'", "ts").isEmpty())
+    }
+
+    @Test
+    fun `content recognition can be switched off`() {
+        val source = "const sizeByAlignment = { left: 'hover:bg-blue-500' }"
+
+        assertEquals(listOf("hover:bg-blue-500"), scan(source, "ts").map { it.sliceOf(source) })
+        assertTrue(scanSyntaxOnly(source, "ts").isEmpty())
     }
 
     @Test
     fun `does not match class as a suffix of another attribute name`() {
         val source = "<div data-class=\"hover:bg-blue-500\"></div>"
 
-        assertTrue(scan(source, "html").isEmpty())
+        assertTrue(scanSyntaxOnly(source, "html").isEmpty())
     }
 
     @Test
@@ -226,9 +267,9 @@ class TailwindDocumentScannerTest {
 
     @Test
     fun `a template tagged by something else is left alone`() {
-        assertTrue(scan("const query = sql`hover:bg-blue-500`", "ts").isEmpty())
-        assertTrue(scan("const raw = String.raw`hover:bg-blue-500`", "ts").isEmpty())
-        assertTrue(scan("const value = wide ? `hover:bg-blue-500` : other", "ts").isEmpty())
+        assertTrue(scanSyntaxOnly("const query = sql`hover:bg-blue-500`", "ts").isEmpty())
+        assertTrue(scanSyntaxOnly("const raw = String.raw`hover:bg-blue-500`", "ts").isEmpty())
+        assertTrue(scanSyntaxOnly("const value = wide ? `hover:bg-blue-500` : other", "ts").isEmpty())
     }
 
     @Test
@@ -287,6 +328,7 @@ class TailwindDocumentScannerTest {
                 classIdentifiers = emptySet(),
                 classFunctions = emptySet(),
                 templateTags = emptySet(),
+                readsClassLikeStrings = false,
             )
 
         assertTrue(scanner.scan("<div title=\"hover:block\"></div>", "html", settings, theme).isEmpty())
@@ -342,7 +384,7 @@ class TailwindDocumentScannerTest {
 
         assertEquals(
             emptyList(),
-            scan(source, "ts").map { it.themeKey },
+            scanSyntaxOnly(source, "ts").map { it.themeKey },
             "the theme colours hover, so this " +
                 "would be reported if the name counted",
         )
@@ -352,14 +394,14 @@ class TailwindDocumentScannerTest {
     fun `the search for an assignment does not walk out of the statement it is in`() {
         val source = "const classes = 1\nlog('hover:bg-blue-500')"
 
-        assertEquals(emptyList(), scan(source, "ts").map { it.themeKey }, "the call is not a class helper")
+        assertEquals(emptyList(), scanSyntaxOnly(source, "ts").map { it.themeKey }, "the call is not a class helper")
     }
 
     @Test
     fun `a later assignment to an ordinary name wins over an earlier class-shaped one`() {
         val source = "const classes = 'lg:text-xl'\nconst label = 'hover:bg-blue-500'"
 
-        assertEquals(listOf("lg"), scan(source, "ts").map { it.themeKey })
+        assertEquals(listOf("lg"), scanSyntaxOnly(source, "ts").map { it.themeKey })
     }
 
     @Test
@@ -369,12 +411,100 @@ class TailwindDocumentScannerTest {
         assertEquals(listOf("hover"), scan(source, "ts").map { it.themeKey }, "only the assignment is read")
     }
 
+    @Test
+    fun `finds classes in an object assigned to a typed class identifier`() {
+        val source = "const alignmentClasses: Alignments = { left: 'hover:mr-3', right: 'lg:ml-3' }"
+
+        assertEquals(
+            listOf("hover:mr-3", "lg:ml-3"),
+            scan(source, "ts").map { it.sliceOf(source) },
+        )
+    }
+
+    @Test
+    fun `finds classes through a generic annotation, over the lines it is written on`() {
+        val source =
+            "const alignmentClasses: ReadonlyRecord<\n" +
+                "  ArticleContentModel.Image[\"alignment\"],\n" +
+                "  string\n" +
+                "> = {\n" +
+                "  center: 'lg:mx-auto',\n" +
+                "  left: 'hover:float-left',\n" +
+                "}"
+
+        assertEquals(
+            listOf("lg:mx-auto", "hover:float-left"),
+            scan(source, "ts").map { it.sliceOf(source) },
+        )
+    }
+
+    @Test
+    fun `finds classes in a typed array assigned to a class identifier`() {
+        val source = "const alignmentClasses: string[] = ['hover:mr-3']"
+
+        assertEquals(listOf("hover:mr-3"), scan(source, "ts").map { it.sliceOf(source) })
+    }
+
+    @Test
+    fun `an equals sign inside the annotation does not end the declaration`() {
+        val source = "const alignmentClasses: Record<T = string> = { left: 'hover:mr-3' }"
+
+        assertEquals(listOf("hover:mr-3"), scan(source, "ts").map { it.sliceOf(source) })
+    }
+
+    @Test
+    fun `an arrow in the annotation is not read as the assignment`() {
+        val source = "const buttonClasses: (a: X) => Y = { left: 'hover:mr-3' }"
+
+        assertEquals(listOf("hover:mr-3"), scan(source, "ts").map { it.sliceOf(source) })
+    }
+
+    @Test
+    fun `a conditional type keeps the colons it spends on itself`() {
+        val source = "const buttonClasses: A extends B ? C : string[] = ['hover:mr-3']"
+
+        assertEquals(
+            listOf("hover:mr-3"),
+            scan(source, "ts").map { it.sliceOf(source) },
+            "the leftmost colon opens the annotation, not the conditional's",
+        )
+    }
+
+    @Test
+    fun `a typed collection assigned to something else is left alone`() {
+        assertTrue(scanSyntaxOnly("const options: string[] = ['hover:mr-3']", "ts").isEmpty())
+        assertTrue(scanSyntaxOnly("const notes: Record<string, string> = { first: 'hover:mr-3' }", "ts").isEmpty())
+        assertTrue(scanSyntaxOnly("const handler: (a: X) => Y = { left: 'hover:mr-3' }", "ts").isEmpty())
+        assertTrue(scanSyntaxOnly("const options: A extends B ? C : string[] = ['hover:mr-3']", "ts").isEmpty())
+    }
+
+    @Test
+    fun `a destructured target is not read as a class-shaped name`() {
+        val source = "const { alignmentClasses }: Alignments = { left: 'hover:mr-3' }"
+
+        assertTrue(scanSyntaxOnly(source, "ts").isEmpty(), "the name being bound is not the name being assigned")
+    }
+
+    @Test
+    fun `an earlier typed declaration does not lend its name to a later one`() {
+        assertTrue(scanSyntaxOnly("const buttonClasses: Foo = 1\nconst notes = { a: 'hover:mr-3' }", "ts").isEmpty())
+        assertTrue(scanSyntaxOnly("const buttonClasses: Foo = 1, notes = { a: 'hover:mr-3' }", "ts").isEmpty())
+        assertTrue(scanSyntaxOnly("const buttonClasses: Foo = 1; const notes = ['hover:mr-3']", "ts").isEmpty())
+    }
+
     private fun scan(
         source: String,
         extension: String,
         theme: RainbowTheme = this.theme,
     ): List<HighlightSegment> = scanner.scan(source, extension, ScanSettings(), theme)
+
+    private fun scanSyntaxOnly(
+        source: String,
+        extension: String,
+    ): List<HighlightSegment> = scanner.scan(source, extension, SYNTAX_ONLY, theme)
 }
+
+private val SYNTAX_ONLY = ScanSettings(readsClassLikeStrings = false)
 
 private class ScanCancelled : RuntimeException()
 

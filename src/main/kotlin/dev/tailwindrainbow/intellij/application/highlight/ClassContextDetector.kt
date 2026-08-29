@@ -17,6 +17,8 @@ internal class ClassContextDetector(private val settings: ScanSettings) {
 
     private val assignedValue = identifierAlternation?.let { Regex("(?is)$it\\s*(?:(?::[^=]+)?=|:)\\s*$") }
 
+    private val assignedName = identifierAlternation?.let { Regex("(?i)$it") }
+
     fun classify(
         text: String,
         token: DocumentToken,
@@ -49,9 +51,9 @@ internal class ClassContextDetector(private val settings: ScanSettings) {
         tokenStart: Int,
     ): Boolean {
         val assignment = text.assignmentBefore(tokenStart, CONTEXT_WINDOW) ?: return false
-        val head = text.substring((assignment + 1 - CONTEXT_WINDOW).coerceAtLeast(0), assignment + 1)
+        val name = text.assignedNameBefore(assignment, CONTEXT_WINDOW) ?: return false
 
-        return attributeValue?.containsMatchIn(head) == true
+        return assignedName?.matches(text.substring(name)) == true
     }
 
     private fun isTaggedTemplate(

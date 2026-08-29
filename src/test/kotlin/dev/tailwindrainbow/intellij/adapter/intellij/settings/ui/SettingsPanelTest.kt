@@ -21,6 +21,7 @@ class SettingsPanelTest {
             templateTags = "tw",
             ignoredPrefixModifiers = "group, peer",
             supportedExtensions = "html, vue",
+            readsClassLikeStrings = true,
         )
 
     @Test

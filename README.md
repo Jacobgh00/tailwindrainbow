@@ -107,14 +107,31 @@ switched off.
 | Template tags | `tw`, `css`, `styled` |
 | Ignored prefix modifiers | `group`, `peer`, `has`, `in`, `not` |
 | Supported extensions | `html`, `htm`, `js`, `jsx`, `ts`, `tsx`, `vue`, `svelte`, `astro`, `php`, `css`, `scss`, `sass`, `less`, `styl`, `stylus`, `pcss`, `postcss` |
+| Colour strings that read as a class list | on |
 
 Each list is comma-separated. A method called on one of the class functions counts as one too, so
 `el.classList.add("…")` is read like `clsx(…)`.
 
 A value assigned to one of the class identifiers is recognized whether it is a string, a template
-literal, an array, or an object: `const classes = ['hover:underline', 'lg:p-4']` is highlighted,
-while the same array assigned to `notes` is not. A name that ends in a class identifier counts too,
-as long as it reads as one: `buttonClasses` and `cardClassName` are recognized, `superclass` is not.
+literal, an array, or an object: `const classes = ['hover:underline', 'lg:p-4']` is highlighted, and
+a declaration that carries a type annotation reads the same as one that does not. A name that ends in
+a class identifier counts too, as long as it reads as one: `buttonClasses` and `cardClassName` are
+recognized, `superclass` is not.
+
+A string none of those rules claims is read when it reads as a class list on its own, which covers the
+lookup tables a codebase names for what they mean rather than for what they hold:
+
+```ts
+const sizeByAlignment: ReadonlyRecord<Alignment, string> = {
+  left: "w-full md:max-w-1/2",   // coloured, though nothing here is called a class
+}
+```
+
+Every word has to be a Tailwind class and at least one has to carry a variant the theme knows. That is
+what keeps prose out — `'see hover:bg-blue-500 for details'` is left alone, and so is any colon that is
+not a variant, such as `'10:30'`, `'user:profile:title'` or a URL. It is consulted only for strings the
+rules above already turned down, so nothing recognized before is recognized differently. Untick
+**Colour strings that read as a class list** to switch it off.
 
 These rules can belong to the project instead of the IDE. Tick **Use project settings for what is
 recognized** and they are stored in `.idea/tailwindRainbow.xml`, which a repository can commit so

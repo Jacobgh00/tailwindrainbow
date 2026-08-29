@@ -42,6 +42,7 @@ class SettingsSerialisationTest {
                         maxFileSize = 4096,
                         classFunctions = setOf("twcx"),
                         supportedExtensions = setOf("vue"),
+                        readsClassLikeStrings = false,
                     ),
             ),
             listOf(midnight),
@@ -72,7 +73,12 @@ class SettingsSerialisationTest {
 
     @Test
     fun `a project keeps the recognition rules it claimed`() {
-        val claimed = ScanSettings(classIdentifiers = setOf("class"), supportedExtensions = setOf("templ"))
+        val claimed =
+            ScanSettings(
+                classIdentifiers = setOf("class"),
+                supportedExtensions = setOf("templ"),
+                readsClassLikeStrings = false,
+            )
         val written = TailwindRainbowProjectSettings()
         written.update(claimed)
 
