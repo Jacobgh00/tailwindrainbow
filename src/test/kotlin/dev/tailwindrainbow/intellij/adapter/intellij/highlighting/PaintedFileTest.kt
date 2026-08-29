@@ -7,15 +7,15 @@ import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
-import com.intellij.testFramework.EdtTestUtil
 import com.intellij.testFramework.VfsTestUtil
 import com.intellij.testFramework.fixtures.impl.CodeInsightTestFixtureImpl
 import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.junit5.fixture.moduleFixture
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import com.intellij.testFramework.junit5.fixture.sourceRootFixture
+import com.intellij.testFramework.runInEdtAndGet
 
-data class Painted(val text: String, val color: String)
+data class Painted(val text: String, val color: String, val start: Int, val end: Int)
 
 @TestApplication
 abstract class PaintedFileTest {
@@ -27,7 +27,7 @@ abstract class PaintedFileTest {
         fileName: String,
         text: String,
     ): List<Painted> =
-        EdtTestUtil.runInEdtAndGet<List<Painted>, Throwable> {
+        runInEdtAndGet {
             WriteIntentReadAction.compute<List<Painted>, Throwable> { paint(fileName, text) }
         }
 
@@ -40,7 +40,14 @@ abstract class PaintedFileTest {
 
         return try {
             CodeInsightTestFixtureImpl.instantiateAndRun(file, editor, IntArray(0), false)
-                .map { Painted(text.substring(it.startOffset, it.endOffset), it.forcedTextAttributes.hex()) }
+                .map {
+                    Painted(
+                        text = text.substring(it.startOffset, it.endOffset),
+                        color = it.forcedTextAttributes.hex(),
+                        start = it.startOffset,
+                        end = it.endOffset,
+                    )
+                }
         } finally {
             EditorFactory.getInstance().releaseEditor(editor)
         }
