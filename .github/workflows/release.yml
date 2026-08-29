@@ -98,26 +98,6 @@ jobs:
           --no-build-cache
           --console=plain
 
-      # Four IDE distributions do not fit alongside the runner's preinstalled
-      # toolchains.
-      - name: Free disk space
-        if: ${{ inputs.wide_verification }}
-        run: |
-          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc
-          df -h /
-
-      # Re-run the complete quality gate for the exact release ref.
-      - name: Verify
-        id: verify
-        env:
-          VERIFICATION_TARGET: ${{ inputs.wide_verification && 'wide' || 'baseline' }}
-        run: >-
-          ./gradlew
-          ktlintCheck
-          detekt
-          --no-build-cache
-          --console=plain
-
       - name: Test
         id: test
         run: >-
@@ -126,8 +106,18 @@ jobs:
           --no-build-cache
           --console=plain
 
+      # Four IDE distributions do not fit alongside the runner's preinstalled
+      # toolchains.
+      - name: Free disk space
+        if: ${{ inputs.wide_verification }}
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc
+          df -h /
+
       - name: Verify plugin
         id: verify
+        env:
+          VERIFICATION_TARGET: ${{ inputs.wide_verification && 'wide' || 'baseline' }}
         run: >-
           ./gradlew
           verifyPlugin
