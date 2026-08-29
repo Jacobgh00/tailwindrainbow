@@ -1,11 +1,9 @@
 package dev.tailwindrainbow.intellij.adapter.intellij.settings.ui
 
-import com.intellij.icons.AllIcons
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.MutableCollectionComboBoxModel
 import com.intellij.ui.components.JBCheckBox
-import com.intellij.ui.components.JBLabel
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.panel
@@ -13,12 +11,8 @@ import dev.tailwindrainbow.intellij.adapter.intellij.TailwindRainbowBundle.messa
 import dev.tailwindrainbow.intellij.application.settings.SettingsForm
 import dev.tailwindrainbow.intellij.application.theme.ThemeProblem
 import dev.tailwindrainbow.intellij.application.theme.ThemeSpec
-import dev.tailwindrainbow.intellij.application.theme.describe
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
-import javax.swing.BoxLayout
 import javax.swing.JButton
-import javax.swing.JPanel
-import javax.swing.SwingConstants
 
 class SettingsPanel(
     private val baseNames: List<String>,
@@ -32,7 +26,18 @@ class SettingsPanel(
     private val theme = ComboBox(themeNameModel)
     private val newTheme = JButton(message("settings.theme.new"))
     private val deleteTheme = JButton(message("settings.theme.delete"))
-    private val problems = JPanel().apply { layout = BoxLayout(this, BoxLayout.Y_AXIS) }
+    private val problems =
+        ThemeProblemsBanner(
+            onShow = { problem ->
+                theme.selectedItem = problem.themeName
+                themeEditor.select(problem.section, problem.key)
+            },
+            onRemove = { found ->
+                themes = themes.withoutEntriesFor(found)
+                editing = ""
+                showSelectedTheme()
+            },
+        )
     private val recognition = RecognitionPanel()
 
     private var editing = ""
@@ -49,7 +54,7 @@ class SettingsPanel(
             separator()
             row { cell(recognition.component).align(Align.FILL) }
             separator()
-            row { cell(problems).align(AlignX.FILL) }
+            row { cell(problems.component).align(AlignX.FILL) }
             row { cell(themeEditor.component).align(Align.FILL) }.resizableRow()
         }
 
@@ -59,13 +64,7 @@ class SettingsPanel(
         deleteTheme.addActionListener { deleteSelectedTheme() }
     }
 
-    fun showProblems(found: List<ThemeProblem>) {
-        problems.removeAll()
-        found.forEach { problems.add(JBLabel(it.describe(), AllIcons.General.Warning, SwingConstants.LEFT)) }
-        problems.isVisible = found.isNotEmpty()
-        problems.revalidate()
-        problems.repaint()
-    }
+    fun showProblems(found: List<ThemeProblem>) = problems.show(found)
 
     fun read(): SettingsForm =
         SettingsForm(
@@ -133,3 +132,13 @@ class SettingsPanel(
         const val CHOOSER_GAP = 4
     }
 }
+
+private fun List<ThemeSpec>.withoutEntriesFor(problems: List<ThemeProblem>): List<ThemeSpec> =
+    map { spec ->
+        spec.copy(
+            entries =
+                spec.entries.filterNot { entry ->
+                    problems.any { it.themeName == spec.name && it.section == entry.section && it.key == entry.key }
+                },
+        )
+    }

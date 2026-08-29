@@ -134,8 +134,9 @@ project-specific variant is a pick from a list rather than something to type fro
 offered, not added: which of them deserve a color, and which color, stays your decision.
 
 If a stored theme holds an entry the plugin cannot use — a color that is not `#RRGGBB`, say, after
-the settings file was edited by hand — it is listed above the token table with what is wrong. The
-entry is skipped rather than applied, and its row stays in the table so it can be reset or removed.
+the settings file was edited by hand — a banner above the token table says so and what is wrong.
+**Show the entry** selects it so it can be fixed, and **Remove them** drops the unusable entries,
+which takes effect when you apply. The entries are skipped rather than applied in the meantime.
 
 ## Contributing themes from another plugin
 
