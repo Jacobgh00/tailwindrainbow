@@ -11,9 +11,12 @@ import com.intellij.testFramework.junit5.fixture.extensionPointFixture
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import com.intellij.testFramework.runInEdtAndWait
 import dev.tailwindrainbow.intellij.adapter.intellij.inspection.UncolouredVariantInspection
+import dev.tailwindrainbow.intellij.adapter.intellij.settings.TailwindRainbowSettings
 import dev.tailwindrainbow.intellij.adapter.intellij.settings.ui.TailwindRainbowSettingsConfigurable
 import dev.tailwindrainbow.intellij.adapter.intellij.statusbar.TAILWIND_STATUS_WIDGET_ID
 import dev.tailwindrainbow.intellij.adapter.intellij.theme.ContributedThemes
+import dev.tailwindrainbow.intellij.adapter.intellij.theme.EditorSchemeListener
+import dev.tailwindrainbow.intellij.adapter.intellij.theme.EditorSchemeThemes
 import dev.tailwindrainbow.intellij.adapter.theme.ThemeContributor
 import dev.tailwindrainbow.intellij.application.theme.StyleEntry
 import dev.tailwindrainbow.intellij.application.theme.ThemeSpec
@@ -80,6 +83,21 @@ class PluginRegistrationTest {
 
         assertNotNull(description, "no inspectionDescriptions/$shortName.html for the settings tree to show")
         assertTrue(description.readText().isNotBlank())
+    }
+
+    @Test
+    fun `the theme that follows the editor scheme is offered as a base like any built-in`() {
+        val bases = TailwindRainbowSettings.getInstance().themes.baseNames()
+
+        assertTrue(EditorSchemeThemes.NAME in bases, "bases are $bases")
+    }
+
+    @Test
+    fun `the scheme listener is registered, since nothing else would notice a scheme change`() {
+        val pluginXml = checkNotNull(javaClass.getResourceAsStream("/META-INF/plugin.xml")).reader().readText()
+
+        assertTrue(EditorSchemeListener::class.java.name in pluginXml)
+        assertTrue("com.intellij.openapi.editor.colors.EditorColorsListener" in pluginXml)
     }
 
     @Test

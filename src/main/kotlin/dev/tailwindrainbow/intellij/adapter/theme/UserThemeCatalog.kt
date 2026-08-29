@@ -8,7 +8,9 @@ import dev.tailwindrainbow.intellij.application.theme.ThemeRepository
 import dev.tailwindrainbow.intellij.application.theme.ThemeSpec
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
 
-class UserThemeCatalog(private val contributed: ThemeSource = ThemeSource { emptyMap() }) : ThemeCatalog {
+class UserThemeCatalog(private val sources: List<ThemeSource> = emptyList()) : ThemeCatalog {
+    constructor(vararg sources: ThemeSource) : this(sources.toList())
+
     @Volatile
     private var specs: List<ThemeSpec> = emptyList()
 
@@ -16,16 +18,16 @@ class UserThemeCatalog(private val contributed: ThemeSource = ThemeSource { empt
     private var source: SpecThemeSource = SpecThemeSource(emptyList(), BuiltInThemes)
 
     @Volatile
-    private var repository: ThemeRepository = ThemeRepository(BuiltInThemes, contributed, source)
+    private var repository: ThemeRepository = ThemeRepository(listOf(BuiltInThemes) + sources + source)
 
     @Volatile
-    private var bases: ThemeRepository = ThemeRepository(BuiltInThemes, contributed)
+    private var bases: ThemeRepository = ThemeRepository(listOf(BuiltInThemes) + sources)
 
     fun refresh(themes: List<ThemeSpec>) {
         specs = themes
         source = SpecThemeSource(themes, BuiltInThemes)
-        repository = ThemeRepository(BuiltInThemes, contributed, source)
-        bases = ThemeRepository(BuiltInThemes, contributed)
+        repository = ThemeRepository(listOf(BuiltInThemes) + sources + source)
+        bases = ThemeRepository(listOf(BuiltInThemes) + sources)
     }
 
     override fun themeNamed(name: String): RainbowTheme = repository.find(name)

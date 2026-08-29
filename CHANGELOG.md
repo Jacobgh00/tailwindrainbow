@@ -7,8 +7,29 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- The theme row is a picker and one gear button: **New…**, **Duplicate**, **Rename…**, **Delete**,
+  **Import theme…** and **Export theme…** moved into its menu. Duplicate and Rename are new — renaming a
+  theme carries every theme based on it, so an inherited palette does not silently fall back.
+- The colour table now shows the theme instead of describing it: every token is painted in the colour
+  that row assigns, bold when the row is bold, adapted to the background the same way the editor adapts
+  it. Rows are taller and the swatch is larger.
+- Colours are chosen in the row: click the swatch in the **Colour** column and the colour picker opens
+  for that token. The separate picker below the table is gone; typing a hex value in the cell still
+  works.
+- A **Find** field beside the section filter narrows the table to matching tokens.
+- The recognition settings — class identifiers, class functions, template tags, ignored modifiers and
+  file extensions — now sit behind a collapsible **What is recognized** group that starts closed. The
+  colour table, which is what the screen is for, gets the height they were taking.
+
 ### Added
 
+- An **editor scheme** theme: instead of declaring colours, it takes them from the IDE's own syntax
+  colours, so the variants match whatever scheme you already run. It updates when you change scheme,
+  and can be used as the base for a theme of your own.
+- A **colour-blind** theme beside `default` and `synthwave`, built on the Okabe–Ito palette so the
+  variant families stay distinguishable under all three dichromacies.
 - A description for the **Tailwind variant with no colour** inspection, shown beside it under
   **Settings | Editor | Inspections**.
 - Colouring in files that were never written to disk — an in-memory copy the IDE makes for an

@@ -9,10 +9,13 @@ import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.panel
 import dev.tailwindrainbow.intellij.adapter.intellij.TailwindRainbowBundle.message
 import dev.tailwindrainbow.intellij.application.settings.SettingsForm
+import dev.tailwindrainbow.intellij.application.settings.duplicating
+import dev.tailwindrainbow.intellij.application.settings.merging
+import dev.tailwindrainbow.intellij.application.settings.renaming
+import dev.tailwindrainbow.intellij.application.settings.withoutEntriesFor
 import dev.tailwindrainbow.intellij.application.theme.ThemeProblem
 import dev.tailwindrainbow.intellij.application.theme.ThemeSpec
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
-import javax.swing.JButton
 
 class SettingsPanel(
     private val baseNames: List<String>,
@@ -24,36 +27,14 @@ class SettingsPanel(
     private val enabled = JBCheckBox(message("settings.enable"))
     private val themeNameModel = MutableCollectionComboBoxModel(themeNames.toMutableList())
     private val theme = ComboBox(themeNameModel)
-    private val newTheme = JButton(message("settings.theme.new"))
-    private val deleteTheme = JButton(message("settings.theme.delete"))
-    private val importTheme =
-        JButton(message("themeFile.import")).apply {
-            addActionListener {
-                val imported = chooseThemesToImport(this)
-                if (imported.isNotEmpty()) {
-                    themes = themes.merging(imported)
-                    editing = ""
-                    themeNameModel.replaceAll(baseNames + themes.map(ThemeSpec::name).filterNot { it in baseNames })
-                    theme.selectedItem = imported.first().name
-                    showSelectedTheme()
-                }
-            }
-        }
-    private val exportTheme =
-        JButton(message("themeFile.export")).apply {
-            addActionListener { exportTheme(this, selectedThemeName(), themeEditor.palette) }
-        }
+    private val menu = ThemeMenu(Commands())
     private val problems =
         ThemeProblemsBanner(
             onShow = { problem ->
                 theme.selectedItem = problem.themeName
                 themeEditor.select(problem.section, problem.key)
             },
-            onRemove = { found ->
-                themes = themes.withoutEntriesFor(found)
-                editing = ""
-                showSelectedTheme()
-            },
+            onRemove = { found -> show(themes.withoutEntriesFor(found), selectedThemeName()) },
         )
     private val recognition = RecognitionPanel()
 
@@ -65,13 +46,11 @@ class SettingsPanel(
             row { cell(enabled) }
             row(message("settings.theme")) {
                 cell(theme)
-                cell(newTheme)
-                cell(deleteTheme)
-                cell(importTheme)
-                cell(exportTheme)
+                cell(menu.component)
             }
-            separator()
-            row { cell(recognition.component).align(Align.FILL) }
+            collapsibleGroup(message("settings.recognition.title"), indent = false) {
+                row { cell(recognition.component).align(Align.FILL) }
+            }.expanded = false
             separator()
             row { cell(problems.component).align(AlignX.FILL) }
             row { cell(themeEditor.component).align(Align.FILL) }.resizableRow()
@@ -79,8 +58,6 @@ class SettingsPanel(
 
     init {
         theme.addActionListener { showSelectedTheme() }
-        newTheme.addActionListener { createTheme() }
-        deleteTheme.addActionListener { deleteSelectedTheme() }
     }
 
     fun showProblems(found: List<ThemeProblem>) = problems.show(found)
@@ -104,7 +81,7 @@ class SettingsPanel(
 
         themes = form.themes
         editing = ""
-        themeNameModel.replaceAll(baseNames + form.themes.map(ThemeSpec::name).filterNot { it in baseNames })
+        offerNames()
         theme.selectedItem = form.themeName
         showSelectedTheme()
     }
@@ -120,47 +97,84 @@ class SettingsPanel(
     private fun showSelectedTheme() {
         themes = park()
         editing = selectedThemeName()
-        deleteTheme.isEnabled = editing !in baseNames
 
         themeEditor.show(basePalette(baseOf(editing)), themes.firstOrNull { it.name == editing })
     }
 
-    private fun createTheme() {
-        val dialog = NewThemeDialog(baseNames) { themeNameModel.items.contains(it) }
-        if (!dialog.showAndGet()) return
-
-        themes = park() + ThemeSpec(dialog.enteredName, emptyList(), basedOn = dialog.selectedBase)
-        editing = ""
-        themeNameModel.add(dialog.enteredName)
-        theme.selectedItem = dialog.enteredName
-    }
-
-    private fun deleteSelectedTheme() {
-        val name = selectedThemeName()
-        if (name in baseNames) return
-
-        themes = themes.filterNot { it.name == name }
-        editing = ""
-        themeNameModel.remove(name)
-        theme.selectedItem = baseNames.first()
-    }
-
     private fun baseOf(name: String): String = themes.firstOrNull { it.name == name }?.basedOn ?: name
 
-    private companion object {
-        const val CHOOSER_GAP = 4
+    private fun offerNames() {
+        themeNameModel.replaceAll(baseNames + themes.map(ThemeSpec::name).filterNot { it in baseNames })
     }
-}
 
-private fun List<ThemeSpec>.withoutEntriesFor(problems: List<ThemeProblem>): List<ThemeSpec> =
-    map { spec ->
-        spec.copy(
-            entries =
-                spec.entries.filterNot { entry ->
-                    problems.any { it.themeName == spec.name && it.section == entry.section && it.key == entry.key }
-                },
+    private fun show(
+        parked: List<ThemeSpec>,
+        selected: String,
+    ) {
+        themes = parked
+        editing = ""
+        offerNames()
+        theme.selectedItem = selected
+        showSelectedTheme()
+    }
+
+    private inner class Commands : ThemeCommands {
+        override fun create() {
+            val dialog = NewThemeDialog(baseNames) { themeNameModel.items.contains(it) }
+            if (!dialog.showAndGet()) return
+
+            show(park() + ThemeSpec(dialog.enteredName, emptyList(), basedOn = dialog.selectedBase), dialog.enteredName)
+        }
+
+        override fun duplicate() {
+            val source = selectedThemeName()
+            val dialog =
+                named(
+                    message("dialog.duplicateTheme.title"),
+                    message("dialog.duplicateTheme.ok"),
+                    message("dialog.duplicateTheme.suggested", source),
+                )
+            if (!dialog.showAndGet()) return
+
+            show(park().duplicating(source, dialog.enteredName), dialog.enteredName)
+        }
+
+        override fun rename() {
+            val from = selectedThemeName()
+            if (!ownsSelected()) return
+
+            val dialog = named(message("dialog.renameTheme.title"), message("dialog.renameTheme.ok"), from)
+            if (!dialog.showAndGet()) return
+
+            show(park().renaming(from, dialog.enteredName), dialog.enteredName)
+        }
+
+        override fun delete() {
+            if (!ownsSelected()) return
+
+            show(park().filterNot { it.name == selectedThemeName() }, baseNames.first())
+        }
+
+        override fun import() {
+            val imported = chooseThemesToImport(menu.component)
+            if (imported.isEmpty()) return
+
+            show(park().merging(imported), imported.first().name)
+        }
+
+        override fun export() = exportTheme(menu.component, selectedThemeName(), themeEditor.palette)
+
+        override fun ownsSelected(): Boolean = selectedThemeName() !in baseNames
+
+        private fun named(
+            dialogTitle: String,
+            okText: String,
+            suggested: String,
+        ) = ThemeNameDialog(
+            dialogTitle = dialogTitle,
+            okText = okText,
+            suggested = suggested,
+            isTaken = { it != selectedThemeName() && themeNameModel.items.contains(it) },
         )
     }
-
-private fun List<ThemeSpec>.merging(imported: List<ThemeSpec>): List<ThemeSpec> =
-    filterNot { existing -> imported.any { it.name == existing.name } } + imported
+}
