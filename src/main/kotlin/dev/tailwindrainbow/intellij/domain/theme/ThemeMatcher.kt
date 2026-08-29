@@ -23,7 +23,7 @@ class ThemeMatcher(
             return it
         }
 
-        return arbitraryMatch(prefix)
+        return arbitraryMatch(prefix) ?: arbitraryMatch(cleanedPrefix) ?: arbitraryMatch(unnamedPrefix)
     }
 
     fun matchBase(className: String): ThemeMatch? {

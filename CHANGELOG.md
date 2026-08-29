@@ -9,6 +9,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Arbitrary variants written behind a modifier or a group name — `has-[:checked]:`,
+  `group-[.is-open]/menu:`, `not-[&:hover]:` — are colored like any other arbitrary variant.
 - Highlighting of Tailwind variant prefixes, base classes, arbitrary variants such as `[&>*]`, and
   the important modifier in every position Tailwind allows — `!font-bold` and `hover:!font-bold`
   from v3, `font-bold!` from v4.

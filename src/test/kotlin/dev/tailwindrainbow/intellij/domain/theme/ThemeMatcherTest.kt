@@ -63,6 +63,30 @@ class ThemeMatcherTest {
     }
 
     @Test
+    fun `a bracketed prefix behind an ignored modifier is still arbitrary`() {
+        assertEquals(
+            ThemeMatch("arbitrary", arbitrary, SegmentKind.ARBITRARY),
+            matcher.matchPrefix("peer-[:checked]"),
+        )
+    }
+
+    @Test
+    fun `a bracketed prefix carrying a group name is still arbitrary`() {
+        assertEquals(
+            ThemeMatch("arbitrary", arbitrary, SegmentKind.ARBITRARY),
+            matcher.matchPrefix("group-[.is-open]/menu"),
+        )
+    }
+
+    @Test
+    fun `a bracket holding a slash is not mistaken for a group name`() {
+        assertEquals(
+            ThemeMatch("arbitrary", arbitrary, SegmentKind.ARBITRARY),
+            matcher.matchPrefix("peer-[aspect-ratio:1/8]"),
+        )
+    }
+
+    @Test
     fun `unknown token has no match`() {
         assertNull(matcher.matchPrefix("unknown"))
         assertNull(matcher.matchBase("flex"))
