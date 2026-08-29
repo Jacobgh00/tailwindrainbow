@@ -230,7 +230,8 @@ into `<change-notes>`, which becomes the Marketplace **What's New** tab. Do not 
 `plugin.xml`; they would be overwritten.
 
 Static analysis is ktlint and detekt; both run in CI on every pull request, along with the tests
-and the Plugin Verifier. Publishing to JetBrains Marketplace is a separate, manually dispatched
+and the Plugin Verifier. Kotlin warnings are errors, so a deprecated platform API fails the build
+rather than waiting to be noticed — which is what usually happens to a warning. Publishing to JetBrains Marketplace is a separate, manually dispatched
 workflow — nothing is released by merging.
 
 ## Credits
