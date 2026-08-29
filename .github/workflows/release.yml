@@ -84,14 +84,27 @@ jobs:
             exit 1
           fi
 
-      # Re-run the complete quality gate for the exact release ref.
-      - name: Verify
-        id: verify
+      - name: Lint
+        id: lint
         run: >-
           ./gradlew
           ktlintCheck
           detekt
+          --no-build-cache
+          --console=plain
+
+      - name: Test
+        id: test
+        run: >-
+          ./gradlew
           test
+          --no-build-cache
+          --console=plain
+
+      - name: Verify plugin
+        id: verify
+        run: >-
+          ./gradlew
           verifyPlugin
           -PpluginVerificationTarget=baseline
           --no-build-cache
@@ -112,7 +125,6 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-      # Always sign and verify the archive, including sign-only runs.
       - name: Sign and verify signature
         id: sign
         env:
@@ -142,6 +154,7 @@ jobs:
 
       # Preserve the signed archive if Marketplace publishing fails.
       - name: Upload signed plugin
+        id: artifact
         if: ${{ !cancelled() && steps.sign.outcome == 'success' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -159,20 +172,29 @@ jobs:
           REF_NAME: ${{ github.ref_name }}
           PLUGIN_VERSION: ${{ steps.metadata.outputs.version }}
           METADATA_OUTCOME: ${{ steps.metadata.outcome }}
+          LINT_OUTCOME: ${{ steps.lint.outcome }}
+          TEST_OUTCOME: ${{ steps.test.outcome }}
           VERIFY_OUTCOME: ${{ steps.verify.outcome }}
           SIGN_OUTCOME: ${{ steps.sign.outcome }}
           PUBLISH_OUTCOME: ${{ steps.publish.outcome }}
+          ARTIFACT_OUTCOME: ${{ steps.artifact.outcome }}
         run: |
           if [[ "$METADATA_OUTCOME" != "success" ]]; then
             status="Release validation failed"
+          elif [[ "$LINT_OUTCOME" != "success" ]]; then
+            status="Linting failed"
+          elif [[ "$TEST_OUTCOME" != "success" ]]; then
+            status="Tests failed"
           elif [[ "$VERIFY_OUTCOME" != "success" ]]; then
-            status="Verification failed"
+            status="Plugin verification failed"
           elif [[ "$SIGN_OUTCOME" != "success" ]]; then
             status="Signing failed"
-          elif [[ "$PUBLISH_REQUESTED" == "true" && "$PUBLISH_OUTCOME" == "success" ]]; then
-            status="Published"
-          elif [[ "$PUBLISH_REQUESTED" == "true" ]]; then
+          elif [[ "$PUBLISH_REQUESTED" == "true" && "$PUBLISH_OUTCOME" != "success" ]]; then
             status="Publishing failed"
+          elif [[ "$ARTIFACT_OUTCOME" != "success" ]]; then
+            status="Signed successfully, but artifact upload failed"
+          elif [[ "$PUBLISH_REQUESTED" == "true" ]]; then
+            status="Published"
           else
             status="Signed and verified — nothing uploaded"
           fi

@@ -16,7 +16,7 @@ jobs:
   verify:
     name: Verify
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -30,20 +30,33 @@ jobs:
           distribution: temurin
           java-version: "21"
 
-      # IntelliJ distributions make the Gradle dependency and transform caches
-      # too large for a standard GitHub runner when restored and extracted.
+      # Restoring cached IntelliJ distributions and transformed dependencies
+      # exceeds the disk capacity of a standard GitHub-hosted runner.
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
         with:
           cache-disabled: true
 
-      - name: Verify
+      - name: Lint
         run: >-
           ./gradlew
           ktlintCheck
           detekt
+          --no-build-cache
+          --console=plain
+
+      - name: Test
+        run: >-
+          ./gradlew
           test
+          --no-build-cache
+          --console=plain
+
+      - name: Verify plugin
+        run: >-
+          ./gradlew
           verifyPlugin
+          -PpluginVerificationTarget=baseline
           --no-build-cache
           --console=plain
 
