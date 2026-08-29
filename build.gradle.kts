@@ -16,6 +16,10 @@ kotlin {
     jvmToolchain(21)
 }
 
+configurations.testRuntimeClasspath {
+    exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib")
+}
+
 dependencies {
     testImplementation(kotlin("test"))
     testImplementation("junit:junit:4.13.2")
