@@ -10,6 +10,7 @@ import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.junit5.fixture.extensionPointFixture
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import com.intellij.testFramework.runInEdtAndWait
+import dev.tailwindrainbow.intellij.adapter.intellij.inspection.UncolouredVariantInspection
 import dev.tailwindrainbow.intellij.adapter.intellij.settings.ui.TailwindRainbowSettingsConfigurable
 import dev.tailwindrainbow.intellij.adapter.intellij.statusbar.TAILWIND_STATUS_WIDGET_ID
 import dev.tailwindrainbow.intellij.adapter.intellij.theme.ContributedThemes
@@ -35,17 +36,22 @@ class PluginRegistrationTest {
         }
 
     @Test
-    fun `both actions are registered, and take their text from the bundle`() {
-        val select = ActionManager.getInstance().getAction("dev.tailwindrainbow.SelectTheme")
-        val explain = ActionManager.getInstance().getAction("dev.tailwindrainbow.ExplainColouring")
+    fun `every action is registered, and takes its text from the bundle`() {
+        val texts = ACTION_IDS.map { ActionManager.getInstance().getAction(it).templatePresentation.text }
 
-        assertEquals("Select Tailwind Rainbow Theme", select.templatePresentation.text)
-        assertEquals("Explain Tailwind Colouring at Caret", explain.templatePresentation.text)
+        assertEquals(
+            listOf(
+                "Select Tailwind Rainbow Theme",
+                "Explain Tailwind Colouring at Caret",
+                "Copy Tailwind Rainbow Diagnostics",
+            ),
+            texts,
+        )
     }
 
     @Test
     fun `an action asked about nothing at all answers without failing`() {
-        listOf("dev.tailwindrainbow.SelectTheme", "dev.tailwindrainbow.ExplainColouring").forEach { id ->
+        ACTION_IDS.forEach { id ->
             val action = ActionManager.getInstance().getAction(id)
             val event =
                 AnActionEvent.createEvent(
@@ -60,6 +66,20 @@ class PluginRegistrationTest {
 
             assertFalse(event.presentation.isEnabled, "$id has nothing to act on")
         }
+    }
+
+    /**
+     * The IDE looks the description up by the inspection's short name, and reports an inspection
+     * without one. `loadDescription()` itself cannot be used here: it resolves the file through the
+     * plugin's own class loader, which a headless test application does not attribute to the plugin.
+     */
+    @Test
+    fun `the inspection carries the description the IDE shows beside it`() {
+        val shortName = UncolouredVariantInspection().shortName
+        val description = javaClass.getResource("/inspectionDescriptions/$shortName.html")
+
+        assertNotNull(description, "no inspectionDescriptions/$shortName.html for the settings tree to show")
+        assertTrue(description.readText().isNotBlank())
     }
 
     @Test
@@ -87,5 +107,14 @@ class PluginRegistrationTest {
             assertFalse(configurable.isModified, "a screen nobody has touched has nothing to apply")
             configurable.disposeUIResources()
         }
+    }
+
+    private companion object {
+        val ACTION_IDS =
+            listOf(
+                "dev.tailwindrainbow.SelectTheme",
+                "dev.tailwindrainbow.ExplainColouring",
+                "dev.tailwindrainbow.CopyDiagnostics",
+            )
     }
 }

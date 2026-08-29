@@ -1,5 +1,7 @@
 package dev.tailwindrainbow.intellij.adapter.intellij.settings.ui
 
+import com.intellij.openapi.application.ApplicationManager.getApplication
+import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.editor.colors.EditorFontType
 import com.intellij.util.ui.JBUI
@@ -13,7 +15,6 @@ import java.awt.Color
 import java.awt.Font
 import javax.swing.JComponent
 import javax.swing.JTextPane
-import javax.swing.SwingUtilities
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import javax.swing.text.AttributeSet
@@ -53,7 +54,7 @@ internal class ThemePreviewPane {
         sample.text = PREVIEW_SAMPLE
     }
 
-    private fun repaintLater() = SwingUtilities.invokeLater(::repaint)
+    private fun repaintLater() = getApplication().invokeLater(::repaint, ModalityState.any())
 
     private fun repaint() {
         val scheme = EditorColorsManager.getInstance().globalScheme

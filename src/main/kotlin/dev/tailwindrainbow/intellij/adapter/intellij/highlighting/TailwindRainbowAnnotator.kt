@@ -7,6 +7,7 @@ import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import dev.tailwindrainbow.intellij.adapter.intellij.scannedExtension
 import dev.tailwindrainbow.intellij.bootstrap.PluginComponents
 
 class TailwindRainbowAnnotator : Annotator {
@@ -18,7 +19,7 @@ class TailwindRainbowAnnotator : Annotator {
             return
         }
 
-        val extension = element.virtualFile?.extension ?: return
+        val extension = element.scannedExtension() ?: return
         val background = EditorColorsManager.getInstance().globalScheme.defaultBackground
 
         PluginComponents.highlightDocument(element.project).highlight(element.text, extension).forEach { segment ->

@@ -5,7 +5,9 @@ import com.intellij.openapi.application.WriteIntentReadAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.fileEditor.FileDocumentManager
+import com.intellij.openapi.fileTypes.PlainTextFileType
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiManager
 import com.intellij.testFramework.VfsTestUtil
 import com.intellij.testFramework.fixtures.impl.CodeInsightTestFixtureImpl
@@ -14,6 +16,8 @@ import com.intellij.testFramework.junit5.fixture.moduleFixture
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import com.intellij.testFramework.junit5.fixture.sourceRootFixture
 import com.intellij.testFramework.runInEdtAndGet
+import com.intellij.util.LocalTimeCounter
+import java.io.IOException
 
 data class Painted(val text: String, val color: String, val start: Int, val end: Int)
 
@@ -39,15 +43,59 @@ abstract class PaintedFileTest {
             WriteIntentReadAction.compute<PsiFile, Throwable> { write(fileName, text) }
         }
 
+    fun paintedReadOnly(
+        fileName: String,
+        text: String,
+    ): List<Painted> =
+        runInEdtAndGet {
+            WriteIntentReadAction.compute<List<Painted>, Throwable> {
+                val file = write(fileName, text)
+
+                setWritable(file, false)
+
+                // The fixture cannot delete a read-only file, so the flag goes back before teardown.
+                try {
+                    paint(file, text)
+                } finally {
+                    setWritable(file, true)
+                }
+            }
+        }
+
+    fun paintedInMemory(
+        fileName: String,
+        text: String,
+    ): List<Painted> =
+        runInEdtAndGet {
+            WriteIntentReadAction.compute<List<Painted>, Throwable> {
+                val file =
+                    PsiFileFactory.getInstance(project.get())
+                        .createFileFromText(
+                            fileName,
+                            PlainTextFileType.INSTANCE,
+                            text,
+                            LocalTimeCounter.currentTime(),
+                            true,
+                        )
+
+                paint(file, text)
+            }
+        }
+
     private fun paint(
         fileName: String,
         text: String,
+    ): List<Painted> = paint(write(fileName, text), text)
+
+    private fun paint(
+        file: PsiFile,
+        text: String,
     ): List<Painted> {
-        val file = write(fileName, text)
         val editor = openEditor(file)
 
         return try {
             CodeInsightTestFixtureImpl.instantiateAndRun(file, editor, IntArray(0), false)
+                .filter { it.forcedTextAttributes != null }
                 .map {
                     Painted(
                         text = text.substring(it.startOffset, it.endOffset),
@@ -61,6 +109,11 @@ abstract class PaintedFileTest {
         }
     }
 
+    private fun setWritable(
+        file: PsiFile,
+        writable: Boolean,
+    ) = WriteAction.computeAndWait<Unit, IOException> { file.virtualFile.isWritable = writable }
+
     private fun write(
         fileName: String,
         text: String,
@@ -72,9 +125,10 @@ abstract class PaintedFileTest {
         }
 
     private fun openEditor(file: PsiFile): Editor {
-        val document = checkNotNull(FileDocumentManager.getInstance().getDocument(file.virtualFile))
+        val virtualFile = file.viewProvider.virtualFile
+        val document = checkNotNull(FileDocumentManager.getInstance().getDocument(virtualFile))
 
-        return EditorFactory.getInstance().createEditor(document, project.get(), file.virtualFile, true)
+        return EditorFactory.getInstance().createEditor(document, project.get(), virtualFile, true)
     }
 }
 

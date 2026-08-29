@@ -33,7 +33,9 @@ class AnnotatorTest : PaintedFileTest() {
 
     @Test
     fun `a file of a type nobody asked for is left alone`() {
-        assertTrue(painted("Notes.kt", """val markup = "<div class=\"hover:bg-blue-500\"></div>"""").isEmpty())
+        val painted = painted("Notes.kt", """val markup = "<div class=\"hover:bg-blue-500\"></div>"""")
+
+        assertTrue(painted.isEmpty(), "painted: $painted")
     }
 
     @Test
@@ -62,6 +64,20 @@ class AnnotatorTest : PaintedFileTest() {
         val painted = painted("rules.ts", source)
 
         assertEquals(listOf("hover:bg-blue-500"), painted.map { it.text }, "the project's helper is read")
+    }
+
+    @Test
+    fun `a file the user is editing that was never on disk is painted like any other`() {
+        val painted = paintedInMemory("sample.html", """<div class="hover:bg-blue-500"></div>""")
+
+        assertEquals(listOf("hover:bg-blue-500"), painted.map { it.text })
+    }
+
+    @Test
+    fun `a file nobody can edit is painted like any other`() {
+        val painted = paintedReadOnly("library.html", """<div class="hover:bg-blue-500"></div>""")
+
+        assertEquals(listOf("hover:bg-blue-500"), painted.map { it.text })
     }
 
     @Test
