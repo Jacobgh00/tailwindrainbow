@@ -107,9 +107,10 @@ will actually paint them. The sample is editable: paste classes from your own co
 land, or to find out that a variant is not colored because no token matches it. Nothing typed there
 is saved, and **Restore sample** brings the original back.
 
-The token table lists what the selected theme colors, grouped by section. Editing a color opens a
-color picker, and **Reset** returns a single entry to its theme value without discarding your other
-overrides. Unticking **Enabled** leaves a token uncolored while keeping the color you picked, so it
+The token table lists what the selected theme colors, grouped by section. Each row shows its color as
+a swatch and a hex value that can be edited in place — with or without the hash, and `#fff` style
+shorthand is expanded — or picked with the color picker below. **Reset**, in the table's toolbar,
+returns a single entry to its theme value without discarding your other overrides. Unticking **Enabled** leaves a token uncolored while keeping the color you picked, so it
 can be switched back on later.
 
 Use **+** to add a token, choosing whether it matches a variant prefix (`hover`, `focus-visible`,

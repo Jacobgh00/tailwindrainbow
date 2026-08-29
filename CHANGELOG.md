@@ -33,6 +33,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   including the adjustment that keeps colors readable on your editor background. The sample is
   editable, so classes pasted from your own code can be tried against the palette; nothing typed
   there is saved, and **Restore sample** brings the original back.
+- The color column shows each token's hex beside its swatch and can be edited in place, including
+  pasting a color with or without its hash and shorthand such as `#fff`. **Reset** now sits in the
+  table's toolbar, next to add and remove.
 - A color, a bold setting, and an on/off switch per token. Switching one off leaves it uncolored
   while keeping the color you picked, which is the difference between silencing a variant and
   deleting it.
