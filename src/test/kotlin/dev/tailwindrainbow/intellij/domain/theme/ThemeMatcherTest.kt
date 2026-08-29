@@ -87,6 +87,18 @@ class ThemeMatcherTest {
     }
 
     @Test
+    fun `a variant that starts with an ignored modifier needs its own entry to survive`() {
+        val withRange =
+            ThemeMatcher(
+                theme = RainbowTheme(prefix = mapOf("in-range" to exact, "*-range" to wildcard)),
+                ignoredPrefixModifiers = setOf("in"),
+            )
+
+        assertEquals(ThemeMatch("in-range", exact, SegmentKind.PREFIX), withRange.matchPrefix("in-range"))
+        assertEquals(ThemeMatch("*-range", wildcard, SegmentKind.PREFIX), withRange.matchPrefix("out-of-range"))
+    }
+
+    @Test
     fun `unknown token has no match`() {
         assertNull(matcher.matchPrefix("unknown"))
         assertNull(matcher.matchBase("flex"))

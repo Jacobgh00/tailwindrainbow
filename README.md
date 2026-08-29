@@ -23,10 +23,14 @@ green              teal          purple   slate            coral        red
 - **Framework bindings** — `:class`, `v-bind:class`, and `x-bind:class`. A bound attribute holds an
   expression, so the class names are read out of the strings inside it: `:class="{ 'lg:p-4': ok }"`
   colors `lg:p-4` and leaves the braces and the condition alone.
-- **Tailwind v3 and v4.** The important modifier is read in every position either version allows,
-  and an `@apply` directive ends where CSS says it does rather than at the end of a line.
+- **Tailwind v3 and v4.** The important modifier is read in every position either version allows, an
+  `@apply` directive ends where CSS says it does rather than at the end of a line, and the built-in
+  themes color what v4 added — container queries, `data-*`, `aria-*`, `supports-*`, `nth-*`, `open`,
+  `inert` and `starting`.
 - **Two built-in themes** — `default` and `synthwave` — plus any number of your own, each started
-  from one of them.
+  from one of them. Both color every variant Tailwind documents, with related variants sharing a
+  color: `focus-visible` is the color of `focus`, and every pointer and motion query is the color of
+  `dark`.
 - **User-defined colors.** Pick a color for any variant with a color picker, toggle bold, or switch
   an entry off so that variant is left alone. Overrides are stored per entry, so a theme you
   customize keeps inheriting everything you did not touch.

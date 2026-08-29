@@ -46,7 +46,33 @@ object BuiltInThemes : ThemeSource {
                     "only" to style("#38bdf8"),
                     "odd" to style("#24b0f0"),
                     "even" to style("#0ea5e9"),
-                ),
+                    "nth-*" to style("#0284c7"),
+                    "@*" to style("#6366f1"),
+                    "data-*" to style("#e879f9"),
+                    "aria-*" to style("#d946ef"),
+                    "supports-*" to style("#c026d3"),
+                    "open" to style("#a3e635"),
+                    "inert" to style("#9ca3af"),
+                    "starting" to style("#fbbf24"),
+                ) +
+                    family("#4ee6b8", "focus-*") +
+                    family("#35c3d6", "visited", "target") +
+                    family("#38bdf8", "*-of-type", "empty") +
+                    family(
+                        "#c8f66c",
+                        "enabled", "indeterminate", "default", "optional", "read-only",
+                        "autofill", "placeholder-shown", "details-content", "user-*", "*-range", "in-range",
+                    ) +
+                    family(
+                        "#ffa357",
+                        "first-letter", "first-line", "marker", "selection", "file", "backdrop",
+                    ) +
+                    family(
+                        "#a5b6cd",
+                        "motion-*", "contrast-*", "*-colors", "pointer-*", "any-pointer-*",
+                        "portrait", "landscape", "noscript", "print",
+                    ) +
+                    family("#94a3b8", "rtl", "ltr"),
         )
 
     val synthwave =
@@ -86,7 +112,33 @@ object BuiltInThemes : ThemeSource {
                     "only" to style("#00ccff"),
                     "odd" to style("#00b2ff"),
                     "even" to style("#0099ff"),
-                ),
+                    "nth-*" to style("#0066ff"),
+                    "@*" to style("#7b2fff"),
+                    "data-*" to style("#ff5cf4"),
+                    "aria-*" to style("#ff2ee8"),
+                    "supports-*" to style("#e000d6"),
+                    "open" to style("#b6ff3d"),
+                    "inert" to style("#7a7f9e"),
+                    "starting" to style("#ffb400"),
+                ) +
+                    family("#a742ff", "focus-*") +
+                    family("#7b5cff", "visited", "target") +
+                    family("#00ccff", "*-of-type", "empty") +
+                    family(
+                        "#ff1a50",
+                        "enabled", "indeterminate", "default", "optional", "read-only",
+                        "autofill", "placeholder-shown", "details-content", "user-*", "*-range", "in-range",
+                    ) +
+                    family(
+                        "#ff9e4f",
+                        "first-letter", "first-line", "marker", "selection", "file", "backdrop",
+                    ) +
+                    family(
+                        "#5d6ca7",
+                        "motion-*", "contrast-*", "*-colors", "pointer-*", "any-pointer-*",
+                        "portrait", "landscape", "noscript", "print",
+                    ) +
+                    family("#8a93c7", "rtl", "ltr"),
         )
 
     private val byName =
@@ -97,6 +149,11 @@ object BuiltInThemes : ThemeSource {
 
     override fun themes(): Map<String, RainbowTheme> = byName
 }
+
+private fun family(
+    color: String,
+    vararg keys: String,
+) = keys.associateWith { style(color) }
 
 private fun style(
     color: String,

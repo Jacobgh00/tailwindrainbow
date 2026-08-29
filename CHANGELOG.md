@@ -9,6 +9,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Every variant Tailwind documents now has a color in both built-in themes, related variants sharing
+  one: the focus family, the of-type selectors, the remaining form states, pseudo-elements such as
+  `marker` and `selection`, the preference and pointer media queries, and text direction.
+- Colors for the variants Tailwind v4 introduced: container queries (`@md:`, `@max-lg:`, `@[400px]:`),
+  `data-*`, `aria-*` and `supports-*` attribute variants, `nth-*`, and the `open`, `inert` and
+  `starting` states — in both built-in themes.
 - Arbitrary variants written behind a modifier or a group name — `has-[:checked]:`,
   `group-[.is-open]/menu:`, `not-[&:hover]:` — are colored like any other arbitrary variant.
 - Highlighting of Tailwind variant prefixes, base classes, arbitrary variants such as `[&>*]`, and
