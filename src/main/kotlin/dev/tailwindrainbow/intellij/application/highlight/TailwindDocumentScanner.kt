@@ -1,5 +1,6 @@
 package dev.tailwindrainbow.intellij.application.highlight
 
+import dev.tailwindrainbow.intellij.application.port.Cancellation
 import dev.tailwindrainbow.intellij.domain.highlight.HighlightSegment
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
 import dev.tailwindrainbow.intellij.domain.theme.ThemeMatcher
@@ -10,6 +11,7 @@ class TailwindDocumentScanner {
         fileExtension: String,
         settings: ScanSettings,
         theme: RainbowTheme,
+        cancellation: Cancellation = Cancellation.NONE,
     ): List<HighlightSegment> {
         val extension = fileExtension.lowercase()
 
@@ -28,6 +30,7 @@ class TailwindDocumentScanner {
             }
 
             tokens.filterNot { it.kind == TokenKind.COMMENT }.forEach { token ->
+                cancellation.check()
                 addAll(nestedAttributeSegments(token, detector, parser))
 
                 when (detector.classify(text, token)) {
