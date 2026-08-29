@@ -7,6 +7,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Files that merely mention something class-shaped — a `class` declaration, `classList`, the word in a
+  comment — no longer pay for it. The check that decides whether a string could hold class names now
+  answers cheaply before the pattern matching runs, taking such a file from about 110 ms a pass to about
+  5 ms. Files full of Tailwind classes are unchanged; their strings really do hold class names.
+
+### Fixed
+
+- Class names nested more than one level inside a value assigned to a class-shaped name are read, so
+  `const classes = [['hover:p-4']]` and `const buttonClasses = { size: { small: 'hover:px-4' } }` are
+  coloured. The release notes promised arrays and objects; only their first level was read.
+- The inspection's scan can now be interrupted. It ran to the end of the file even after the IDE had
+  cancelled the pass, which on a large file queued work rather than dropping it.
+
 ## [0.1.0] - 2026-08-29
 
 First release.

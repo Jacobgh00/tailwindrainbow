@@ -31,5 +31,20 @@ class CancellationTest {
         assertEquals(100, painted.size)
     }
 
+    @Test
+    fun `looking for uncoloured variants gives up part way too`() {
+        var checks = 0
+
+        assertFailsWith<GaveUp> {
+            UncolouredVariants(
+                settings = ScanSettings(),
+                theme = BuiltInThemes.default,
+                declared = setOf("theme-midnight"),
+            ) { if (++checks > 3) throw GaveUp() }.inside(source, "html")
+        }
+
+        assertTrue(checks < 50, "it stopped rather than finishing the file: $checks checks")
+    }
+
     private class GaveUp : RuntimeException()
 }

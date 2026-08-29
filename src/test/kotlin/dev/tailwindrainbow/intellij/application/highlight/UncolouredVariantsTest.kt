@@ -13,7 +13,7 @@ class UncolouredVariantsTest {
 
     @Test
     fun `a variant the project declares and the theme does not colour is reported, where it is written`() {
-        val found = uncolouredDeclaredVariants(source, "html", ScanSettings(), theme, setOf("pointer-coarse"))
+        val found = UncolouredVariants(ScanSettings(), theme, setOf("pointer-coarse")).inside(source, "html")
 
         assertEquals(listOf("pointer-coarse"), found.map { it.name })
         assertEquals("pointer-coarse", source.substring(found.single().start, found.single().end))
@@ -21,17 +21,17 @@ class UncolouredVariantsTest {
 
     @Test
     fun `a variant the theme already colours is nobody's problem`() {
-        assertTrue(uncolouredDeclaredVariants(source, "html", ScanSettings(), theme, setOf("hover")).isEmpty())
+        assertTrue(UncolouredVariants(ScanSettings(), theme, setOf("hover")).inside(source, "html").isEmpty())
     }
 
     @Test
     fun `a project that declares nothing reports nothing`() {
-        assertTrue(uncolouredDeclaredVariants(source, "html", ScanSettings(), theme, emptySet()).isEmpty())
+        assertTrue(UncolouredVariants(ScanSettings(), theme, emptySet()).inside(source, "html").isEmpty())
     }
 
     @Test
     fun `a declared variant nobody wrote in this file is not reported`() {
-        val found = uncolouredDeclaredVariants(source, "html", ScanSettings(), theme, setOf("theme-midnight"))
+        val found = UncolouredVariants(ScanSettings(), theme, setOf("theme-midnight")).inside(source, "html")
 
         assertTrue(found.isEmpty(), "the file has to mention it")
     }
@@ -40,7 +40,7 @@ class UncolouredVariantsTest {
     fun `every place the variant is written is reported`() {
         val twice = """<div class="pointer-coarse:p-4"><p class="pointer-coarse:text-sm"></p></div>"""
 
-        val found = uncolouredDeclaredVariants(twice, "html", ScanSettings(), theme, setOf("pointer-coarse"))
+        val found = UncolouredVariants(ScanSettings(), theme, setOf("pointer-coarse")).inside(twice, "html")
 
         assertEquals(2, found.size)
     }

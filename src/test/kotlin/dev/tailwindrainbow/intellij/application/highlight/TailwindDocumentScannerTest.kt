@@ -308,6 +308,67 @@ class TailwindDocumentScannerTest {
         assertTrue(checks < 100, "cancellation must stop the scan, not be noticed after every token was read")
     }
 
+    @Test
+    fun `an attribute whose value starts on the next line is still an attribute`() {
+        val source = "<div\n  className=\n  \"hover:bg-blue-500\">"
+
+        assertEquals(listOf("hover"), scan(source, "html").map { it.themeKey })
+    }
+
+    @Test
+    fun `a class list nested deeper than one bracket is read`() {
+        val source = "const classes = [['hover:bg-blue-500'], ['lg:text-xl']]"
+
+        assertEquals(listOf("hover", "lg"), scan(source, "ts").map { it.themeKey })
+    }
+
+    @Test
+    fun `a class object is read past a nested pair of braces`() {
+        val source = "const classes = { spacing: compute({}), state: 'hover:bg-blue-500' }"
+
+        assertEquals(listOf("hover"), scan(source, "ts").map { it.themeKey })
+    }
+
+    @Test
+    fun `a class object nested inside another is read all the way down`() {
+        val source = "const buttonClasses = { size: { small: 'hover:px-4', large: 'lg:text-xl' } }"
+
+        assertEquals(listOf("hover", "lg"), scan(source, "ts").map { it.themeKey })
+    }
+
+    @Test
+    fun `a nested object assigned to a name that is not class-shaped is left alone`() {
+        val source = "const notes = { size: { small: 'hover:px-4' } }"
+
+        assertEquals(
+            emptyList(),
+            scan(source, "ts").map { it.themeKey },
+            "the theme colours hover, so this " +
+                "would be reported if the name counted",
+        )
+    }
+
+    @Test
+    fun `the search for an assignment does not walk out of the statement it is in`() {
+        val source = "const classes = 1\nlog('hover:bg-blue-500')"
+
+        assertEquals(emptyList(), scan(source, "ts").map { it.themeKey }, "the call is not a class helper")
+    }
+
+    @Test
+    fun `a later assignment to an ordinary name wins over an earlier class-shaped one`() {
+        val source = "const classes = 'lg:text-xl'\nconst label = 'hover:bg-blue-500'"
+
+        assertEquals(listOf("lg"), scan(source, "ts").map { it.themeKey })
+    }
+
+    @Test
+    fun `a string sitting after a class name in ordinary code is left alone`() {
+        val source = "const classes = 'hover:bg-blue-500'\nlog('nothing here', other)"
+
+        assertEquals(listOf("hover"), scan(source, "ts").map { it.themeKey }, "only the assignment is read")
+    }
+
     private fun scan(
         source: String,
         extension: String,

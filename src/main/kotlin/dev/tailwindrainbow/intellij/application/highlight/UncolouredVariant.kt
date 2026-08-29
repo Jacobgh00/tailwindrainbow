@@ -1,5 +1,6 @@
 package dev.tailwindrainbow.intellij.application.highlight
 
+import dev.tailwindrainbow.intellij.application.port.Cancellation
 import dev.tailwindrainbow.intellij.domain.theme.FontWeight
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
 import dev.tailwindrainbow.intellij.domain.theme.TextStyle
@@ -11,25 +12,31 @@ data class UncolouredVariant(
     val end: Int,
 )
 
-fun uncolouredDeclaredVariants(
-    text: String,
-    fileExtension: String,
-    settings: ScanSettings,
-    theme: RainbowTheme,
-    declared: Set<String>,
-): List<UncolouredVariant> {
-    val matcher = ThemeMatcher(theme, settings.ignoredPrefixModifiers)
-    val uncoloured = declared.filter { matcher.matchPrefix(it) == null }
+class UncolouredVariants(
+    private val settings: ScanSettings,
+    private val theme: RainbowTheme,
+    private val declared: Set<String>,
+    private val cancellation: Cancellation = Cancellation.NONE,
+) {
+    fun inside(
+        text: String,
+        fileExtension: String,
+    ): List<UncolouredVariant> {
+        val matcher = ThemeMatcher(theme, settings.ignoredPrefixModifiers)
+        val uncoloured = declared.filter { matcher.matchPrefix(it) == null }
 
-    if (uncoloured.isEmpty()) {
-        return emptyList()
+        if (uncoloured.isEmpty()) {
+            return emptyList()
+        }
+
+        val probe = RainbowTheme(prefix = uncoloured.associateWith { PROBE })
+
+        return TailwindDocumentScanner().scan(text, fileExtension, settings, probe, cancellation).map {
+            UncolouredVariant(it.themeKey, it.start, it.start + it.themeKey.length)
+        }
     }
 
-    val probe = RainbowTheme(prefix = uncoloured.associateWith { PROBE })
-
-    return TailwindDocumentScanner().scan(text, fileExtension, settings, probe).map {
-        UncolouredVariant(it.themeKey, it.start, it.start + it.themeKey.length)
+    private companion object {
+        val PROBE = TextStyle("#000000", FontWeight.NORMAL)
     }
 }
-
-private val PROBE = TextStyle("#000000", FontWeight.NORMAL)
