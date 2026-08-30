@@ -4,8 +4,10 @@ import dev.tailwindrainbow.intellij.application.port.ThemeSource
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
 import dev.tailwindrainbow.intellij.domain.theme.overriddenBy
 
-class ThemeRepository(private val sources: List<ThemeSource>) {
+class ThemeRepository(sourceList: List<ThemeSource>) {
     constructor(vararg sources: ThemeSource) : this(sources.toList())
+
+    private val sources = sourceList.toList()
 
     private val resolved: Map<String, RainbowTheme> by lazy {
         buildMap {

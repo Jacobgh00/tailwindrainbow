@@ -11,6 +11,9 @@ import com.intellij.util.xmlb.annotations.XCollection
 import dev.tailwindrainbow.intellij.adapter.intellij.settings.persistence.StoredTheme
 import dev.tailwindrainbow.intellij.adapter.intellij.theme.ContributedThemes
 import dev.tailwindrainbow.intellij.adapter.intellij.theme.EditorSchemeThemes
+import dev.tailwindrainbow.intellij.adapter.settings.persistence.RecognitionState
+import dev.tailwindrainbow.intellij.adapter.settings.persistence.toScanSettings
+import dev.tailwindrainbow.intellij.adapter.settings.persistence.updateFrom
 import dev.tailwindrainbow.intellij.adapter.theme.UserThemeCatalog
 import dev.tailwindrainbow.intellij.application.highlight.ScanSettings
 import dev.tailwindrainbow.intellij.application.port.HighlightSettings
@@ -49,16 +52,7 @@ class TailwindRainbowSettings :
         HighlightSettings(
             enabled = storedState.enabled,
             themeName = previewedTheme ?: storedState.themeName,
-            scan =
-                ScanSettings(
-                    maxFileSize = storedState.maxFileSize,
-                    classIdentifiers = storedState.classIdentifiers.toSet(),
-                    classFunctions = storedState.classFunctions.toSet(),
-                    templateTags = storedState.templateTags.toSet(),
-                    ignoredPrefixModifiers = storedState.ignoredPrefixModifiers.toSet(),
-                    supportedExtensions = storedState.supportedExtensions.toSet(),
-                    readsClassLikeStrings = storedState.readsClassLikeStrings,
-                ),
+            scan = storedState.toScanSettings(),
         )
 
     fun previewTheme(name: String?) {
@@ -79,13 +73,7 @@ class TailwindRainbowSettings :
         previewedTheme = null
         storedState.enabled = snapshot.enabled
         storedState.themeName = snapshot.themeName
-        storedState.maxFileSize = snapshot.scan.maxFileSize
-        storedState.classIdentifiers = snapshot.scan.classIdentifiers.sorted().toMutableList()
-        storedState.classFunctions = snapshot.scan.classFunctions.sorted().toMutableList()
-        storedState.templateTags = snapshot.scan.templateTags.sorted().toMutableList()
-        storedState.ignoredPrefixModifiers = snapshot.scan.ignoredPrefixModifiers.sorted().toMutableList()
-        storedState.supportedExtensions = snapshot.scan.supportedExtensions.sorted().toMutableList()
-        storedState.readsClassLikeStrings = snapshot.scan.readsClassLikeStrings
+        storedState.updateFrom(snapshot.scan)
         storedState.themes = userThemes.mapTo(mutableListOf(), StoredTheme::of)
         refreshThemes()
     }
@@ -100,22 +88,28 @@ class TailwindRainbowSettings :
 
     private fun storedSpecs(): List<ThemeSpec> = storedState.themes.map(StoredTheme::toSpec)
 
-    class StoredState {
+    class StoredState : RecognitionState {
         var enabled: Boolean = true
         var themeName: String = "default"
-        var maxFileSize: Int = ScanSettings().maxFileSize
-        var classIdentifiers: MutableList<String> = ScanSettings.DEFAULT_CLASS_IDENTIFIERS.sorted().toMutableList()
-        var classFunctions: MutableList<String> = ScanSettings.DEFAULT_CLASS_FUNCTIONS.sorted().toMutableList()
-        var templateTags: MutableList<String> = ScanSettings.DEFAULT_TEMPLATE_TAGS.sorted().toMutableList()
-        var ignoredPrefixModifiers: MutableList<String> =
-            ScanSettings.DEFAULT_IGNORED_PREFIX_MODIFIERS.sorted().toMutableList()
+        override var maxFileSize: Int = DEFAULTS.maxFileSize
+        override var classIdentifiers: MutableList<String> = DEFAULTS.classIdentifiers.sorted().toMutableList()
+        override var classFunctions: MutableList<String> = DEFAULTS.classFunctions.sorted().toMutableList()
+        override var templateTags: MutableList<String> = DEFAULTS.templateTags.sorted().toMutableList()
+
+        override var ignoredPrefixModifiers: MutableList<String> =
+            DEFAULTS.ignoredPrefixModifiers.sorted().toMutableList()
 
         @get:XCollection(style = XCollection.Style.v2)
         var themes: MutableList<StoredTheme> = mutableListOf()
 
-        var supportedExtensions: MutableList<String> =
-            ScanSettings.DEFAULT_SUPPORTED_EXTENSIONS.sorted().toMutableList()
-        var readsClassLikeStrings: Boolean = ScanSettings().readsClassLikeStrings
+        override var supportedExtensions: MutableList<String> =
+            DEFAULTS.supportedExtensions.sorted().toMutableList()
+
+        override var readsClassLikeStrings: Boolean = DEFAULTS.readsClassLikeStrings
+
+        private companion object {
+            val DEFAULTS = ScanSettings()
+        }
     }
 
     companion object {

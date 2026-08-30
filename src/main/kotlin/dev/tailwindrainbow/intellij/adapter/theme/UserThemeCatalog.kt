@@ -8,37 +8,46 @@ import dev.tailwindrainbow.intellij.application.theme.ThemeRepository
 import dev.tailwindrainbow.intellij.application.theme.ThemeSpec
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
 
-class UserThemeCatalog(private val sources: List<ThemeSource> = emptyList()) : ThemeCatalog {
+class UserThemeCatalog(sources: List<ThemeSource> = emptyList()) : ThemeCatalog {
     constructor(vararg sources: ThemeSource) : this(sources.toList())
 
-    @Volatile
-    private var specs: List<ThemeSpec> = emptyList()
+    private val stableSources = sources.toList()
 
     @Volatile
-    private var source: SpecThemeSource = SpecThemeSource(emptyList(), BuiltInThemes)
-
-    @Volatile
-    private var repository: ThemeRepository = ThemeRepository(listOf(BuiltInThemes) + sources + source)
-
-    @Volatile
-    private var bases: ThemeRepository = ThemeRepository(listOf(BuiltInThemes) + sources)
+    private var snapshot = createSnapshot(emptyList())
 
     fun refresh(themes: List<ThemeSpec>) {
-        specs = themes
-        source = SpecThemeSource(themes, BuiltInThemes)
-        repository = ThemeRepository(listOf(BuiltInThemes) + sources + source)
-        bases = ThemeRepository(listOf(BuiltInThemes) + sources)
+        snapshot = createSnapshot(themes)
     }
 
-    override fun themeNamed(name: String): RainbowTheme = repository.find(name)
+    override fun themeNamed(name: String): RainbowTheme = snapshot.repository.find(name)
 
-    fun names(): Set<String> = repository.names
+    fun names(): Set<String> = snapshot.repository.names
 
-    fun baseNames(): Set<String> = bases.names
+    fun baseNames(): Set<String> = snapshot.bases.names
 
-    fun overrides(): List<ThemeSpec> = specs
+    fun overrides(): List<ThemeSpec> = snapshot.specs
 
-    fun basePalette(name: String): RainbowTheme = bases.find(name)
+    fun basePalette(name: String): RainbowTheme = snapshot.bases.find(name)
 
-    fun problems(): List<ThemeProblem> = source.problems
+    fun problems(): List<ThemeProblem> = snapshot.source.problems
+
+    private fun createSnapshot(themes: List<ThemeSpec>): CatalogSnapshot {
+        val specs = themes.map { it.copy(entries = it.entries.toList()) }
+        val source = SpecThemeSource(specs, BuiltInThemes)
+
+        return CatalogSnapshot(
+            specs = specs,
+            source = source,
+            repository = ThemeRepository(listOf(BuiltInThemes) + stableSources + source),
+            bases = ThemeRepository(listOf(BuiltInThemes) + stableSources),
+        )
+    }
+
+    private data class CatalogSnapshot(
+        val specs: List<ThemeSpec>,
+        val source: SpecThemeSource,
+        val repository: ThemeRepository,
+        val bases: ThemeRepository,
+    )
 }

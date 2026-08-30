@@ -7,6 +7,9 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.util.xmlb.XmlSerializerUtil
+import dev.tailwindrainbow.intellij.adapter.settings.persistence.RecognitionState
+import dev.tailwindrainbow.intellij.adapter.settings.persistence.toScanSettings
+import dev.tailwindrainbow.intellij.adapter.settings.persistence.updateFrom
 import dev.tailwindrainbow.intellij.application.highlight.ScanSettings
 
 @Service(Service.Level.PROJECT)
@@ -26,15 +29,7 @@ class TailwindRainbowProjectSettings : PersistentStateComponent<TailwindRainbowP
     fun recognition(): ScanSettings? {
         if (!storedState.ownRecognition) return null
 
-        return ScanSettings(
-            maxFileSize = storedState.maxFileSize,
-            classIdentifiers = storedState.classIdentifiers.toSet(),
-            classFunctions = storedState.classFunctions.toSet(),
-            templateTags = storedState.templateTags.toSet(),
-            ignoredPrefixModifiers = storedState.ignoredPrefixModifiers.toSet(),
-            supportedExtensions = storedState.supportedExtensions.toSet(),
-            readsClassLikeStrings = storedState.readsClassLikeStrings,
-        )
+        return storedState.toScanSettings()
     }
 
     @Synchronized
@@ -42,26 +37,31 @@ class TailwindRainbowProjectSettings : PersistentStateComponent<TailwindRainbowP
         storedState.ownRecognition = scan != null
         val effective = scan ?: ScanSettings()
 
-        storedState.maxFileSize = effective.maxFileSize
-        storedState.classIdentifiers = effective.classIdentifiers.sorted().toMutableList()
-        storedState.classFunctions = effective.classFunctions.sorted().toMutableList()
-        storedState.templateTags = effective.templateTags.sorted().toMutableList()
-        storedState.ignoredPrefixModifiers = effective.ignoredPrefixModifiers.sorted().toMutableList()
-        storedState.supportedExtensions = effective.supportedExtensions.sorted().toMutableList()
-        storedState.readsClassLikeStrings = effective.readsClassLikeStrings
+        storedState.updateFrom(effective)
     }
 
-    class StoredState {
+    class StoredState : RecognitionState {
         var ownRecognition: Boolean = false
-        var maxFileSize: Int = ScanSettings().maxFileSize
-        var classIdentifiers: MutableList<String> = ScanSettings.DEFAULT_CLASS_IDENTIFIERS.sorted().toMutableList()
-        var classFunctions: MutableList<String> = ScanSettings.DEFAULT_CLASS_FUNCTIONS.sorted().toMutableList()
-        var templateTags: MutableList<String> = ScanSettings.DEFAULT_TEMPLATE_TAGS.sorted().toMutableList()
-        var ignoredPrefixModifiers: MutableList<String> =
-            ScanSettings.DEFAULT_IGNORED_PREFIX_MODIFIERS.sorted().toMutableList()
-        var supportedExtensions: MutableList<String> =
-            ScanSettings.DEFAULT_SUPPORTED_EXTENSIONS.sorted().toMutableList()
-        var readsClassLikeStrings: Boolean = ScanSettings().readsClassLikeStrings
+
+        override var maxFileSize: Int = DEFAULTS.maxFileSize
+
+        override var classIdentifiers: MutableList<String> = DEFAULTS.classIdentifiers.sorted().toMutableList()
+
+        override var classFunctions: MutableList<String> = DEFAULTS.classFunctions.sorted().toMutableList()
+
+        override var templateTags: MutableList<String> = DEFAULTS.templateTags.sorted().toMutableList()
+
+        override var ignoredPrefixModifiers: MutableList<String> =
+            DEFAULTS.ignoredPrefixModifiers.sorted().toMutableList()
+
+        override var supportedExtensions: MutableList<String> =
+            DEFAULTS.supportedExtensions.sorted().toMutableList()
+
+        override var readsClassLikeStrings: Boolean = DEFAULTS.readsClassLikeStrings
+
+        private companion object {
+            val DEFAULTS = ScanSettings()
+        }
     }
 
     companion object {

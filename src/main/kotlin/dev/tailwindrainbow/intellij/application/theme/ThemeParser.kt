@@ -21,18 +21,15 @@ object ThemeParser {
         val problems = mutableListOf<ThemeProblem>()
 
         spec.entries.forEach { entry ->
-            val style = entry.toTextStyle()
-
-            if (style == null) {
-                problems += entry.problem(spec.name)
-                return@forEach
-            }
-
-            when (entry.section) {
-                SegmentKind.PREFIX -> prefix[entry.key] = style
-                SegmentKind.BASE -> base[entry.key] = style
-                SegmentKind.ARBITRARY -> arbitrary = style
-                SegmentKind.IMPORTANT -> important = style
+            when (val result = entry.parse()) {
+                is EntryResult.Valid ->
+                    when (entry.section) {
+                        SegmentKind.PREFIX -> prefix[entry.key] = result.style
+                        SegmentKind.BASE -> base[entry.key] = result.style
+                        SegmentKind.ARBITRARY -> arbitrary = result.style
+                        SegmentKind.IMPORTANT -> important = result.style
+                    }
+                is EntryResult.Invalid -> problems += ThemeProblem(spec.name, entry.section, entry.key, result.message)
             }
         }
 
@@ -43,23 +40,25 @@ object ThemeParser {
         )
     }
 
-    private fun StyleEntry.toTextStyle(): TextStyle? {
-        if (!color.isHexColor()) return null
-        if (!FontWeight.isValid(fontWeight)) return null
-        if (section.isKeyed && key.isBlank()) return null
+    private fun StyleEntry.parse(): EntryResult {
+        if (!color.isHexColor()) {
+            return EntryResult.Invalid("color must use #RRGGBB format, was '$color'")
+        }
 
-        return TextStyle(color, FontWeight.of(fontWeight), enabled)
+        if (!FontWeight.isValid(fontWeight)) {
+            return EntryResult.Invalid("font weight must be one of ${FontWeight.ALL.sorted()}, was $fontWeight")
+        }
+
+        if (section.isKeyed && key.isBlank()) {
+            return EntryResult.Invalid("a ${section.name.lowercase()} entry needs a key")
+        }
+
+        return EntryResult.Valid(TextStyle(color, FontWeight.of(fontWeight), enabled))
     }
 
-    private fun StyleEntry.problem(themeName: String): ThemeProblem {
-        val reason =
-            when {
-                !color.isHexColor() -> "color must use #RRGGBB format, was '$color'"
-                !FontWeight.isValid(fontWeight) ->
-                    "font weight must be one of ${FontWeight.ALL.sorted()}, was $fontWeight"
-                else -> "a ${section.name.lowercase()} entry needs a key"
-            }
+    private sealed interface EntryResult {
+        data class Valid(val style: TextStyle) : EntryResult
 
-        return ThemeProblem(themeName, section, key, reason)
+        data class Invalid(val message: String) : EntryResult
     }
 }

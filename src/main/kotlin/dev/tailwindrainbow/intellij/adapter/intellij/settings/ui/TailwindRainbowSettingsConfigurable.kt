@@ -10,6 +10,7 @@ import dev.tailwindrainbow.intellij.adapter.intellij.settings.TailwindRainbowPro
 import dev.tailwindrainbow.intellij.adapter.intellij.settings.TailwindRainbowSettings
 import dev.tailwindrainbow.intellij.adapter.intellij.settingsChanged
 import dev.tailwindrainbow.intellij.adapter.intellij.variants.ProjectVariants
+import dev.tailwindrainbow.intellij.adapter.theme.vscode.VsCodeThemeCodec
 import dev.tailwindrainbow.intellij.application.settings.FormResult
 import dev.tailwindrainbow.intellij.application.settings.SettingsFormMapper
 import dev.tailwindrainbow.intellij.application.theme.ThemeProblem
@@ -36,23 +37,30 @@ class TailwindRainbowSettingsConfigurable(private val project: Project) : Search
                 themeNames = settings.themes.names().toList(),
                 basePalette = { name -> settings.themes.basePalette(name) },
                 declaredVariants = { ProjectVariants.getInstance(project).declared() },
+                themeFileCodec = VsCodeThemeCodec,
             )
 
-        created.write(currentForm())
+        created.write(currentForm(settings))
         created.showProblems(settings.themes.problems())
         panel = created
-        validators = Disposer.newDisposable("TailwindRainbowFieldValidators")
-        created.component.registerValidators(validators!!)
+        val fieldValidators = Disposer.newDisposable("TailwindRainbowFieldValidators")
+        validators = fieldValidators
+        created.component.registerValidators(fieldValidators)
 
         return created.component
     }
 
     override fun isModified(): Boolean =
         when (val result = currentResult() ?: return false) {
-            is FormResult.Valid ->
-                result.settings != TailwindRainbowSettings.getInstance().current() ||
-                    result.themes != TailwindRainbowSettings.getInstance().themes.overrides() ||
-                    result.projectScan != forProject.recognition()
+            is FormResult.Valid -> {
+                val settings = TailwindRainbowSettings.getInstance()
+                val storedThemes = settings.themes.overrides()
+                val storedProjectRecognition = forProject.recognition()
+
+                result.settings != settings.current() ||
+                    result.themes != storedThemes ||
+                    result.projectScan != storedProjectRecognition
+            }
             is FormResult.Invalid -> true
         }
 
@@ -65,7 +73,7 @@ class TailwindRainbowSettingsConfigurable(private val project: Project) : Search
 
                 settings.update(result.settings, result.themes)
                 forProject.update(result.projectScan)
-                panel?.showStoredRecognition(currentForm())
+                panel?.showStoredRecognition(currentForm(settings))
                 panel?.showProblems(settings.themes.problems())
                 settingsChanged()
             }
@@ -84,14 +92,14 @@ class TailwindRainbowSettingsConfigurable(private val project: Project) : Search
     }
 
     override fun reset() {
-        panel?.write(currentForm())
-        panel?.showProblems(TailwindRainbowSettings.getInstance().themes.problems())
+        val settings = TailwindRainbowSettings.getInstance()
+
+        panel?.write(currentForm(settings))
+        panel?.showProblems(settings.themes.problems())
     }
 
-    private fun currentForm() =
-        TailwindRainbowSettings.getInstance().let { settings ->
-            SettingsFormMapper.toForm(settings.current(), settings.themes.overrides(), forProject.recognition())
-        }
+    private fun currentForm(settings: TailwindRainbowSettings) =
+        SettingsFormMapper.toForm(settings.current(), settings.themes.overrides(), forProject.recognition())
 
     override fun disposeUIResources() {
         validators?.let(Disposer::dispose)

@@ -1,12 +1,14 @@
-package dev.tailwindrainbow.intellij.application.theme
+package dev.tailwindrainbow.intellij.adapter.theme.vscode
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import dev.tailwindrainbow.intellij.application.theme.StyleEntry
+import dev.tailwindrainbow.intellij.application.theme.ThemeSpec
 import dev.tailwindrainbow.intellij.domain.theme.FontWeight
 import dev.tailwindrainbow.intellij.domain.theme.SegmentKind
 
-fun themesFromFile(json: String): List<ThemeSpec> {
+internal fun themesFromFile(json: String): List<ThemeSpec> {
     val root = runCatching { JsonParser.parseString(json).asJsonObject }.getOrNull() ?: return emptyList()
     val themes = root.getAsJsonObjectOrNull(VS_CODE_THEMES) ?: root
 

@@ -5,6 +5,7 @@ import com.intellij.ui.TableSpeedSearch
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.ColorIcon
 import com.intellij.util.ui.JBUI
+import dev.tailwindrainbow.intellij.adapter.color.toHex
 import dev.tailwindrainbow.intellij.adapter.intellij.TailwindRainbowBundle.message
 import dev.tailwindrainbow.intellij.adapter.intellij.highlighting.toTextAttributes
 import dev.tailwindrainbow.intellij.application.settings.RowStyle
@@ -24,10 +25,6 @@ import javax.swing.ListSelectionModel
 import javax.swing.table.AbstractTableModel
 import javax.swing.table.DefaultTableCellRenderer
 
-/**
- * The theme, shown as itself: every token is drawn in the colour it assigns, and the colour is chosen
- * in the row rather than in a control somewhere below the table.
- */
 internal class TokenTable(
     private val rowsOf: () -> List<ThemeEditorRow>,
     private val restyle: (ThemeEditorRow, RowStyle) -> Unit,
@@ -85,7 +82,6 @@ internal class TokenTable(
         refresh()
     }
 
-    /** The swatch is drawn at the leading edge of the cell; the rest of it stays a text field. */
     private fun overSwatch(
         row: Int,
         event: MouseEvent,
@@ -158,10 +154,6 @@ internal class TokenTable(
             }
     }
 
-    /**
-     * Paints the token in the colour that row assigns, adapted to whatever it is sitting on the way the
-     * editor adapts it — so the table cannot disagree with the file.
-     */
     private inner class TokenRenderer : DefaultTableCellRenderer() {
         override fun getTableCellRendererComponent(
             table: JTable,
@@ -206,16 +198,17 @@ internal class TokenTable(
 
         val SWITCHES = setOf(BOLD, ENABLED)
 
-        fun Color.toHex(): String = "#%02x%02x%02x".format(red, green, blue)
-
         fun RowStyle.painted(background: Color): Color? =
             color
                 .takeIf(String::isHexColor)
-                ?.let { TextStyle(it, FontWeight.of(if (bold) BOLD_WEIGHT else NORMAL_WEIGHT), enabled) }
+                ?.let {
+                    TextStyle(
+                        it,
+                        FontWeight.of(if (bold) FontWeight.BOLD.value else FontWeight.NORMAL.value),
+                        enabled,
+                    )
+                }
                 ?.toTextAttributes(background)
                 ?.foregroundColor
-
-        const val BOLD_WEIGHT = 700
-        const val NORMAL_WEIGHT = 400
     }
 }

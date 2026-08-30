@@ -128,11 +128,6 @@ class ThemeEditorModel private constructor(
     private fun withOverrides(overrides: Map<EntryKey, StyleEntry>) = ThemeEditorModel(inherited, overrides)
 }
 
-private const val BOLD = 700
-private const val NORMAL = 400
-
-internal const val ADDED_TOKEN_COLOR = "#808080"
-
 private fun ThemeEditorRow.matches(query: String): Boolean {
     val wanted = query.trim()
 
@@ -149,7 +144,12 @@ private fun rowOf(
     return ThemeEditorRow(
         section = entry.section,
         key = entry.key,
-        style = RowStyle(effective.color, bold = effective.fontWeight >= BOLD, enabled = effective.enabled),
+        style =
+            RowStyle(
+                effective.color,
+                bold = effective.fontWeight >= FontWeight.BOLD.value,
+                enabled = effective.enabled,
+            ),
         origin =
             when {
                 override == null -> RowOrigin.INHERITED
@@ -166,12 +166,16 @@ private fun SectionedStyles.sectionOf(section: SegmentKind) = filter { it.first 
 private fun SectionedStyles.singleOf(section: SegmentKind) = firstOrNull { it.first == section }?.second?.second
 
 private fun RowStyle.toTextStyle(): TextStyle? =
-    if (color.isHexColor()) TextStyle(color, FontWeight.of(if (bold) BOLD else NORMAL), enabled) else null
+    if (color.isHexColor()) {
+        TextStyle(color, FontWeight.of(if (bold) FontWeight.BOLD.value else FontWeight.NORMAL.value), enabled)
+    } else {
+        null
+    }
 
 private fun TextStyle.toEntry(entry: EntryKey) = StyleEntry(entry.section, entry.key, color, fontWeight.value, enabled)
 
 private fun RowStyle.toEntry(entry: EntryKey) = StyleEntry(entry.section, entry.key, color, weight(), enabled)
 
-private fun RowStyle.weight() = if (bold) BOLD else NORMAL
+private fun RowStyle.weight() = if (bold) FontWeight.BOLD.value else FontWeight.NORMAL.value
 
-private fun blankEntry(entry: EntryKey) = StyleEntry(entry.section, entry.key, ADDED_TOKEN_COLOR, BOLD)
+private fun blankEntry(entry: EntryKey) = newThemeEntry(entry.section, entry.key)

@@ -1,6 +1,7 @@
 package dev.tailwindrainbow.intellij.adapter.intellij.highlighting
 
 import com.intellij.openapi.editor.markup.TextAttributes
+import dev.tailwindrainbow.intellij.adapter.color.toHex
 import dev.tailwindrainbow.intellij.domain.theme.TextStyle
 import dev.tailwindrainbow.intellij.domain.theme.readableOn
 import java.awt.Color
@@ -13,5 +14,3 @@ internal fun TextStyle.toTextAttributes(background: Color): TextAttributes =
         foregroundColor = Color.decode(readableOn(background.toHex()).color)
         fontType = if (fontWeight.value >= BOLD_WEIGHT_THRESHOLD) Font.BOLD else Font.PLAIN
     }
-
-private fun Color.toHex(): String = "#%02x%02x%02x".format(red, green, blue)
