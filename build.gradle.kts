@@ -157,6 +157,33 @@ detekt {
 }
 
 /*
+ * The platform plugin's signature verification appends the certificate chain as a stray
+ * argument when the chain is passed as a string, which the signer rejects. Only its
+ * file-based input works, so the chain reaches that task through a file.
+ */
+val signingCertificateChainFile =
+    layout
+        .buildDirectory
+        .file("signing/certificate-chain.pem")
+
+val signingCertificateChain =
+    tasks.register("signingCertificateChain") {
+        val chain =
+            providers
+                .environmentVariable("CERTIFICATE_CHAIN")
+                .orElse("")
+
+        val output = signingCertificateChainFile
+
+        inputs.property("chain", chain)
+        outputs.file(output)
+
+        doLast {
+            output.get().asFile.writeText(chain.get())
+        }
+    }
+
+/*
  * The diagnostics report names the plugin version. Asking the platform for it means
  * asking the plugin descriptor, and every method that answers is either marked internal
  * or deprecated — the Plugin Verifier reports all three against 2026.2. The version is
@@ -191,6 +218,15 @@ sourceSets {
 tasks {
     processResources {
         dependsOn(pluginVersionResource)
+    }
+
+    // The platform plugin leaves the two signing tasks unordered, which Gradle rejects
+    // as an undeclared dependency when a build runs both.
+    verifyPluginSignature {
+        dependsOn(signPlugin, signingCertificateChain)
+        certificateChain.unsetConvention()
+        certificateChain.unset()
+        certificateChainFile = signingCertificateChainFile
     }
 
     test {
