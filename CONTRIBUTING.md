@@ -54,6 +54,17 @@ Static analysis is ktlint and detekt, and Kotlin warnings are errors - so a depr
 fails the build rather than waiting to be noticed. Both run in CI on every pull request, along with
 the tests and the Plugin Verifier.
 
+## Git hooks
+
+The repository includes a versioned pre-commit hook that runs `./gradlew check`. Enable it once per
+checkout:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+The hook then runs automatically before each commit.
+
 ## How the source is laid out
 
 ```
