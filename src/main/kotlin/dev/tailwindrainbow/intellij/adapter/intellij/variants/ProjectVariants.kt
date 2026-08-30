@@ -1,6 +1,8 @@
 package dev.tailwindrainbow.intellij.adapter.intellij.variants
 
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
@@ -18,7 +20,7 @@ import java.io.IOException
 import java.util.concurrent.atomic.AtomicBoolean
 
 @Service(Service.Level.PROJECT)
-class ProjectVariants(private val project: Project) {
+class ProjectVariants(private val project: Project) : Disposable {
     @Volatile
     private var snapshot = VariantSnapshot(emptySet(), NEVER_READ)
 
@@ -40,7 +42,7 @@ class ProjectVariants(private val project: Project) {
     }
 
     fun refresh(): Set<String> {
-        val found = ReadAction.compute<Set<String>, RuntimeException> { read() }
+        val found = runReadAction { variantScanner.scan() }
 
         remember(found)
 
@@ -50,20 +52,20 @@ class ProjectVariants(private val project: Project) {
     private fun scheduleUnlessCurrent() {
         if (snapshot.readAt == modificationCount() || !reading.compareAndSet(false, true)) return
 
-        ReadAction.nonBlocking<Set<String>> { read() }
-            .expireWith(project)
+        ReadAction.nonBlocking<Set<String>> { variantScanner.scan() }
+            .expireWith(this)
             .submit(AppExecutorUtil.getAppExecutorService())
             .onSuccess(::remember)
             .onProcessed { reading.set(false) }
     }
+
+    override fun dispose() = Unit
 
     private fun remember(found: Set<String>) {
         snapshot = VariantSnapshot(found.toSet(), modificationCount())
     }
 
     private fun modificationCount(): Long = PsiModificationTracker.getInstance(project).modificationCount
-
-    private fun read(): Set<String> = variantScanner.scan()
 
     private fun configFiles(): Sequence<VariantFile> {
         val scope = ProjectScope.getContentScope(project)

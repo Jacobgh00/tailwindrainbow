@@ -29,7 +29,10 @@ internal class AddTokenDialog(
     init {
         title = message("dialog.addToken.title")
         setOKButtonText(message("dialog.addToken.ok"))
-        section.renderer = SimpleListCellRenderer.create("") { it.displayName }
+        section.renderer =
+            SimpleListCellRenderer.create<SegmentKind> { label, value, _ ->
+                label.text = value.displayName
+            }
         section.addActionListener { offerSuggestions() }
         init()
         offerSuggestions()
@@ -70,8 +73,4 @@ internal class AddTokenDialog(
                 ValidationInfo(message("dialog.addToken.duplicate", enteredKey, selectedSection.displayName), key)
             else -> null
         }
-
-    private companion object {
-        const val TOKEN_FIELD_COLUMNS = 20
-    }
 }

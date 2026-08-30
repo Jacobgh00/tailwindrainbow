@@ -14,7 +14,7 @@ internal fun settingsChanged() {
 
 internal fun settingsChanged(project: Project) {
     ApplicationManager.getApplication().invokeLater({
-        DaemonCodeAnalyzer.getInstance(project).restart()
+        DaemonCodeAnalyzer.getInstance(project).settingsChanged()
         WindowManager.getInstance().getStatusBar(project)?.updateWidget(TAILWIND_STATUS_WIDGET_ID)
     }, ModalityState.any(), project.disposed)
 }
