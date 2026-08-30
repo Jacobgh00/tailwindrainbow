@@ -7,123 +7,63 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-### Added
-
-- Class names are read from a string that reads as a class list on its own, so an object no attribute,
-  helper or class-shaped name claims — `const sizeByAlignment: ReadonlyRecord<Alignment, string> =
-  { left: 'w-full md:max-w-1/2' }` — is coloured for what it holds rather than for what it is called.
-  A string qualifies only when *every* word in it is a Tailwind class and at least one carries a variant
-  the theme knows, which is what keeps prose that merely mentions a class — `'see hover:bg-blue-500 for
-  details'` — and colons that are not variants — `'10:30'`, `'user:profile:title'`, a URL — out of it.
-  It runs only on the strings the existing rules already turned down, so what was recognised before is
-  recognised the same way and costs the same. **Colour strings that read as a class list**, under
-  *Settings | Editor | Tailwind Rainbow*, switches it off.
-
-### Changed
-
-- Files that merely mention something class-shaped — a `class` declaration, `classList`, the word in a
-  comment — no longer pay for it. The check that decides whether a string could hold class names now
-  answers cheaply before the pattern matching runs, taking such a file from about 110 ms a pass to about
-  5 ms. Files full of Tailwind classes are unchanged; their strings really do hold class names.
-
-### Fixed
-
-- A declaration that carries a type annotation is read like one that does not, so
-  `const alignmentClasses: ReadonlyRecord<Alignment, string> = { left: 'md:float-left' }` is coloured.
-  The name had to sit against the `=` to be recognised, and an annotation stands between the two — which
-  left the typed lookup tables a TypeScript codebase is mostly made of uncoloured. Reading the name is
-  now a walk rather than a pattern, so `string[]`, `Record<K, V>`, a generic default, an arrow in the
-  annotation, and an annotation written over several lines all read the same.
-- Class names nested more than one level inside a value assigned to a class-shaped name are read, so
-  `const classes = [['hover:p-4']]` and `const buttonClasses = { size: { small: 'hover:px-4' } }` are
-  coloured. The release notes promised arrays and objects; only their first level was read.
-- The inspection's scan can now be interrupted. It ran to the end of the file even after the IDE had
-  cancelled the pass, which on a large file queued work rather than dropping it.
-
-## [0.1.0] - 2026-08-29
+## [0.1.0] - 2026-08-30
 
 First release.
 
 ### Added
 
 - Highlighting of Tailwind variant prefixes, arbitrary variants such as `[&>*]`, and the important
-  modifier in every position Tailwind allows — `!font-bold` and `hover:!font-bold` from v3,
-  `font-bold!` from v4. Related variants share a color, so the structure of a class list is visible
-  at a glance rather than read word by word.
-- Colors for the variants Tailwind v4 introduced: container queries (`@md:`, `@max-lg:`, `@[400px]:`),
-  `data-*`, `aria-*` and `supports-*` attribute variants, `nth-*`, and the `open`, `inert` and
-  `starting` states. Every variant Tailwind documents has a color in every built-in theme.
-- Arbitrary variants written behind a modifier or a group name — `has-[:checked]:`,
-  `group-[.is-open]/menu:`, `not-[&:hover]:` — colored like any other arbitrary variant.
-- Recognition of class names in class attributes (`class`, `className`, `class:list`, …), framework
-  bindings (`:class`, `v-bind:class`, `x-bind:class`), class helper functions (`cn`, `clsx`, `cva`,
-  `twMerge`, …) and methods called on them (`el.classList.add(…)`), tagged templates including ones
-  that carry a component, a type, or attributes (`` styled.div`…` ``, `` styled(Button)`…` ``), and
-  CSS `@apply` directives including ones wrapped over several lines.
-- Recognition of values assigned to a class-shaped name, whether a string, a template literal, an
-  array, or an object. A compound name counts across a camel case boundary, so `buttonClasses` and
-  `cardClassName` are read while ordinary words such as `superclass` are not.
-- A bound attribute is treated as the expression it is, so `:class="{ 'lg:p-4': ok }"` colors
-  `lg:p-4` and leaves the braces, brackets, and conditions alone.
-- Support for HTML, JSX/TSX, Vue, Svelte, Astro, PHP, and CSS/SCSS/Sass/Less/Stylus/PostCSS files,
-  and for files the editor holds without one on disk, such as the copy the IDE makes for an intention
-  preview.
-- Four built-in themes: `default` and `synthwave`; `colour-blind`, built on the Okabe–Ito palette so
-  the variant families stay distinguishable under all three dichromacies; and `editor scheme`, which
-  takes its colors from the IDE's own syntax colors and follows you when you switch color scheme.
-- Any number of themes of your own, based on any of the four. A theme stores only the colors you
-  change, so the rest keeps following its base — including tokens added in later plugin versions.
-- A theme editor whose table shows the palette rather than describing it: each token is painted in
-  its own color, the swatch opens a color picker for that row, and the hex can be typed with or
-  without its hash, shorthand such as `#fff` included. Add, remove, reset, a section filter and a
-  find field sit around it.
-- A color, a bold setting, and an on/off switch per token. Switching one off leaves it uncolored
-  while keeping the color you picked, which is the difference between silencing a variant and
-  deleting it.
-- Theme tokens you add yourself, so a variant no built-in theme lists can be colored. Base-class
-  patterns such as `bg-*` can be added too, coloring the utility itself alongside its variants;
-  built-in themes ship none, so this stays opt-in.
-- A live preview under the table: a sample class list painted with the theme as you edit it,
-  including the adjustment that keeps colors readable on your editor background. The sample is
-  editable, so classes pasted from your own code can be tried against the palette; nothing typed
-  there is saved, and **Restore sample** brings the original back.
-- Colors adapt to the editor background: one that would be unreadable against it is darkened or
-  lightened, keeping its hue, until it meets the WCAG AA contrast ratio. One that already reads is
-  used exactly as chosen.
-- A theme menu beside the picker holding **New…**, **Duplicate**, **Rename…**, **Delete**,
-  **Import theme…** and **Export theme…**. Renaming carries every theme based on the renamed one, so
-  an inherited palette does not silently fall back. Import reads both a theme this plugin exported
-  and a VS Code `settings.json` — every theme under `tailwindRainbow.themes` comes across, so a
-  palette tuned in the VS Code extension moves in one dialog.
-- Settings under **Editor | Tailwind Rainbow** for the theme and, behind a **What is recognized**
-  group, the maximum file size to scan and the recognized attributes, functions, template tags,
-  ignored prefix modifiers and file extensions. Each list is edited one value per line; a file
-  extension written with a leading dot is stored the way a file reports it.
-- Settings validated as they are typed: a maximum file size that is not a positive number is reported
-  under the field rather than when Apply is pressed, and emptying the class identifiers or the file
-  extensions says what it will cost.
-- Project-level recognition settings. A project can keep its own answers in
-  `.idea/tailwindRainbow.xml` for a repository to share, while the theme stays with the user.
-- An inspection that reports a variant your project declares but your theme has no color for, with a
-  quick fix that adds it — so a custom variant is not silently uncolored. Declared variants are read
-  from `@custom-variant` and `--breakpoint-*` in Tailwind v4 stylesheets and from `addVariant(…)` and
-  `screens` in a v3 config, and are offered when adding a token.
-- Reporting of theme entries the plugin cannot use: a banner in the settings screen says how many
-  there are and what is wrong with them, and offers to show the entry or remove them. An edit that
-  would add a new one is refused with the reason.
-- A **Select Tailwind Rainbow Theme** action, found through Find Action, that switches themes without
-  opening settings and previews each one in the editor while the list is open. The status bar shows
-  the active theme and opens the same chooser, or says the current file is not scanned and why.
-- An **Explain Tailwind Colouring at Caret** action that says which theme entry colours the class
-  under the caret, or that nothing matches it.
-- A **Copy Tailwind Rainbow Diagnostics** action that puts the plugin version, the IDE build, the
-  theme in use, the recognition rules and the current file's scan status on the clipboard — the whole
-  content of a useful bug report, in one paste. The same facts reach `idea.log`: a theme entry dropped
-  as malformed, and a file handed back unpainted because of its size, its extension, or the plugin
-  being switched off.
-- A `dev.tailwindrainbow.themeContributor` extension point, so other plugins can ship themes. A
-  contributed theme can be based on a built-in one, can be the base of a user theme, and is
-  overridden entry by entry by the user's own colors.
+  modifier in every position Tailwind allows - `!font-bold`, `hover:!font-bold`, `font-bold!`.
+  Related variants share a color.
+- Colors for the variants Tailwind v4 introduced: container queries (`@md:`, `@max-lg:`,
+  `@[400px]:`), `data-*`, `aria-*` and `supports-*`, `nth-*`, and `open`, `inert` and `starting`.
+- Arbitrary variants written behind a modifier or a group name - `has-[:checked]:`,
+  `group-[.is-open]/menu:`, `not-[&:hover]:`.
+- Recognition of class names in class attributes, framework bindings (`:class`, `v-bind:class`,
+  `x-bind:class`), class helper functions and methods called on them (`el.classList.add(…)`), tagged
+  templates including ones carrying a component or a type (`` styled(Button)`…` ``), CSS `@apply`
+  directives wrapped over several lines, and values assigned to a class-shaped name - string,
+  template literal, array or object. A compound name counts across a camel case boundary, so
+  `buttonClasses` is read and `superclass` is not.
+- Support for HTML, JSX/TSX, Vue, Svelte, Astro, PHP, and CSS/SCSS/Sass/Less/Stylus/PostCSS files.
+- Four built-in themes: `default`, `synthwave`, `colour-blind` (Okabe-Ito, holding the variant
+  families apart under all three dichromacies) and `editor scheme`, which follows the IDE's syntax
+  colors.
+- Any number of themes of your own, storing only the colors you change so the rest keeps following
+  the base - including tokens added in later plugin versions.
+- A theme editor showing the palette rather than describing it: each token painted in its own color,
+  a swatch that opens a color picker, a hex field, and add, remove, reset, section filter and find
+  around it. Per token: a color, a bold setting, and an on/off switch.
+- Theme tokens you add yourself, including base-class patterns such as `bg-*`. Built-in themes ship
+  none, so base-class coloring stays opt-in.
+- A live, editable preview of the theme under the table. Nothing typed there is saved.
+- Colors adapted to the editor background: one that would be unreadable is darkened or lightened,
+  keeping its hue, until it meets the WCAG AA contrast ratio.
+- Theme management beside the picker: **New…**, **Duplicate**, **Rename…**, **Delete**, **Import
+  theme…** and **Export theme…**. Renaming carries every theme based on the renamed one. Import reads
+  both this plugin's export and a VS Code `settings.json`.
+- Settings under **Editor | Tailwind Rainbow** for the theme and, behind **What is recognized**, the
+  maximum file size and the recognized attributes, functions, template tags, ignored prefix modifiers
+  and file extensions - validated as they are typed.
+- Project-level recognition settings in `.idea/tailwindRainbow.xml` for a repository to share, while
+  the theme stays with the user.
+- An inspection reporting a variant your project declares but your theme has no color for, with a
+  quick fix that adds it. Declared variants are read from `@custom-variant` and `--breakpoint-*` in
+  v4 stylesheets and from `addVariant(…)` and `screens` in a v3 config, and are offered when adding a
+  token.
+- Reporting of theme entries the plugin cannot use: a banner saying how many and what is wrong, with
+  the option to show or remove them.
+- **Select Tailwind Rainbow Theme**, which switches themes and previews each one in the editor; a
+  status bar widget showing the active theme, or why the current file is not scanned; **Explain
+  Tailwind Colouring at Caret**; and **Copy Tailwind Rainbow Diagnostics**, which puts a whole bug
+  report on the clipboard.
+- A `dev.tailwindrainbow.themeContributor` extension point, so other plugins can ship themes.
+- Class names are read from a string that reads as a class list on its own, so a lookup table no
+  attribute, helper or class-shaped name claims - `{ left: 'w-full md:max-w-1/2' }` - is coloured for
+  what it holds. Every word has to be a Tailwind class and at least one has to carry a known variant,
+  which keeps prose and non-variant colons such as `'10:30'` or a URL out of it. **Colour strings that
+  read as a class list**, under *Settings | Editor | Tailwind Rainbow*, switches it off.
 
 [Unreleased]: https://github.com/Jacobgh00/tailwindrainbow/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/Jacobgh00/tailwindrainbow/commits/v0.1.0

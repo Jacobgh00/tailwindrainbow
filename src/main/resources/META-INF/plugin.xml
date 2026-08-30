@@ -18,12 +18,12 @@
         <code>cva</code>, <code>twMerge</code>, …), tagged templates including
         <code>styled.div`…`</code>, values assigned to a class-shaped name, and CSS
         <code>@apply</code> directives. Out of the box that covers HTML, JSX/TSX, Vue, Svelte, Astro,
-        PHP and stylesheets — and the list of file types is a setting rather than a promise.</p>
+        PHP and stylesheets - and the list of file types is a setting rather than a promise.</p>
         <p><b>What you can change.</b> Four themes ship: two decorative ones, a palette built on the
-        Okabe–Ito colors so the variant families stay apart for color-blind readers, and one that
+        Okabe-Ito colors so the variant families stay apart for color-blind readers, and one that
         takes its colors from your editor's own syntax scheme and follows it when you switch. Build
-        your own on top of any of them — pick colors in the table, add variants no theme lists, switch
-        entries off — or import a theme from the VS Code Tailwind Rainbow extension. Which attributes,
+        your own on top of any of them - pick colors in the table, add variants no theme lists, switch
+        entries off - or import a theme from the VS Code Tailwind Rainbow extension. Which attributes,
         helper functions and file types are scanned is configurable, and a project can keep its own
         answers and commit them. Colors that would not contrast with your editor background are
         adjusted until they do.</p>
@@ -31,6 +31,10 @@
         and it does not color utility classes out of the box: variants stop standing out once
         everything else is colored too, so base-class coloring is something you opt into.</p>
         <p>Everything lives under <b>Settings | Editor | Tailwind Rainbow</b>.</p>
+        <p><em>An independent port of the Tailwind Rainbow extension for Visual Studio Code,
+        not affiliated with or endorsed by its authors. Tailwind CSS is a trademark of
+        Tailwind Labs Inc.; this plugin is not affiliated with or endorsed by Tailwind
+        Labs.</em></p>
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
