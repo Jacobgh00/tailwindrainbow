@@ -36,7 +36,10 @@ class ThemeEditorPanel(private val declaredVariants: () -> Set<String>) {
 
     private val sectionFilter =
         ComboBox(CollectionComboBoxModel(sections)).apply {
-            renderer = SimpleListCellRenderer.create("") { it?.displayName ?: message("editor.filter.all") }
+            renderer =
+                SimpleListCellRenderer.create<SegmentKind?> { label, value, _ ->
+                    label.text = value?.displayName ?: message("editor.filter.all")
+                }
         }
 
     private val find = SearchTextField(false)
