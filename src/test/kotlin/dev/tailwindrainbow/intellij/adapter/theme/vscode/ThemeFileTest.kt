@@ -1,5 +1,8 @@
-package dev.tailwindrainbow.intellij.application.theme
+package dev.tailwindrainbow.intellij.adapter.theme.vscode
 
+import dev.tailwindrainbow.intellij.application.port.ThemeFileCodec
+import dev.tailwindrainbow.intellij.application.theme.SpecThemeSource
+import dev.tailwindrainbow.intellij.application.theme.StyleEntry
 import dev.tailwindrainbow.intellij.domain.theme.FontWeight
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
 import dev.tailwindrainbow.intellij.domain.theme.SegmentKind
@@ -9,6 +12,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class ThemeFileTest {
+    private val codec: ThemeFileCodec = VsCodeThemeCodec
+
     private val palette =
         RainbowTheme(
             prefix = mapOf("hover" to TextStyle("#4ee585", FontWeight.BOLD)),
@@ -19,7 +24,7 @@ class ThemeFileTest {
 
     @Test
     fun `a palette survives being written out and read back`() {
-        val read = themesFromFile(palette.toThemeFile("midnight")).singleOrNull()
+        val read = codec.read(codec.write("midnight", palette)).singleOrNull()
 
         assertEquals("midnight", read?.name)
         assertEquals(
@@ -35,7 +40,7 @@ class ThemeFileTest {
 
     @Test
     fun `what is written is what the VS Code extension writes`() {
-        val written = palette.toThemeFile("midnight")
+        val written = codec.write("midnight", palette)
 
         listOf("\"midnight\"", "\"prefix\"", "\"hover\"", "\"color\"", "\"#4ee585\"", "\"fontWeight\"")
             .forEach { assertTrue(it in written, "expected $it in\n$written") }
@@ -58,7 +63,7 @@ class ThemeFileTest {
             }
             """.trimIndent()
 
-        val read = checkNotNull(themesFromFile(theirs).singleOrNull())
+        val read = checkNotNull(codec.read(theirs).singleOrNull())
 
         assertEquals("myTheme", read.name)
         assertEquals(700, read.entries.first { it.key == "hover" }.fontWeight, "named weights are read")
@@ -68,16 +73,16 @@ class ThemeFileTest {
 
     @Test
     fun `a file that is not a theme is refused rather than throwing`() {
-        assertTrue(themesFromFile("not json at all").isEmpty())
-        assertTrue(themesFromFile("[]").isEmpty())
-        assertTrue(themesFromFile("{}").isEmpty())
+        assertTrue(codec.read("not json at all").isEmpty())
+        assertTrue(codec.read("[]").isEmpty())
+        assertTrue(codec.read("{}").isEmpty())
     }
 
     @Test
     fun `an entry the plugin cannot use is reported, not thrown, exactly as a stored one is`() {
         val broken = """{ "mine": { "prefix": { "hover": { "color": "rebeccapurple" } } } }"""
 
-        val spec = checkNotNull(themesFromFile(broken).singleOrNull())
+        val spec = checkNotNull(codec.read(broken).singleOrNull())
         val problems = SpecThemeSource(listOf(spec)).problems
 
         assertEquals(1, problems.size)

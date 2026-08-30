@@ -2,6 +2,7 @@ package dev.tailwindrainbow.intellij.adapter.intellij.settings.ui
 
 import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.runInEdtAndGet
+import dev.tailwindrainbow.intellij.adapter.theme.vscode.VsCodeThemeCodec
 import dev.tailwindrainbow.intellij.application.settings.RecognitionForm
 import dev.tailwindrainbow.intellij.application.settings.SettingsForm
 import dev.tailwindrainbow.intellij.application.theme.StyleEntry
@@ -73,5 +74,6 @@ class SettingsPanelTest {
             themeNames = listOf("default", "mine"),
             basePalette = { RainbowTheme() },
             declaredVariants = { emptySet() },
+            themeFileCodec = VsCodeThemeCodec,
         ).apply { write(form) }
 }

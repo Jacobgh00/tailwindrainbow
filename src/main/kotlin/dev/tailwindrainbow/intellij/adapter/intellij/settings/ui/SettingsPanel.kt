@@ -8,7 +8,9 @@ import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.panel
 import dev.tailwindrainbow.intellij.adapter.intellij.TailwindRainbowBundle.message
+import dev.tailwindrainbow.intellij.application.port.ThemeFileCodec
 import dev.tailwindrainbow.intellij.application.settings.SettingsForm
+import dev.tailwindrainbow.intellij.application.settings.ThemeWorkspace
 import dev.tailwindrainbow.intellij.application.settings.duplicating
 import dev.tailwindrainbow.intellij.application.settings.merging
 import dev.tailwindrainbow.intellij.application.settings.renaming
@@ -22,8 +24,10 @@ class SettingsPanel(
     themeNames: List<String>,
     private val basePalette: (String) -> RainbowTheme,
     declaredVariants: () -> Set<String>,
+    themeFileCodec: ThemeFileCodec,
 ) {
     private val themeEditor = ThemeEditorPanel(declaredVariants)
+    private val themeFiles = ThemeFileActions(themeFileCodec)
     private val enabled = JBCheckBox(message("settings.enable"))
     private val themeNameModel = MutableCollectionComboBoxModel(themeNames.toMutableList())
     private val theme = ComboBox(themeNameModel)
@@ -34,12 +38,11 @@ class SettingsPanel(
                 theme.selectedItem = problem.themeName
                 themeEditor.select(problem.section, problem.key)
             },
-            onRemove = { found -> show(themes.withoutEntriesFor(found), selectedThemeName()) },
+            onRemove = { found -> show(commitCurrentDraft().themes.withoutEntriesFor(found), selectedThemeName()) },
         )
     private val recognition = RecognitionPanel()
 
-    private var editing = ""
-    private var themes: List<ThemeSpec> = emptyList()
+    private var workspace = ThemeWorkspace.load(emptyList())
 
     val component: DialogPanel =
         panel {
@@ -68,7 +71,7 @@ class SettingsPanel(
             themeName = selectedThemeName(),
             recognition = recognition.applicationRules(),
             projectRecognition = recognition.projectRules(),
-            themes = park(),
+            themes = commitCurrentDraft().themes,
         )
 
     fun showStoredRecognition(form: SettingsForm) {
@@ -79,8 +82,7 @@ class SettingsPanel(
         enabled.isSelected = form.enabled
         recognition.show(form.recognition, form.projectRecognition)
 
-        themes = form.themes
-        editing = ""
+        workspace = ThemeWorkspace.load(form.themes)
         offerNames()
         theme.selectedItem = form.themeName
         showSelectedTheme()
@@ -88,31 +90,22 @@ class SettingsPanel(
 
     private fun selectedThemeName(): String = theme.selectedItem as? String ?: ""
 
-    private fun park(): List<ThemeSpec> {
-        if (editing.isEmpty()) return themes
-
-        return themes.filterNot { it.name == editing } + listOfNotNull(themeEditor.specFor(editing, baseOf(editing)))
-    }
-
     private fun showSelectedTheme() {
-        themes = park()
-        editing = selectedThemeName()
+        val selected = selectedThemeName()
+        workspace = workspace.select(selected, currentDraft())
 
-        themeEditor.show(basePalette(baseOf(editing)), themes.firstOrNull { it.name == editing })
+        themeEditor.show(basePalette(workspace.baseOf(selected)), workspace.selectedTheme())
     }
-
-    private fun baseOf(name: String): String = themes.firstOrNull { it.name == name }?.basedOn ?: name
 
     private fun offerNames() {
-        themeNameModel.replaceAll(baseNames + themes.map(ThemeSpec::name).filterNot { it in baseNames })
+        themeNameModel.replaceAll(baseNames + workspace.themes.map(ThemeSpec::name).filterNot { it in baseNames })
     }
 
     private fun show(
         parked: List<ThemeSpec>,
         selected: String,
     ) {
-        themes = parked
-        editing = ""
+        workspace = ThemeWorkspace.load(parked)
         offerNames()
         theme.selectedItem = selected
         showSelectedTheme()
@@ -123,7 +116,10 @@ class SettingsPanel(
             val dialog = NewThemeDialog(baseNames) { themeNameModel.items.contains(it) }
             if (!dialog.showAndGet()) return
 
-            show(park() + ThemeSpec(dialog.enteredName, emptyList(), basedOn = dialog.selectedBase), dialog.enteredName)
+            show(
+                commitCurrentDraft().themes + ThemeSpec(dialog.enteredName, emptyList(), basedOn = dialog.selectedBase),
+                dialog.enteredName,
+            )
         }
 
         override fun duplicate() {
@@ -136,7 +132,7 @@ class SettingsPanel(
                 )
             if (!dialog.showAndGet()) return
 
-            show(park().duplicating(source, dialog.enteredName), dialog.enteredName)
+            show(commitCurrentDraft().themes.duplicating(source, dialog.enteredName), dialog.enteredName)
         }
 
         override fun rename() {
@@ -146,23 +142,23 @@ class SettingsPanel(
             val dialog = named(message("dialog.renameTheme.title"), message("dialog.renameTheme.ok"), from)
             if (!dialog.showAndGet()) return
 
-            show(park().renaming(from, dialog.enteredName), dialog.enteredName)
+            show(commitCurrentDraft().themes.renaming(from, dialog.enteredName), dialog.enteredName)
         }
 
         override fun delete() {
             if (!ownsSelected()) return
 
-            show(park().filterNot { it.name == selectedThemeName() }, baseNames.first())
+            show(commitCurrentDraft().themes.filterNot { it.name == selectedThemeName() }, baseNames.first())
         }
 
         override fun import() {
-            val imported = chooseThemesToImport(menu.component)
+            val imported = themeFiles.chooseThemes(menu.component)
             if (imported.isEmpty()) return
 
-            show(park().merging(imported), imported.first().name)
+            show(commitCurrentDraft().themes.merging(imported), imported.first().name)
         }
 
-        override fun export() = exportTheme(menu.component, selectedThemeName(), themeEditor.palette)
+        override fun export() = themeFiles.export(menu.component, selectedThemeName(), themeEditor.palette)
 
         override fun ownsSelected(): Boolean = selectedThemeName() !in baseNames
 
@@ -176,5 +172,16 @@ class SettingsPanel(
             suggested = suggested,
             isTaken = { it != selectedThemeName() && themeNameModel.items.contains(it) },
         )
+    }
+
+    private fun currentDraft(): ThemeSpec? {
+        return workspace.editing?.let { name ->
+            themeEditor.specFor(name, workspace.baseOf(name))
+        }
+    }
+
+    private fun commitCurrentDraft(): ThemeWorkspace {
+        workspace = workspace.commit(currentDraft())
+        return workspace
     }
 }

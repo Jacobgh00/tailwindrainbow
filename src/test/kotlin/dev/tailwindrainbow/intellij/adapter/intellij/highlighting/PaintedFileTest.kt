@@ -17,6 +17,7 @@ import com.intellij.testFramework.junit5.fixture.projectFixture
 import com.intellij.testFramework.junit5.fixture.sourceRootFixture
 import com.intellij.testFramework.runInEdtAndGet
 import com.intellij.util.LocalTimeCounter
+import dev.tailwindrainbow.intellij.domain.theme.rgbToHex
 import java.io.IOException
 
 data class Painted(val text: String, val color: String, val start: Int, val end: Int)
@@ -135,5 +136,5 @@ abstract class PaintedFileTest {
 private fun com.intellij.openapi.editor.markup.TextAttributes?.hex(): String {
     val color = this?.foregroundColor ?: return ""
 
-    return "#%02x%02x%02x".format(color.red, color.green, color.blue)
+    return rgbToHex(color.red, color.green, color.blue)
 }

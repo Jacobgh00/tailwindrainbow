@@ -14,7 +14,13 @@ internal fun String.toRgbOrNull(): Rgb? {
     return Rgb(red, green, blue)
 }
 
-internal fun Rgb.toHex(): String = "#%02x%02x%02x".format(red.toChannel(), green.toChannel(), blue.toChannel())
+internal fun rgbToHex(
+    red: Int,
+    green: Int,
+    blue: Int,
+): String = "#%02x%02x%02x".format(red, green, blue)
+
+internal fun Rgb.toHex(): String = rgbToHex(red.toChannel(), green.toChannel(), blue.toChannel())
 
 internal fun Rgb.toHsl(): Hsl {
     val max = maxOf(red, green, blue)

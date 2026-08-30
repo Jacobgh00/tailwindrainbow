@@ -216,6 +216,15 @@ class ThemeEditorModelTest {
     }
 
     @Test
+    fun `an added token starts with the shared default style`() {
+        val row = model().add(SegmentKind.PREFIX, "focus-visible").rows().first { it.key == "focus-visible" }
+
+        assertEquals(ADDED_TOKEN_COLOR, row.style.color)
+        assertTrue(row.style.bold)
+        assertTrue(row.style.enabled)
+    }
+
+    @Test
     fun `an added token can be removed again`() {
         val removed =
             model()

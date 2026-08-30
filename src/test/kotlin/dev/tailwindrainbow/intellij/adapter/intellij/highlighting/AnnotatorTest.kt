@@ -6,6 +6,7 @@ import dev.tailwindrainbow.intellij.adapter.intellij.settings.TailwindRainbowSet
 import dev.tailwindrainbow.intellij.application.highlight.ScanSettings
 import dev.tailwindrainbow.intellij.application.port.HighlightSettings
 import dev.tailwindrainbow.intellij.domain.theme.readableOn
+import dev.tailwindrainbow.intellij.domain.theme.rgbToHex
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -47,7 +48,7 @@ class AnnotatorTest : PaintedFileTest() {
     fun `the colour painted is the one the theme's colour becomes on this background`() {
         val background = EditorColorsManager.getInstance().globalScheme.defaultBackground
         val hover = settings.themes.themeNamed("default").prefix.getValue("hover")
-        val expected = hover.readableOn("#%02x%02x%02x".format(background.red, background.green, background.blue))
+        val expected = hover.readableOn(rgbToHex(background.red, background.green, background.blue))
 
         val painted = painted("adapted.html", """<div class="hover:bg-blue-500"></div>""")
 

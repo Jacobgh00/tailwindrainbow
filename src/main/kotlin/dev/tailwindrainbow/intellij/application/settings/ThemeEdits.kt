@@ -1,7 +1,17 @@
 package dev.tailwindrainbow.intellij.application.settings
 
+import dev.tailwindrainbow.intellij.application.theme.StyleEntry
 import dev.tailwindrainbow.intellij.application.theme.ThemeProblem
 import dev.tailwindrainbow.intellij.application.theme.ThemeSpec
+import dev.tailwindrainbow.intellij.domain.theme.FontWeight
+import dev.tailwindrainbow.intellij.domain.theme.SegmentKind
+
+internal const val ADDED_TOKEN_COLOR = "#808080"
+
+internal fun newThemeEntry(
+    section: SegmentKind,
+    key: String,
+): StyleEntry = StyleEntry(section, key, ADDED_TOKEN_COLOR, FontWeight.BOLD.value)
 
 fun List<ThemeSpec>.duplicating(
     source: String,
@@ -26,6 +36,16 @@ fun List<ThemeSpec>.renaming(
 fun List<ThemeSpec>.merging(imported: List<ThemeSpec>): List<ThemeSpec> =
     filterNot { existing -> imported.any { it.name == existing.name } } + imported
 
+fun List<ThemeSpec>.addingEntry(
+    themeName: String,
+    entry: StyleEntry,
+): List<ThemeSpec> {
+    val existing = firstOrNull { it.name == themeName }
+    val updated = existing?.copy(entries = existing.entries.replacing(entry)) ?: ThemeSpec(themeName, listOf(entry))
+
+    return filterNot { it.name == themeName } + updated
+}
+
 fun List<ThemeSpec>.withoutEntriesFor(problems: List<ThemeProblem>): List<ThemeSpec> =
     map { spec ->
         spec.copy(
@@ -35,3 +55,6 @@ fun List<ThemeSpec>.withoutEntriesFor(problems: List<ThemeProblem>): List<ThemeS
                 },
         )
     }
+
+private fun List<StyleEntry>.replacing(entry: StyleEntry): List<StyleEntry> =
+    filterNot { it.section == entry.section && it.key == entry.key } + entry

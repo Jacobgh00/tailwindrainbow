@@ -7,6 +7,8 @@ import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.panel
 import dev.tailwindrainbow.intellij.adapter.intellij.TailwindRainbowBundle.message
 import dev.tailwindrainbow.intellij.application.settings.RecognitionForm
+import dev.tailwindrainbow.intellij.application.settings.RecognitionOwner
+import dev.tailwindrainbow.intellij.application.settings.RecognitionWorkspace
 import dev.tailwindrainbow.intellij.application.settings.classIdentifiersWarning
 import dev.tailwindrainbow.intellij.application.settings.maxFileSizeProblem
 import dev.tailwindrainbow.intellij.application.settings.supportedExtensionsWarning
@@ -22,7 +24,7 @@ internal class RecognitionPanel {
     private val supportedExtensions = listField()
     private val readsClassLikeStrings = JBCheckBox(message("settings.recognition.classLikeStrings"))
 
-    private var rulesOffScreen: RecognitionForm? = null
+    private var workspace: RecognitionWorkspace? = null
 
     val component: JComponent =
         panel {
@@ -58,24 +60,25 @@ internal class RecognitionPanel {
         ownedByProject.addActionListener { swap() }
     }
 
-    fun applicationRules(): RecognitionForm = if (ownedByProject.isSelected) rulesOffScreen() else onScreen()
+    fun applicationRules(): RecognitionForm = saveDisplayed().applicationRules()
 
-    fun projectRules(): RecognitionForm? = onScreen().takeIf { ownedByProject.isSelected }
+    fun projectRules(): RecognitionForm? = saveDisplayed().projectRules()
 
     fun show(
         application: RecognitionForm,
         project: RecognitionForm?,
     ) {
-        ownedByProject.isSelected = project != null
-        write(project ?: application)
-        rulesOffScreen = application.takeIf { project != null }
+        val loaded = RecognitionWorkspace.load(application, project)
+        workspace = loaded
+        write(loaded.displayed)
+        ownedByProject.isSelected = loaded.owner == RecognitionOwner.PROJECT
     }
 
     private fun swap() {
-        val current = onScreen()
-
-        write(rulesOffScreen ?: current)
-        rulesOffScreen = current
+        val selected = if (ownedByProject.isSelected) RecognitionOwner.PROJECT else RecognitionOwner.APPLICATION
+        val selectedWorkspace = saveDisplayed().select(selected)
+        workspace = selectedWorkspace
+        write(selectedWorkspace.displayed)
     }
 
     private fun listField() =
@@ -83,8 +86,6 @@ internal class RecognitionPanel {
             { text -> text.split(SEPARATOR).map(String::trim).filter(String::isNotEmpty).toMutableList() },
             { values -> values.joinToString("$SEPARATOR ") },
         )
-
-    private fun rulesOffScreen() = rulesOffScreen ?: onScreen()
 
     private fun onScreen() =
         RecognitionForm(
@@ -109,5 +110,12 @@ internal class RecognitionPanel {
         ignoredModifiers.text = rules.ignoredPrefixModifiers
         supportedExtensions.text = rules.supportedExtensions
         readsClassLikeStrings.isSelected = rules.readsClassLikeStrings
+    }
+
+    private fun saveDisplayed(): RecognitionWorkspace {
+        val current = onScreen()
+        val saved = workspace?.updateDisplayed(current) ?: RecognitionWorkspace.load(current, null)
+        workspace = saved
+        return saved
     }
 }

@@ -1,11 +1,11 @@
-package dev.tailwindrainbow.intellij.application.theme
+package dev.tailwindrainbow.intellij.adapter.theme.vscode
 
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
 import dev.tailwindrainbow.intellij.domain.theme.TextStyle
 
-fun RainbowTheme.toThemeFile(name: String): String {
+internal fun RainbowTheme.toThemeFile(name: String): String {
     val sections =
         JsonObject().apply {
             add(PREFIX, prefix.asJson())

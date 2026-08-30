@@ -2,6 +2,7 @@ package dev.tailwindrainbow.intellij.application.settings
 
 import dev.tailwindrainbow.intellij.application.theme.StyleEntry
 import dev.tailwindrainbow.intellij.application.theme.ThemeSpec
+import dev.tailwindrainbow.intellij.domain.theme.FontWeight
 import dev.tailwindrainbow.intellij.domain.theme.SegmentKind
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -55,5 +56,46 @@ class ThemeEditsTest {
     @Test
     fun `renaming something the list does not hold leaves it alone`() {
         assertEquals(listOf(mine), listOf(mine).renaming("synthwave", "yours"))
+    }
+
+    @Test
+    fun `a new entry has the editor's default colour and weight`() {
+        assertEquals(
+            StyleEntry(SegmentKind.PREFIX, "focus", ADDED_TOKEN_COLOR, FontWeight.BOLD.value),
+            newThemeEntry(SegmentKind.PREFIX, "focus"),
+        )
+    }
+
+    @Test
+    fun `adding an entry creates a same-name theme when none exists`() {
+        val entry = newThemeEntry(SegmentKind.PREFIX, "hover")
+
+        assertEquals(
+            listOf(ThemeSpec("mine", listOf(entry))),
+            emptyList<ThemeSpec>().addingEntry("mine", entry),
+        )
+    }
+
+    @Test
+    fun `adding an entry preserves the existing base`() {
+        val existing = ThemeSpec("mine", listOf(hover), basedOn = "synthwave")
+        val entry = newThemeEntry(SegmentKind.PREFIX, "focus")
+
+        val updated = listOf(existing).addingEntry("mine", entry).single()
+
+        assertEquals("synthwave", updated.basedOn)
+        assertEquals(listOf(hover, entry), updated.entries)
+    }
+
+    @Test
+    fun `adding an entry replaces disabled and duplicate copies of the same key`() {
+        val disabled = StyleEntry(SegmentKind.PREFIX, "hover", "#111111", 700, enabled = false)
+        val other = StyleEntry(SegmentKind.BASE, "bg-*", "#222222", 400)
+        val replacement = newThemeEntry(SegmentKind.PREFIX, "hover")
+        val existing = ThemeSpec("mine", listOf(disabled, other, hover))
+
+        val updated = listOf(existing).addingEntry("mine", replacement).single()
+
+        assertEquals(listOf(other, replacement), updated.entries)
     }
 }

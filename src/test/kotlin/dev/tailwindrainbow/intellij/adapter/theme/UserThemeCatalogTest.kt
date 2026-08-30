@@ -58,6 +58,46 @@ class UserThemeCatalogTest {
         assertTrue("corporate" in UserThemeCatalog(contributed).baseNames())
     }
 
+    @Test
+    fun `refresh copies the caller's theme list`() {
+        val themes = mutableListOf(ThemeSpec("local", listOf(entry("hover", "#020202"))))
+        val catalog = UserThemeCatalog()
+
+        catalog.refresh(themes)
+        themes.clear()
+
+        assertEquals("local", catalog.overrides().single().name)
+        assertTrue("local" in catalog.names())
+    }
+
+    @Test
+    fun `refresh copies the entries inside the caller's theme list`() {
+        val entries = mutableListOf(entry("hover", "#020202"))
+        val catalog = UserThemeCatalog()
+
+        catalog.refresh(listOf(ThemeSpec("local", entries)))
+        entries.clear()
+
+        assertEquals(1, catalog.overrides().single().entries.size)
+    }
+
+    @Test
+    fun `a previously published view remains from its original generation`() {
+        val catalog = UserThemeCatalog()
+        val first = ThemeSpec("first", listOf(entry("hover", "#020202")))
+        val second = ThemeSpec("second", listOf(entry("hover", "#030303")))
+
+        catalog.refresh(listOf(first))
+        val firstOverrides = catalog.overrides()
+
+        catalog.refresh(listOf(second))
+
+        assertEquals(listOf(first), firstOverrides)
+        assertEquals(listOf(second), catalog.overrides())
+        assertTrue("second" in catalog.names())
+        assertTrue("first" !in catalog.names())
+    }
+
     private fun entry(
         key: String,
         color: String,

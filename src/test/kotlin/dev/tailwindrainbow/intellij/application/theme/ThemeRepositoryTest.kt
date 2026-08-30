@@ -63,6 +63,16 @@ class ThemeRepositoryTest {
         assertTrue(ThemeRepository(builtIn, user).find("default").prefix.containsKey("hover"))
     }
 
+    @Test
+    fun `a repository copies its source list before lazy resolution`() {
+        val sources = mutableListOf<ThemeSource>(builtIn)
+        val repository = ThemeRepository(sources)
+
+        sources.clear()
+
+        assertEquals(red, repository.find("default").prefix["hover"])
+    }
+
     private companion object {
         val red = TextStyle("#ff0000", FontWeight.BOLD)
         val blue = TextStyle("#0000ff", FontWeight.BOLD)

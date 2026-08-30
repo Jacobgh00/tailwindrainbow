@@ -8,28 +8,35 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.InvalidVirtualFileAccessException
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.FilenameIndex
-import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
 import com.intellij.psi.util.PsiModificationTracker
 import com.intellij.util.concurrency.AppExecutorUtil
-import dev.tailwindrainbow.intellij.application.variants.variantsDeclaredIn
+import dev.tailwindrainbow.intellij.application.port.VariantFile
+import dev.tailwindrainbow.intellij.application.port.VariantFileSource
+import dev.tailwindrainbow.intellij.application.variants.VariantScanner
 import java.io.IOException
 import java.util.concurrent.atomic.AtomicBoolean
 
 @Service(Service.Level.PROJECT)
 class ProjectVariants(private val project: Project) {
     @Volatile
-    private var known: Set<String> = emptySet()
-
-    @Volatile
-    private var knownAt: Long = NEVER_READ
+    private var snapshot = VariantSnapshot(emptySet(), NEVER_READ)
 
     private val reading = AtomicBoolean(false)
+
+    private val variantScanner =
+        VariantScanner(
+            sources =
+                listOf(
+                    VariantFileSource(::configFiles),
+                    VariantFileSource(::styleSheets),
+                ),
+        )
 
     fun declared(): Set<String> {
         scheduleUnlessCurrent()
 
-        return known
+        return snapshot.declared
     }
 
     fun refresh(): Set<String> {
@@ -37,11 +44,11 @@ class ProjectVariants(private val project: Project) {
 
         remember(found)
 
-        return found
+        return snapshot.declared
     }
 
     private fun scheduleUnlessCurrent() {
-        if (knownAt == modificationCount() || !reading.compareAndSet(false, true)) return
+        if (snapshot.readAt == modificationCount() || !reading.compareAndSet(false, true)) return
 
         ReadAction.nonBlocking<Set<String>> { read() }
             .expireWith(project)
@@ -51,29 +58,32 @@ class ProjectVariants(private val project: Project) {
     }
 
     private fun remember(found: Set<String>) {
-        known = found
-        knownAt = modificationCount()
+        snapshot = VariantSnapshot(found.toSet(), modificationCount())
     }
 
     private fun modificationCount(): Long = PsiModificationTracker.getInstance(project).modificationCount
 
-    private fun read(): Set<String> =
-        ReadAction.compute<Set<String>, RuntimeException> {
-            val scope = ProjectScope.getContentScope(project)
+    private fun read(): Set<String> = variantScanner.scan()
 
-            (configFiles(scope) + styleSheets(scope))
-                .take(MAX_FILES)
-                .filter { it.length <= MAX_FILE_SIZE }
-                .flatMapTo(mutableSetOf()) { variantsDeclaredIn(it.readText()) }
-        }
+    private fun configFiles(): Sequence<VariantFile> {
+        val scope = ProjectScope.getContentScope(project)
 
-    private fun configFiles(scope: GlobalSearchScope): List<VirtualFile> =
-        CONFIG_NAMES.flatMap { name -> FilenameIndex.getVirtualFilesByName(name, scope) }
+        return CONFIG_NAMES.asSequence()
+            .flatMap { name -> FilenameIndex.getVirtualFilesByName(name, scope).asSequence() }
+            .map { it.asVariantFile() }
+    }
 
-    private fun styleSheets(scope: GlobalSearchScope): List<VirtualFile> =
-        STYLESHEET_EXTENSIONS.flatMap { extension -> FilenameIndex.getAllFilesByExt(project, extension, scope) }
+    private fun styleSheets(): Sequence<VariantFile> {
+        val scope = ProjectScope.getContentScope(project)
 
-    private fun VirtualFile.readText(): String =
+        return STYLESHEET_EXTENSIONS.asSequence()
+            .flatMap { extension -> FilenameIndex.getAllFilesByExt(project, extension, scope).asSequence() }
+            .map { it.asVariantFile() }
+    }
+
+    private fun VirtualFile.asVariantFile(): VariantFile = VariantFile(length) { readContents() }
+
+    private fun VirtualFile.readContents(): String =
         try {
             String(contentsToByteArray())
         } catch (unreadable: IOException) {
@@ -84,10 +94,13 @@ class ProjectVariants(private val project: Project) {
             ""
         }
 
+    private data class VariantSnapshot(
+        val declared: Set<String>,
+        val readAt: Long,
+    )
+
     companion object {
         private const val NEVER_READ = -1L
-        private const val MAX_FILES = 200
-        private const val MAX_FILE_SIZE = 200_000L
 
         private val CONFIG_NAMES =
             listOf("tailwind.config.js", "tailwind.config.ts", "tailwind.config.cjs", "tailwind.config.mjs")

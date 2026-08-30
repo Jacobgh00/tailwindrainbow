@@ -237,14 +237,15 @@ The source is layered, and the layering is enforced by tests rather than by conv
 domain/       Themes, segment kinds, matching. Depends on nothing.
 application/  Scanning, parsing, theme resolution, settings mapping. Depends only on domain.
   port/       The interfaces the application needs the outside world to satisfy.
-adapter/      Implementations of those ports. Imports com.intellij; nothing inward does.
+adapter/      Implementations of those ports and external formats. IntelliJ adapters import the platform;
+              nothing inward does.
 bootstrap/    Composition root. The only place that names a concrete adapter.
 ```
 
-`ArchitectureTest` asserts those statements, and two more: that no code outside `adapter/` and
-`bootstrap/` touches the platform, and that nothing sits in the IDE adapter without needing to be
-there. They fail on a violation, which is how two dependency inversions, a misplaced class, and a
-documentation link pointing the wrong way were caught during development.
+`ArchitectureRulesTest` asserts those statements, and that no code outside `adapter/` and
+`bootstrap/` touches the platform or names a concrete adapter. It also keeps serialization and UI
+toolkits out of the domain and application layers. The rules fail on a violation, which is how
+dependency inversions and misplaced code are caught during development.
 
 Highlighting runs through an `Annotator`, so the platform's `DaemonCodeAnalyzer` owns debouncing,
 cancellation, and highlight lifetime. The plugin does not manage the markup model itself.

@@ -1,5 +1,6 @@
-package dev.tailwindrainbow.intellij.application.theme
+package dev.tailwindrainbow.intellij.adapter.theme.vscode
 
+import dev.tailwindrainbow.intellij.application.theme.StyleEntry
 import dev.tailwindrainbow.intellij.domain.theme.SegmentKind
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -31,21 +32,21 @@ class VsCodeSettingsTest {
 
     @Test
     fun `every theme in a VS Code settings file comes across`() {
-        val themes = themesFromFile(settingsJson)
+        val themes = VsCodeThemeCodec.read(settingsJson)
 
         assertEquals(listOf("myTheme", "quiet"), themes.map { it.name })
     }
 
     @Test
     fun `the settings around the themes are ignored rather than read as themes`() {
-        val themes = themesFromFile(settingsJson)
+        val themes = VsCodeThemeCodec.read(settingsJson)
 
         assertTrue(themes.none { it.name.startsWith("editor.") || it.name.startsWith("workbench.") })
     }
 
     @Test
     fun `a theme keeps its sections, colours, and weights`() {
-        val mine = themesFromFile(settingsJson).first { it.name == "myTheme" }
+        val mine = VsCodeThemeCodec.read(settingsJson).first { it.name == "myTheme" }
 
         assertEquals(
             listOf(
@@ -69,11 +70,11 @@ class VsCodeSettingsTest {
             }
             """.trimIndent()
 
-        assertEquals(listOf("mine"), themesFromFile(commented).map { it.name })
+        assertEquals(listOf("mine"), VsCodeThemeCodec.read(commented).map { it.name })
     }
 
     @Test
     fun `a settings file with no themes in it brings nothing across`() {
-        assertTrue(themesFromFile("""{ "editor.fontSize": 14 }""").none { it.entries.isNotEmpty() })
+        assertTrue(VsCodeThemeCodec.read("""{ "editor.fontSize": 14 }""").none { it.entries.isNotEmpty() })
     }
 }

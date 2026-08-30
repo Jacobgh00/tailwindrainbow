@@ -1,4 +1,4 @@
-package dev.tailwindrainbow.intellij.application.theme
+package dev.tailwindrainbow.intellij.adapter.theme.vscode
 
 internal const val PREFIX = "prefix"
 internal const val BASE = "base"

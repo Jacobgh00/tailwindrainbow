@@ -36,15 +36,17 @@ object PluginComponents {
         project: Project,
         file: VirtualFile?,
     ): Diagnostics {
-        val settings = effectiveSettings(project)
+        val settingsService = TailwindRainbowSettings.getInstance()
+        val projectRecognition = TailwindRainbowProjectSettings.getInstance(project).recognition()
+        val settings = settingsService.current().withProjectRecognition(projectRecognition)
 
         return Diagnostics(
             pluginVersion = pluginVersion(),
             ide = runningIde(),
             settings = settings,
-            recognitionFromProject = TailwindRainbowProjectSettings.getInstance(project).recognition() != null,
+            recognitionFromProject = projectRecognition != null,
             file = file?.let { scannedFile(it, settings) },
-            themeProblems = TailwindRainbowSettings.getInstance().themes.problems(),
+            themeProblems = settingsService.themes.problems(),
         )
     }
 
