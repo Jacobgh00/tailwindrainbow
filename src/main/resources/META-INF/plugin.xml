@@ -93,5 +93,8 @@
 
         <action id="dev.tailwindrainbow.CopyDiagnostics"
                 class="dev.tailwindrainbow.intellij.adapter.intellij.actions.CopyDiagnosticsAction"/>
+
+        <action id="dev.tailwindrainbow.VariantHealth"
+                class="dev.tailwindrainbow.intellij.adapter.intellij.actions.VariantHealthAction"/>
     </actions>
 </idea-plugin>

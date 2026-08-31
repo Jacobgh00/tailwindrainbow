@@ -1,6 +1,9 @@
 package dev.tailwindrainbow.intellij.adapter.intellij.variants
 
+import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.testFramework.runInEdtAndGet
+import dev.tailwindrainbow.intellij.adapter.intellij.actions.openVariantDeclaration
 import dev.tailwindrainbow.intellij.adapter.intellij.highlighting.PaintedFileTest
 import dev.tailwindrainbow.intellij.application.variants.VariantDeclarationKind
 import dev.tailwindrainbow.intellij.application.variants.VariantStatus
@@ -49,6 +52,25 @@ class ProjectVariantsThreadingTest : PaintedFileTest() {
         assertEquals("default", report.theme.name)
         assertEquals("is-dragging", report.assessments.single().name)
         assertIs<VariantStatus.MissingColour>(report.assessments.single().status)
+    }
+
+    @Test
+    fun `a declaration opens its source file`() {
+        file("navigation.css", "@custom-variant is-dragging (&:where(*));")
+        val declaration =
+            runInEdtAndGet {
+                ProjectVariants.getInstance(project.get()).refreshScan().declarations.single()
+            }
+
+        val opened =
+            runInEdtAndGet {
+                assertTrue(openVariantDeclaration(project.get(), declaration))
+                FileEditorManager.getInstance(project.get()).selectedFiles.toList()
+            }
+
+        assertTrue(
+            opened.any { it == LocalFileSystem.getInstance().findFileByPath(checkNotNull(declaration.location).path) },
+        )
     }
 
     @Test
