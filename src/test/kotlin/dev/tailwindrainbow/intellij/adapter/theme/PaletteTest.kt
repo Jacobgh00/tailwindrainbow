@@ -33,6 +33,15 @@ class PaletteTest {
         assertEquals("#000017", theme.prefix.getValue("supports-*").color)
     }
 
+    @Test
+    fun `every scoping modifier maps to the one modifier colour`() {
+        val theme = palette().toTheme()
+
+        listOf("group", "peer", "has", "in", "not").forEach { modifier ->
+            assertEquals("#000024", theme.prefix.getValue(modifier).color, "'$modifier' is not painted as a scope")
+        }
+    }
+
     private fun palette() =
         Palette(
             arbitrary = "#000018",
@@ -70,6 +79,7 @@ class PaletteTest {
                     nth = "#000014",
                 ),
             attributes = AttributeColors(data = "#000015", aria = "#000016", supports = "#000017"),
+            modifier = "#000024",
             open = "#00001f",
             inert = "#000020",
             starting = "#000021",

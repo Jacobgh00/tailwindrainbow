@@ -7,6 +7,7 @@ import kotlin.test.assertNull
 
 class ThemeMatcherTest {
     private val exact = TextStyle("#111111", FontWeight.BOLD)
+    private val scope = TextStyle("#444444", FontWeight.BOLD)
     private val wildcard = TextStyle("#222222", FontWeight.BOLD)
     private val arbitrary = TextStyle("#333333", FontWeight.BOLD)
 
@@ -18,6 +19,8 @@ class ThemeMatcherTest {
                         mapOf(
                             "hover" to exact,
                             "min-*" to wildcard,
+                            "group" to scope,
+                            "peer" to scope,
                         ),
                     base =
                         mapOf(
@@ -39,8 +42,69 @@ class ThemeMatcherTest {
     }
 
     @Test
-    fun `ignored modifier resolves to the underlying prefix`() {
+    fun `a scoping modifier resolves to the variant underneath it`() {
         assertEquals(ThemeMatch("hover", exact, SegmentKind.PREFIX), matcher.matchPrefix("group-hover"))
+    }
+
+    @Test
+    fun `a plain variant carries no modifiers`() {
+        assertEquals(emptyList(), matcher.matchPrefixParts("hover").modifiers)
+    }
+
+    @Test
+    fun `a scoped variant reports the modifier it was written with`() {
+        assertEquals(
+            listOf(ModifierSegment(ThemeMatch("group", scope, SegmentKind.PREFIX), "group-".length)),
+            matcher.matchPrefixParts("group-hover").modifiers,
+        )
+    }
+
+    @Test
+    fun `stacked modifiers are reported in the order they were written`() {
+        val parts = matcher.matchPrefixParts("peer-group-hover")
+
+        assertEquals(listOf("peer", "group"), parts.modifiers.map { it.match?.key })
+        assertEquals(ThemeMatch("hover", exact, SegmentKind.PREFIX), parts.variant)
+    }
+
+    @Test
+    fun `a theme that paints no modifier keeps the prefix whole, as it was before they existed`() {
+        val untinted = ThemeMatcher(RainbowTheme(prefix = mapOf("hover" to exact)))
+
+        val parts = untinted.matchPrefixParts("group-hover")
+
+        assertEquals(emptyList(), parts.modifiers)
+        assertEquals(ThemeMatch("hover", exact, SegmentKind.PREFIX), parts.variant)
+    }
+
+    @Test
+    fun `an unpainted modifier beside a painted one still takes up its room`() {
+        val partly = ThemeMatcher(RainbowTheme(prefix = mapOf("hover" to exact, "group" to scope)))
+
+        val parts = partly.matchPrefixParts("peer-group-hover")
+
+        assertEquals(
+            listOf(
+                ModifierSegment(null, "peer-".length),
+                ModifierSegment(ThemeMatch("group", scope, SegmentKind.PREFIX), "group-".length),
+            ),
+            parts.modifiers,
+        )
+    }
+
+    @Test
+    fun `a word that merely starts like a modifier is left alone`() {
+        assertEquals(emptyList(), matcher.matchPrefixParts("grouped-hover").modifiers)
+    }
+
+    @Test
+    fun `a variant the theme names outright is never split apart`() {
+        val withRange = ThemeMatcher(RainbowTheme(prefix = mapOf("in-range" to exact)))
+
+        val parts = withRange.matchPrefixParts("in-range")
+
+        assertEquals(emptyList(), parts.modifiers)
+        assertEquals(ThemeMatch("in-range", exact, SegmentKind.PREFIX), parts.variant)
     }
 
     @Test
@@ -62,7 +126,7 @@ class ThemeMatcherTest {
     }
 
     @Test
-    fun `a bracketed prefix behind an ignored modifier is still arbitrary`() {
+    fun `a bracketed prefix behind a scoping modifier is still arbitrary`() {
         assertEquals(
             ThemeMatch("arbitrary", arbitrary, SegmentKind.ARBITRARY),
             matcher.matchPrefix("peer-[:checked]"),
@@ -86,7 +150,7 @@ class ThemeMatcherTest {
     }
 
     @Test
-    fun `a variant that starts with an ignored modifier needs its own entry to survive`() {
+    fun `a variant that starts with a scoping modifier needs its own entry to survive`() {
         val withRange =
             ThemeMatcher(
                 theme = RainbowTheme(prefix = mapOf("in-range" to exact, "*-range" to wildcard)),

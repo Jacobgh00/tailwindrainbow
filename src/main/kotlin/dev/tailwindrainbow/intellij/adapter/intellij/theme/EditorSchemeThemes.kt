@@ -39,6 +39,7 @@ object EditorSchemeThemes : ThemeSource {
                 structural =
                     StructuralColors.from(of(Syntax.FUNCTION_DECLARATION).shades(StructuralColors.RAMP_SIZE)),
                 attributes = AttributeColors.from(of(Syntax.METADATA).shades(AttributeColors.RAMP_SIZE)),
+                modifier = of(Syntax.OPERATION_SIGN, Syntax.IDENTIFIER),
                 open = of(Syntax.CONSTANT),
                 inert = of(Syntax.LINE_COMMENT),
                 starting = of(Syntax.LABEL, Syntax.CONSTANT),

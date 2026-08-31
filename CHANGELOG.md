@@ -10,6 +10,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Add **Open Tailwind Rainbow Variant Health**, a cancellable project report for declared variants,
   theme matches, missing/disabled/malformed entries, wildcard coverage and duplicate declarations,
   with actions to add a colour, open a declaration and refresh the report.
+- Colour a scoping modifier apart from the variant it scopes, so `group-hover:` reads as both a
+  hover and an ancestor-scoped one instead of looking identical to a plain `hover:`. Covers `group`,
+  `peer`, `has`, `in` and `not`, which share one colour per built-in theme and appear in the theme
+  editor as ordinary tokens.
 - Remove the **Ignored prefix modifiers** setting. `group`, `peer`, `has`, `in` and `not` are
   Tailwind's own syntax rather than a preference, so they are now fixed in the plugin.
 
