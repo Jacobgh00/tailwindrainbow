@@ -47,6 +47,7 @@ class PluginRegistrationTest {
                 "Select Tailwind Rainbow Theme",
                 "Explain Tailwind Colouring at Caret",
                 "Copy Tailwind Rainbow Diagnostics",
+                "Open Tailwind Rainbow Variant Health",
             ),
             texts,
         )
@@ -133,6 +134,7 @@ class PluginRegistrationTest {
                 "dev.tailwindrainbow.SelectTheme",
                 "dev.tailwindrainbow.ExplainColouring",
                 "dev.tailwindrainbow.CopyDiagnostics",
+                "dev.tailwindrainbow.VariantHealth",
             )
     }
 }

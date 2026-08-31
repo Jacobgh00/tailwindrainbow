@@ -104,6 +104,17 @@ class DeclaredVariantsTest {
     }
 
     @Test
+    fun `a screen location points at the screen key rather than the whole block`() {
+        val config = "theme: { screens: { tablet: '640px' } }"
+
+        val declaration = variantDeclarationsIn(config, "tailwind.config.js").single()
+        val location = checkNotNull(declaration.location)
+
+        assertEquals(VariantDeclarationKind.SCREEN, declaration.kind)
+        assertEquals("tablet", config.substring(location.startOffset, location.endOffset))
+    }
+
+    @Test
     fun `a screens block does not swallow what follows it`() {
         val config = "screens: { sm: '40rem' },\n fontFamily: { display: ['Inter'] }"
 

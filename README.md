@@ -40,7 +40,7 @@ color, so `focus-visible` looks like `focus`.
 
 ## Using it
 
-Find Action (`⇧⌘A` / `Ctrl+Shift+A`) reaches three actions:
+Find Action (`⇧⌘A` / `Ctrl+Shift+A`) reaches four actions:
 
 - **Select Tailwind Rainbow Theme** - switches themes and previews each one in the editor as you
   arrow through the list. `Esc` changes nothing. The status bar shows the active theme and opens the
@@ -48,6 +48,8 @@ Find Action (`⇧⌘A` / `Ctrl+Shift+A`) reaches three actions:
 - **Explain Tailwind Colouring at Caret** - says which theme entry colors the class under the caret.
 - **Copy Tailwind Rainbow Diagnostics** - puts the plugin version, IDE build, active theme,
   recognition rules and the current file's scan status on the clipboard: a bug report in one paste.
+- **Open Tailwind Rainbow Variant Health** - scans project variant declarations and explains missing,
+  disabled or malformed theme entries, wildcard coverage and duplicate declarations.
 
 A variant your project declares - through `@custom-variant`, `addVariant(…)` or a custom screen -
 that your theme has no color for is reported as a weak warning where it is used, with a quick fix
