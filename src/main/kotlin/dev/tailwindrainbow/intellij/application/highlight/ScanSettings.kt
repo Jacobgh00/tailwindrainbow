@@ -5,7 +5,6 @@ data class ScanSettings(
     val classIdentifiers: Set<String> = DEFAULT_CLASS_IDENTIFIERS,
     val classFunctions: Set<String> = DEFAULT_CLASS_FUNCTIONS,
     val templateTags: Set<String> = DEFAULT_TEMPLATE_TAGS,
-    val ignoredPrefixModifiers: Set<String> = DEFAULT_IGNORED_PREFIX_MODIFIERS,
     val supportedExtensions: Set<String> = DEFAULT_SUPPORTED_EXTENSIONS,
     val readsClassLikeStrings: Boolean = true,
 ) {
@@ -48,7 +47,6 @@ data class ScanSettings(
             )
 
         val DEFAULT_TEMPLATE_TAGS = setOf("tw", "css", "styled")
-        val DEFAULT_IGNORED_PREFIX_MODIFIERS = setOf("group", "peer", "has", "in", "not")
         val DEFAULT_SUPPORTED_EXTENSIONS =
             setOf(
                 "html",

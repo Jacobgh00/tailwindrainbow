@@ -11,7 +11,6 @@ class ClassListShapeTest {
         ClassListShape(
             ThemeMatcher(
                 BuiltInThemes.themes().getValue(BuiltInThemes.DEFAULT_NAME),
-                ScanSettings.DEFAULT_IGNORED_PREFIX_MODIFIERS,
             ),
         )
 
@@ -30,7 +29,7 @@ class ClassListShapeTest {
     fun `reads the shapes Tailwind allows around a variant`() {
         assertTrue(reads("[&>*]:mt-2"), "an arbitrary variant")
         assertTrue(reads("!font-bold md:!p-2"), "the important modifier in either position")
-        assertTrue(reads("group-hover:underline"), "an ignored prefix modifier")
+        assertTrue(reads("group-hover:underline"), "a scoping prefix modifier")
         assertTrue(reads("data-[state=open]:bg-white"), "an attribute variant")
     }
 

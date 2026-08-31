@@ -26,7 +26,6 @@ class TailwindClassParserTest {
                     arbitrary = arbitraryStyle,
                     important = importantStyle,
                 ),
-                ignoredPrefixModifiers = setOf("group", "peer"),
             ),
         )
 

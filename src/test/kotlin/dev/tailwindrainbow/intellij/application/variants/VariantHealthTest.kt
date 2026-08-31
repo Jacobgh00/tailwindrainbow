@@ -113,7 +113,7 @@ class VariantHealthTest {
         vararg declarations: VariantDeclaration,
         theme: ThemeHealthContext = ThemeHealthContext("default", RainbowTheme(), emptyList()),
     ): VariantHealthReport {
-        return VariantHealthAnalyzer(ThemeHealthCatalog { theme }, emptySet())
+        return VariantHealthAnalyzer(ThemeHealthCatalog { theme })
             .analyze("default", VariantScanResult(declarations.toList(), 0))
     }
 

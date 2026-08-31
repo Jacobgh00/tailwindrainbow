@@ -13,7 +13,6 @@ class RecognitionStateTest {
                 classIdentifiers = mutableListOf("class", "class")
                 classFunctions = mutableListOf("cn")
                 templateTags = mutableListOf("tw")
-                ignoredPrefixModifiers = mutableListOf("group")
                 supportedExtensions = mutableListOf("html")
                 readsClassLikeStrings = false
             }
@@ -24,7 +23,6 @@ class RecognitionStateTest {
                 classIdentifiers = setOf("class"),
                 classFunctions = setOf("cn"),
                 templateTags = setOf("tw"),
-                ignoredPrefixModifiers = setOf("group"),
                 supportedExtensions = setOf("html"),
                 readsClassLikeStrings = false,
             ),
@@ -42,7 +40,6 @@ class RecognitionStateTest {
                 classIdentifiers = setOf("className", "class"),
                 classFunctions = setOf("twMerge", "cn"),
                 templateTags = setOf("styled", "tw"),
-                ignoredPrefixModifiers = setOf("peer", "group"),
                 supportedExtensions = setOf("vue", "html"),
                 readsClassLikeStrings = false,
             ),
@@ -52,7 +49,6 @@ class RecognitionStateTest {
         assertEquals(listOf("class", "className"), state.classIdentifiers)
         assertEquals(listOf("cn", "twMerge"), state.classFunctions)
         assertEquals(listOf("styled", "tw"), state.templateTags)
-        assertEquals(listOf("group", "peer"), state.ignoredPrefixModifiers)
         assertEquals(listOf("html", "vue"), state.supportedExtensions)
         assertEquals(false, state.readsClassLikeStrings)
     }
@@ -63,7 +59,6 @@ class RecognitionStateTest {
             override var classIdentifiers = mutableListOf<String>()
             override var classFunctions = mutableListOf<String>()
             override var templateTags = mutableListOf<String>()
-            override var ignoredPrefixModifiers = mutableListOf<String>()
             override var supportedExtensions = mutableListOf<String>()
             override var readsClassLikeStrings = true
         }

@@ -45,7 +45,6 @@ object PluginComponents {
 
         return VariantHealthAnalyzer(
             themes = TailwindRainbowSettings.getInstance().themes,
-            ignoredPrefixModifiers = settings.scan.ignoredPrefixModifiers,
         ).analyze(settings.themeName, scan)
     }
 

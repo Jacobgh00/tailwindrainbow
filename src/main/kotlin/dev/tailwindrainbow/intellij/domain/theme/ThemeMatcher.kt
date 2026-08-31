@@ -1,9 +1,6 @@
 package dev.tailwindrainbow.intellij.domain.theme
 
-class ThemeMatcher(
-    private val theme: RainbowTheme,
-    private val ignoredPrefixModifiers: Set<String>,
-) {
+class ThemeMatcher(private val theme: RainbowTheme) {
     fun matchPrefix(prefix: String): ThemeMatch? {
         exactMatch(theme.prefix, prefix, SegmentKind.PREFIX)?.let {
             return it
@@ -72,7 +69,7 @@ class ThemeMatcher(
         var result = prefix
 
         while (true) {
-            val modifier = ignoredPrefixModifiers.firstOrNull { result.startsWith("$it-") } ?: return result
+            val modifier = SCOPING_MODIFIERS.firstOrNull { result.startsWith("$it-") } ?: return result
             result = result.removePrefix("$modifier-")
         }
     }

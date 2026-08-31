@@ -96,9 +96,6 @@ class TailwindRainbowSettings :
         override var classFunctions: MutableList<String> = DEFAULTS.classFunctions.sorted().toMutableList()
         override var templateTags: MutableList<String> = DEFAULTS.templateTags.sorted().toMutableList()
 
-        override var ignoredPrefixModifiers: MutableList<String> =
-            DEFAULTS.ignoredPrefixModifiers.sorted().toMutableList()
-
         @get:XCollection(style = XCollection.Style.v2)
         var themes: MutableList<StoredTheme> = mutableListOf()
 

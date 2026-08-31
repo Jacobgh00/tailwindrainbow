@@ -10,6 +10,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Add **Open Tailwind Rainbow Variant Health**, a cancellable project report for declared variants,
   theme matches, missing/disabled/malformed entries, wildcard coverage and duplicate declarations,
   with actions to add a colour, open a declaration and refresh the report.
+- Remove the **Ignored prefix modifiers** setting. `group`, `peer`, `has`, `in` and `not` are
+  Tailwind's own syntax rather than a preference, so they are now fixed in the plugin.
 
 ## [0.1.0] - 2026-08-30
 

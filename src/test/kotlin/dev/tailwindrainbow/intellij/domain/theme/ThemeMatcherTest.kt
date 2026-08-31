@@ -26,7 +26,6 @@ class ThemeMatcherTest {
                         ),
                     arbitrary = arbitrary,
                 ),
-            ignoredPrefixModifiers = setOf("group", "peer"),
         )
 
     @Test
@@ -91,7 +90,6 @@ class ThemeMatcherTest {
         val withRange =
             ThemeMatcher(
                 theme = RainbowTheme(prefix = mapOf("in-range" to exact, "*-range" to wildcard)),
-                ignoredPrefixModifiers = setOf("in"),
             )
 
         assertEquals(ThemeMatch("in-range", exact, SegmentKind.PREFIX), withRange.matchPrefix("in-range"))
@@ -109,7 +107,6 @@ class ThemeMatcherTest {
         val starMatcher =
             ThemeMatcher(
                 theme = RainbowTheme(prefix = mapOf("*" to exact, "**" to wildcard)),
-                ignoredPrefixModifiers = emptySet(),
             )
 
         assertEquals(ThemeMatch("*", exact, SegmentKind.PREFIX), starMatcher.matchPrefix("*"))

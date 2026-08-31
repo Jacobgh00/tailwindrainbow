@@ -53,16 +53,13 @@ data class VariantMatch(
     val entry: ThemeHealthEntry.Usable,
 )
 
-class VariantHealthAnalyzer(
-    private val themes: ThemeHealthCatalog,
-    private val ignoredPrefixModifiers: Set<String>,
-) {
+class VariantHealthAnalyzer(private val themes: ThemeHealthCatalog) {
     fun analyze(
         themeName: String,
         scan: VariantScanResult,
     ): VariantHealthReport {
         val theme = themes.themeHealthNamed(themeName)
-        val lookup = EntryLookup(theme, ThemeMatcher(theme.effectiveTheme, ignoredPrefixModifiers))
+        val lookup = EntryLookup(theme, ThemeMatcher(theme.effectiveTheme))
 
         return VariantHealthReport(
             assessments =

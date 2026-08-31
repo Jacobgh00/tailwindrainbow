@@ -50,7 +50,6 @@ private fun ScanSettings.rules(): List<String> =
         "Class identifiers: ${classIdentifiers.listed()}",
         "Class functions: ${classFunctions.listed()}",
         "Template tags: ${templateTags.listed()}",
-        "Ignored prefix modifiers: ${ignoredPrefixModifiers.listed()}",
         "Supported file extensions: ${supportedExtensions.listed()}",
     )
 

@@ -259,7 +259,7 @@ class UserThemeCatalogTest {
             )
 
         val assessment =
-            VariantHealthAnalyzer(catalog, emptySet())
+            VariantHealthAnalyzer(catalog)
                 .analyze(
                     "mine",
                     VariantScanResult(listOf(declaration.copy(name = "project-grid")), 0),
