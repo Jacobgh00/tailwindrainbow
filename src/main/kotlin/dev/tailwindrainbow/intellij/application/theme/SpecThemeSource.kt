@@ -8,12 +8,29 @@ class SpecThemeSource(
     specs: List<ThemeSpec>,
     private val bases: ThemeSource = ThemeSource { emptyMap() },
 ) : ThemeSource {
-    private val parsed = specs.map { spec -> spec to ThemeParser.parse(spec) }
+    private val parsed = parseThemeSpecs(specs)
 
-    val problems: List<ThemeProblem> = parsed.flatMap { (_, theme) -> theme.problems }
+    val problems: List<ThemeProblem> = parsed.flatMap { it.parsed.problems }
 
-    override fun themes(): Map<String, RainbowTheme> =
-        parsed.associate { (spec, parsed) -> spec.name to baseOf(spec).overriddenBy(parsed.theme) }
-
-    private fun baseOf(spec: ThemeSpec): RainbowTheme = bases.themes()[spec.basedOn] ?: RainbowTheme()
+    override fun themes(): Map<String, RainbowTheme> = resolveThemeSpecifications(parsed, bases.themes())
 }
+
+internal data class ParsedThemeSpec(
+    val spec: ThemeSpec,
+    val parsed: ParsedTheme,
+)
+
+internal fun parseThemeSpecs(specs: List<ThemeSpec>): List<ParsedThemeSpec> =
+    specs.map { spec ->
+        val copy = spec.copy(entries = spec.entries.toList())
+        ParsedThemeSpec(copy, ThemeParser.parse(copy))
+    }
+
+internal fun resolveThemeSpecifications(
+    specs: Iterable<ParsedThemeSpec>,
+    baseThemes: Map<String, RainbowTheme>,
+): Map<String, RainbowTheme> =
+    specs.associate { parsed ->
+        parsed.spec.name to
+            (baseThemes[parsed.spec.basedOn] ?: RainbowTheme()).overriddenBy(parsed.parsed.theme)
+    }

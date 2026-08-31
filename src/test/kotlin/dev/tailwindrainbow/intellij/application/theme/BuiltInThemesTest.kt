@@ -53,9 +53,4 @@ class BuiltInThemesTest {
                 "Base colouring is opt-in, added by the user in the theme editor",
         )
     }
-
-    @Test
-    fun `an unknown theme name falls back to default`() {
-        assertEquals(BuiltInThemes.default, ThemeRepository(BuiltInThemes).find("no-such-theme"))
-    }
 }

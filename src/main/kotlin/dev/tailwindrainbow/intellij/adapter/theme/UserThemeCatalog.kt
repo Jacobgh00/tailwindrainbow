@@ -1,14 +1,19 @@
 package dev.tailwindrainbow.intellij.adapter.theme
 
 import dev.tailwindrainbow.intellij.application.port.ThemeCatalog
+import dev.tailwindrainbow.intellij.application.port.ThemeDefinitionSource
+import dev.tailwindrainbow.intellij.application.port.ThemeHealthCatalog
 import dev.tailwindrainbow.intellij.application.port.ThemeSource
-import dev.tailwindrainbow.intellij.application.theme.SpecThemeSource
+import dev.tailwindrainbow.intellij.application.theme.ThemeCatalogSnapshot
+import dev.tailwindrainbow.intellij.application.theme.ThemeEntryProvenance
+import dev.tailwindrainbow.intellij.application.theme.ThemeHealthContext
+import dev.tailwindrainbow.intellij.application.theme.ThemeHealthLayer
 import dev.tailwindrainbow.intellij.application.theme.ThemeProblem
-import dev.tailwindrainbow.intellij.application.theme.ThemeRepository
 import dev.tailwindrainbow.intellij.application.theme.ThemeSpec
+import dev.tailwindrainbow.intellij.application.theme.themeCatalogSnapshotFor
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
 
-class UserThemeCatalog(sources: List<ThemeSource> = emptyList()) : ThemeCatalog {
+class UserThemeCatalog(sources: List<ThemeSource> = emptyList()) : ThemeCatalog, ThemeHealthCatalog {
     constructor(vararg sources: ThemeSource) : this(sources.toList())
 
     private val stableSources = sources.toList()
@@ -20,34 +25,42 @@ class UserThemeCatalog(sources: List<ThemeSource> = emptyList()) : ThemeCatalog 
         snapshot = createSnapshot(themes)
     }
 
-    override fun themeNamed(name: String): RainbowTheme = snapshot.repository.find(name)
+    override fun themeNamed(name: String): RainbowTheme = snapshot.themeNamed(name)
 
-    fun names(): Set<String> = snapshot.repository.names
+    override fun themeHealthNamed(name: String): ThemeHealthContext = snapshot.healthNamed(name)
 
-    fun baseNames(): Set<String> = snapshot.bases.names
+    fun names(): Set<String> = snapshot.themes.keys
+
+    fun baseNames(): Set<String> = snapshot.baseThemes.keys
 
     fun overrides(): List<ThemeSpec> = snapshot.specs
 
-    fun basePalette(name: String): RainbowTheme = snapshot.bases.find(name)
+    fun basePalette(name: String): RainbowTheme = snapshot.basePalette(name)
 
-    fun problems(): List<ThemeProblem> = snapshot.source.problems
+    fun problems(): List<ThemeProblem> = snapshot.problems
 
-    private fun createSnapshot(themes: List<ThemeSpec>): CatalogSnapshot {
-        val specs = themes.map { it.copy(entries = it.entries.toList()) }
-        val source = SpecThemeSource(specs, BuiltInThemes)
+    private fun createSnapshot(themes: List<ThemeSpec>): ThemeCatalogSnapshot {
+        val baseLayers =
+            listOf(
+                ThemeHealthLayer.ResolvedThemes(
+                    BuiltInThemes.themes(),
+                    ThemeEntryProvenance.BUILT_IN,
+                    BUILT_IN_SOURCE,
+                ),
+            ) + stableSources.map { source -> source.healthLayer() }
 
-        return CatalogSnapshot(
-            specs = specs,
-            source = source,
-            repository = ThemeRepository(listOf(BuiltInThemes) + stableSources + source),
-            bases = ThemeRepository(listOf(BuiltInThemes) + stableSources),
-        )
+        return themeCatalogSnapshotFor(themes, baseLayers)
     }
 
-    private data class CatalogSnapshot(
-        val specs: List<ThemeSpec>,
-        val source: SpecThemeSource,
-        val repository: ThemeRepository,
-        val bases: ThemeRepository,
-    )
+    private fun ThemeSource.healthLayer(): ThemeHealthLayer =
+        if (this is ThemeDefinitionSource) {
+            ThemeHealthLayer.Specifications(specs(), ThemeEntryProvenance.CONTRIBUTED, sourceName)
+        } else {
+            ThemeHealthLayer.ResolvedThemes(themes(), ThemeEntryProvenance.CONTRIBUTED, ANONYMOUS_SOURCE)
+        }
+
+    private companion object {
+        const val BUILT_IN_SOURCE = "built-in"
+        const val ANONYMOUS_SOURCE = "contributed"
+    }
 }
