@@ -26,6 +26,15 @@ class ThemeMatcher(
         return arbitraryMatch(prefix) ?: arbitraryMatch(cleanedPrefix) ?: arbitraryMatch(unnamedPrefix)
     }
 
+    fun prefixCandidates(prefix: String): PrefixCandidates {
+        val cleanedPrefix = removeIgnoredModifiers(prefix)
+
+        return PrefixCandidates(
+            exact = listOf(prefix, cleanedPrefix, cleanedPrefix.substringBefore('/')).distinct(),
+            cleaned = cleanedPrefix,
+        )
+    }
+
     fun matchBase(className: String): ThemeMatch? {
         exactMatch(theme.base, className, SegmentKind.BASE)?.let {
             return it
@@ -73,6 +82,10 @@ class ThemeMatcher(
         const val IMPORTANT_KEY = "important"
     }
 }
+
+fun Iterable<String>.wildcardsCovering(value: String): List<String> =
+    filter { pattern -> pattern.isWildcard() && pattern.matchesGlob(value) }
+        .sortedByDescending { pattern -> pattern.count { it != '*' } }
 
 private fun TextStyle?.toMatch(
     key: String,

@@ -66,3 +66,8 @@ data class ThemeMatch(
     val style: TextStyle,
     val kind: SegmentKind,
 )
+
+data class PrefixCandidates(
+    val exact: List<String>,
+    val cleaned: String,
+)

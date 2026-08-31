@@ -1,5 +1,6 @@
 package dev.tailwindrainbow.intellij.application.variants
 
+import dev.tailwindrainbow.intellij.application.port.Cancellation
 import dev.tailwindrainbow.intellij.application.port.VariantFileSource
 
 class VariantScanner(
@@ -8,13 +9,39 @@ class VariantScanner(
 ) {
     private val sources = sources.toList()
 
-    fun scan(): Set<String> =
-        sources
-            .asSequence()
-            .flatMap { it.files() }
-            .take(limits.maxFiles)
-            .filter { it.size <= limits.maxFileSize }
-            .flatMapTo(mutableSetOf()) { variantsDeclaredIn(it.readText()) }
+    fun scanResult(cancellation: Cancellation = Cancellation.NONE): VariantScanResult {
+        val found =
+            sources.asSequence()
+                .flatMap(VariantFileSource::files)
+                .onEach { cancellation.check() }
+                .take(limits.maxFiles + 1)
+                .toList()
+        val considered = found.take(limits.maxFiles)
+        val readable = considered.filter { it.size <= limits.maxFileSize }
+
+        return VariantScanResult(
+            declarations =
+                readable.flatMap { file ->
+                    cancellation.check()
+                    variantDeclarationsIn(file.readText(), file.path)
+                },
+            scannedFileCount = readable.size,
+            oversizedFileCount = considered.size - readable.size,
+            reachedFileLimit = found.size > limits.maxFiles,
+        )
+    }
+}
+
+data class VariantScanResult(
+    val declarations: List<VariantDeclaration>,
+    val scannedFileCount: Int,
+    val oversizedFileCount: Int = 0,
+    val reachedFileLimit: Boolean = false,
+) {
+    init {
+        require(scannedFileCount >= 0) { "scannedFileCount must not be negative" }
+        require(oversizedFileCount >= 0) { "oversizedFileCount must not be negative" }
+    }
 }
 
 data class VariantScanLimits(

@@ -18,7 +18,7 @@ class VariantScannerTest {
                 ),
             )
 
-        assertEquals(setOf("pointer-coarse", "tablet"), scanner.scan())
+        assertEquals(setOf("pointer-coarse", "tablet"), scanner.declaredNames())
     }
 
     @Test
@@ -39,7 +39,7 @@ class VariantScannerTest {
                     ),
             )
 
-        assertTrue(scanner.scan().isEmpty())
+        assertTrue(scanner.declaredNames().isEmpty())
         assertFalse(read)
     }
 
@@ -55,7 +55,55 @@ class VariantScannerTest {
                 limits = VariantScanLimits(maxFiles = 1),
             )
 
-        assertEquals(setOf("first"), scanner.scan())
+        assertEquals(setOf("first"), scanner.declaredNames())
+    }
+
+    @Test
+    fun `flags a scan cut short by the file limit`() {
+        val scanner =
+            VariantScanner(
+                sources =
+                    listOf(
+                        source("@custom-variant first (&:where(*));"),
+                        source("@custom-variant second (&:where(*));"),
+                    ),
+                limits = VariantScanLimits(maxFiles = 1),
+            )
+
+        val result = scanner.scanResult()
+
+        assertEquals(1, result.scannedFileCount)
+        assertTrue(result.reachedFileLimit)
+    }
+
+    @Test
+    fun `counts files left unread for being too large`() {
+        val scanner =
+            VariantScanner(
+                sources = listOf(VariantFileSource { sequenceOf(VariantFile(200_001L) { "" }) }),
+            )
+
+        val result = scanner.scanResult()
+
+        assertEquals(0, result.scannedFileCount)
+        assertEquals(1, result.oversizedFileCount)
+        assertFalse(result.reachedFileLimit)
+    }
+
+    @Test
+    fun `stops pulling files from a source once the limit is reached`() {
+        var pulled = 0
+        val endless =
+            VariantFileSource {
+                generateSequence {
+                    pulled++
+                    VariantFile(1L) { "" }
+                }
+            }
+
+        VariantScanner(listOf(endless), VariantScanLimits(maxFiles = 5)).scanResult()
+
+        assertEquals(6, pulled, "five files, plus the one that proves the scan was cut short")
     }
 
     @Test
@@ -64,8 +112,32 @@ class VariantScannerTest {
         val scanner = VariantScanner(sources)
         sources.clear()
 
-        assertEquals(setOf("first"), scanner.scan())
+        assertEquals(setOf("first"), scanner.declaredNames())
     }
+
+    @Test
+    fun `retains declaration kind and source location`() {
+        val text = "@custom-variant pointer-coarse (&:where(*));"
+        val scanner =
+            VariantScanner(
+                listOf(
+                    VariantFile(
+                        size = text.length.toLong(),
+                        readText = { text },
+                        path = "styles/app.css",
+                    ).let { file -> VariantFileSource { sequenceOf(file) } },
+                ),
+            )
+
+        val declaration = scanner.scanResult().declarations.single()
+        val location = checkNotNull(declaration.location)
+
+        assertEquals(VariantDeclarationKind.CUSTOM_VARIANT, declaration.kind)
+        assertEquals("styles/app.css", location.path)
+        assertEquals("pointer-coarse", text.substring(location.startOffset, location.endOffset))
+    }
+
+    private fun VariantScanner.declaredNames() = scanResult().declarations.map(VariantDeclaration::name).toSet()
 
     private fun source(text: String) = VariantFileSource { sequenceOf(VariantFile(text.length.toLong()) { text }) }
 }
