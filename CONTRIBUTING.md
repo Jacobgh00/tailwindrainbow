@@ -3,21 +3,18 @@
 Thanks for reading the code. Bug reports and ideas are welcome; the notes below say what happens to
 them and what a pull request needs before it can be merged.
 
-## Licence
+## License
 
-Tailwind Rainbow is source-available, not open source. The source is published so it can be read and
-audited; it is not licensed for reuse. See [LICENSE](LICENSE).
+Tailwind Rainbow is open source software licensed under the [Apache License, Version 2.0](LICENSE).
 
-That has one consequence for contributions: a patch you write is yours, and the plugin's licence
-does not cover code owned by someone else. So a pull request can only be merged if you state, in the
-pull request itself, that you assign the copyright in your contribution to the maintainer, or grant
-an unlimited licence to use it under the plugin's terms. One sentence is enough:
+You keep the copyright in your contribution. By submitting a pull request, you agree that the
+contribution may be used, modified and distributed under the Apache License, Version 2.0, as
+described in section 5 of that license. No copyright assignment or separate contributor license
+agreement is required.
 
-> I assign the copyright in this contribution to the maintainer of Tailwind Rainbow, to be
-> distributed under the plugin's licence.
-
-Without it the change cannot be merged, however good it is. Please don't open a pull request that
-copies code from another project unless its licence plainly allows it, and say where it came from.
+Only submit work you have the right to license. Please don't copy code from another project unless
+its license permits that use; preserve any required attribution and mention the source in the pull
+request.
 
 ## Reporting a bug
 

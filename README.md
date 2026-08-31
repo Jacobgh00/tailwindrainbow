@@ -1,7 +1,10 @@
 # Tailwind Rainbow
 
-An IntelliJ Platform plugin that colorizes Tailwind CSS variant prefixes, so a long class list stays
-readable.
+[![Build](https://github.com/Jacobgh00/tailwindrainbow/actions/workflows/build.yml/badge.svg)](https://github.com/Jacobgh00/tailwindrainbow/actions/workflows/build.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+
+An open-source IntelliJ Platform plugin that colorizes Tailwind CSS variant prefixes, so a long
+class list stays readable.
 
 ```
 hover:bg-blue-500  focus:ring-2  sm:px-4  dark:text-white  [&>*]:mt-2  !font-bold
@@ -161,4 +164,8 @@ a trademark of Tailwind Labs Inc.; this plugin is not affiliated with or endorse
 
 ## License
 
-Proprietary. Free to use; the source is published to be read, not reused. See [LICENSE](LICENSE).
+Tailwind Rainbow is open source software licensed under the [Apache License, Version 2.0](LICENSE).
+
+The Apache License applies to the original code in this repository. See [NOTICE](NOTICE) for
+upstream attribution. Third-party dependencies and the Gradle wrapper retain their own licenses and
+notices.

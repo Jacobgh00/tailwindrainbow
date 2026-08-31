@@ -1,0 +1,11 @@
+Tailwind Rainbow
+Copyright 2026 Jacob Hauerberg
+
+This project is an independent port of the Tailwind Rainbow extension for
+Visual Studio Code by esdete2:
+https://github.com/esdete2/tailwind-rainbow
+
+The upstream project is licensed under the Apache License, Version 2.0.
+
+This NOTICE file is provided for attribution purposes only and does not modify
+the Apache License, Version 2.0.
