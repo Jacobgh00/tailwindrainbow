@@ -25,7 +25,7 @@ class DiagnosticsGatheringTest {
     fun `the report names the plugin's own version, not a placeholder`() {
         val report = PluginComponents.diagnostics(project.get(), file = null).report()
 
-        assertContains(report, "Tailwind Rainbow 0.1.0")
+        assertContains(report, "Tailwind Rainbow 0.2.0")
     }
 
     @Test
