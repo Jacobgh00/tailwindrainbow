@@ -44,4 +44,24 @@ class UncolouredVariantsTest {
 
         assertEquals(2, found.size)
     }
+
+    @Test
+    fun `a variant behind a scoping modifier is reported on the underlying variant`() {
+        val source = """<div class="group-custom:bg-blue-500"></div>"""
+
+        val found = UncolouredVariants(ScanSettings(), theme, setOf("custom")).inside(source, "html")
+
+        assertEquals(listOf("custom"), found.map { it.name })
+        assertEquals("custom", source.substring(found.single().start, found.single().end))
+    }
+
+    @Test
+    fun `a stacked scoped variant split by an important marker is reported once`() {
+        val source = """<div class="peer-group-custom:!bg-blue-500"></div>"""
+
+        val found = UncolouredVariants(ScanSettings(), theme, setOf("custom")).inside(source, "html")
+
+        assertEquals(listOf("custom"), found.map { it.name })
+        assertEquals("custom", source.substring(found.single().start, found.single().end))
+    }
 }

@@ -48,15 +48,21 @@ class ThemeMatcherTest {
 
     @Test
     fun `a plain variant carries no modifiers`() {
-        assertEquals(emptyList(), matcher.matchPrefixParts("hover").modifiers)
+        val parts = matcher.matchPrefixParts("hover")
+
+        assertEquals(emptyList(), parts.modifiers)
+        assertEquals(0, parts.scopingModifierWidth)
     }
 
     @Test
     fun `a scoped variant reports the modifier it was written with`() {
+        val parts = matcher.matchPrefixParts("group-hover")
+
         assertEquals(
             listOf(ModifierSegment(ThemeMatch("group", scope, SegmentKind.PREFIX), "group-".length)),
-            matcher.matchPrefixParts("group-hover").modifiers,
+            parts.modifiers,
         )
+        assertEquals("group-".length, parts.scopingModifierWidth)
     }
 
     @Test
@@ -65,6 +71,7 @@ class ThemeMatcherTest {
 
         assertEquals(listOf("peer", "group"), parts.modifiers.map { it.match?.key })
         assertEquals(ThemeMatch("hover", exact, SegmentKind.PREFIX), parts.variant)
+        assertEquals("peer-group-".length, parts.scopingModifierWidth)
     }
 
     @Test
@@ -75,6 +82,7 @@ class ThemeMatcherTest {
 
         assertEquals(emptyList(), parts.modifiers)
         assertEquals(ThemeMatch("hover", exact, SegmentKind.PREFIX), parts.variant)
+        assertEquals("group-".length, parts.scopingModifierWidth)
     }
 
     @Test
@@ -105,6 +113,7 @@ class ThemeMatcherTest {
 
         assertEquals(emptyList(), parts.modifiers)
         assertEquals(ThemeMatch("in-range", exact, SegmentKind.PREFIX), parts.variant)
+        assertEquals(0, parts.scopingModifierWidth)
     }
 
     @Test

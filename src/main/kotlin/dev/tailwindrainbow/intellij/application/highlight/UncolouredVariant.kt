@@ -3,6 +3,7 @@ package dev.tailwindrainbow.intellij.application.highlight
 import dev.tailwindrainbow.intellij.application.port.Cancellation
 import dev.tailwindrainbow.intellij.domain.theme.FontWeight
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
+import dev.tailwindrainbow.intellij.domain.theme.SegmentKind
 import dev.tailwindrainbow.intellij.domain.theme.TextStyle
 import dev.tailwindrainbow.intellij.domain.theme.ThemeMatcher
 
@@ -31,9 +32,13 @@ class UncolouredVariants(
 
         val probe = RainbowTheme(prefix = uncoloured.associateWith { PROBE })
 
-        return TailwindDocumentScanner().scan(text, fileExtension, settings, probe, cancellation).map {
-            UncolouredVariant(it.themeKey, it.start, it.start + it.themeKey.length)
-        }
+        return TailwindDocumentScanner()
+            .scan(text, fileExtension, settings, probe, cancellation)
+            .asSequence()
+            .filter { it.kind == SegmentKind.PREFIX && it.themeKey in uncoloured }
+            .map { UncolouredVariant(it.themeKey, it.matchStart, it.matchEnd) }
+            .distinct()
+            .toList()
     }
 
     private companion object {

@@ -35,5 +35,5 @@ class ExplanationsTest {
         start: Int,
         end: Int,
         key: String,
-    ) = HighlightSegment(start, end, key, TextStyle("#ffffff", FontWeight.BOLD), SegmentKind.PREFIX)
+    ) = HighlightSegment(start, end, start, end, key, TextStyle("#ffffff", FontWeight.BOLD), SegmentKind.PREFIX)
 }

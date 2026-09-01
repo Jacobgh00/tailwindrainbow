@@ -42,7 +42,7 @@ class TailwindClassParser(private val themeMatcher: ThemeMatcher) {
         }
 
         themeMatcher.matchImportant()?.let { match ->
-            add(match.toSegment(importantAt, importantAt + 1))
+            add(match.toSegment(importantAt, importantAt + 1, MatchSpan(importantAt, importantAt + 1)))
         }
     }
 
@@ -56,18 +56,25 @@ class TailwindClassParser(private val themeMatcher: ThemeMatcher) {
 
         prefixes.forEachIndexed { index, prefix ->
             val parts = themeMatcher.matchPrefixParts(prefix.value)
-            val variantStart = addModifierSegments(importantAt, parts.modifiers, prefix.offset)
+            val visualStart = addModifierSegments(importantAt, parts.modifiers, prefix.offset)
+            val matchSpan = MatchSpan(prefix.offset + parts.scopingModifierWidth, prefix.end)
 
             parts.variant?.let { match ->
                 val hasFollowingStyledSegment = index < prefixes.lastIndex || baseMatch != null
                 val end = if (hasFollowingStyledSegment) prefix.end + 1 else baseClass.end
 
-                addSegmentAround(importantAt, match, variantStart, end)
+                addSegmentAround(importantAt, match, visualStart, end, matchSpan)
             }
         }
 
         baseMatch?.let { match ->
-            add(match.toSegment(baseClass.offset, baseClass.end))
+            add(
+                match.toSegment(
+                    baseClass.offset,
+                    baseClass.end,
+                    MatchSpan(baseClass.offset, baseClass.end),
+                ),
+            )
         }
     }
 
@@ -77,7 +84,15 @@ class TailwindClassParser(private val themeMatcher: ThemeMatcher) {
         offset: Int,
     ): Int =
         modifiers.fold(offset) { start, modifier ->
-            modifier.match?.let { addSegmentAround(importantAt, it, start, start + modifier.width) }
+            modifier.match?.let {
+                addSegmentAround(
+                    importantAt,
+                    it,
+                    start,
+                    start + modifier.width,
+                    MatchSpan(start, start + modifier.width),
+                )
+            }
             start + modifier.width
         }
 
@@ -86,14 +101,15 @@ class TailwindClassParser(private val themeMatcher: ThemeMatcher) {
         match: ThemeMatch,
         start: Int,
         end: Int,
+        matchSpan: MatchSpan,
     ) {
         if (importantAt == null || importantAt !in start until end) {
-            add(match.toSegment(start, end))
+            add(match.toSegment(start, end, matchSpan))
             return
         }
 
-        if (start < importantAt) add(match.toSegment(start, importantAt))
-        if (importantAt + 1 < end) add(match.toSegment(importantAt + 1, end))
+        if (start < importantAt) add(match.toSegment(start, importantAt, matchSpan))
+        if (importantAt + 1 < end) add(match.toSegment(importantAt + 1, end, matchSpan))
     }
 }
 
@@ -120,6 +136,8 @@ private fun List<ClassPart>.takeImportantOut(): MarkedClass {
 }
 
 private const val IMPORTANT = '!'
+
+private data class MatchSpan(val start: Int, val end: Int)
 
 private fun List<ClassPart>.replacingFirst(part: ClassPart) = listOf(part) + drop(1)
 
@@ -180,4 +198,5 @@ internal fun String.splitOnUnnestedColons(startOffset: Int): List<ClassPart> {
 private fun ThemeMatch.toSegment(
     start: Int,
     end: Int,
-): HighlightSegment = HighlightSegment(start, end, key, style, kind)
+    matchSpan: MatchSpan,
+): HighlightSegment = HighlightSegment(start, end, matchSpan.start, matchSpan.end, key, style, kind)

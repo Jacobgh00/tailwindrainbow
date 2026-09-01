@@ -69,7 +69,11 @@ data class ThemeMatch(
 
 data class ModifierSegment(val match: ThemeMatch?, val width: Int)
 
-data class PrefixParts(val modifiers: List<ModifierSegment>, val variant: ThemeMatch?)
+data class PrefixParts(
+    val modifiers: List<ModifierSegment>,
+    val variant: ThemeMatch?,
+    val scopingModifierWidth: Int,
+)
 
 data class PrefixCandidates(
     val exact: List<String>,
