@@ -2,6 +2,7 @@ package dev.tailwindrainbow.intellij.adapter.theme
 
 import dev.tailwindrainbow.intellij.domain.theme.FontWeight
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
+import dev.tailwindrainbow.intellij.domain.theme.SCOPING_MODIFIERS
 import dev.tailwindrainbow.intellij.domain.theme.TextStyle
 
 internal data class BreakpointColors(
@@ -120,6 +121,7 @@ internal data class Palette(
     val formStates: FormStateColors,
     val structural: StructuralColors,
     val attributes: AttributeColors,
+    val modifier: String,
     val open: String,
     val inert: String,
     val starting: String,
@@ -131,10 +133,13 @@ internal data class Palette(
         RainbowTheme(
             arbitrary = style(arbitrary),
             important = style(important, importantWeight),
-            prefix = universalSelectors() + responsive() + pseudo() + states() + attributesAndModes(),
+            prefix =
+                universalSelectors() + responsive() + pseudo() + states() + attributesAndModes() + modifiers(),
         )
 
     private fun universalSelectors() = family(universal, "*", "**")
+
+    private fun modifiers() = SCOPING_MODIFIERS.associateWith { style(modifier) }
 
     private fun responsive(): Map<String, TextStyle> {
         val widths =

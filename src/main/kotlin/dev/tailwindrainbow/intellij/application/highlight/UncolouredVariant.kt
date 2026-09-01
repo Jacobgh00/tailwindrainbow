@@ -22,7 +22,7 @@ class UncolouredVariants(
         text: String,
         fileExtension: String,
     ): List<UncolouredVariant> {
-        val matcher = ThemeMatcher(theme, settings.ignoredPrefixModifiers)
+        val matcher = ThemeMatcher(theme)
         val uncoloured = declared.filter { matcher.matchPrefix(it) == null }
 
         if (uncoloured.isEmpty()) {

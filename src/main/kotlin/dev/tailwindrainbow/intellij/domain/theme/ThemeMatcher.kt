@@ -1,37 +1,43 @@
 package dev.tailwindrainbow.intellij.domain.theme
 
-class ThemeMatcher(
-    private val theme: RainbowTheme,
-    private val ignoredPrefixModifiers: Set<String>,
-) {
-    fun matchPrefix(prefix: String): ThemeMatch? {
-        exactMatch(theme.prefix, prefix, SegmentKind.PREFIX)?.let {
-            return it
-        }
+class ThemeMatcher(private val theme: RainbowTheme) {
+    fun matchPrefix(prefix: String): ThemeMatch? = matchPrefixParts(prefix).variant
 
-        val cleanedPrefix = removeIgnoredModifiers(prefix)
-        exactMatch(theme.prefix, cleanedPrefix, SegmentKind.PREFIX)?.let {
-            return it
-        }
+    /**
+     * A whole prefix that the theme names outright wins before anything is stripped, so a
+     * variant like `in-range` is never mistaken for `in-` scoping a `range`.
+     */
+    fun matchPrefixParts(prefix: String): PrefixParts {
+        exactMatch(theme.prefix, prefix, SegmentKind.PREFIX)?.let { return PrefixParts(emptyList(), it) }
 
-        val unnamedPrefix = cleanedPrefix.substringBefore('/')
-        exactMatch(theme.prefix, unnamedPrefix, SegmentKind.PREFIX)?.let {
-            return it
-        }
+        val modifiers = modifierSegmentsIn(prefix)
+        val scoped = prefix.drop(modifiers.sumOf(ModifierSegment::width))
+        val variant = matchScoped(prefix, scoped)
 
-        wildcardMatch(theme.prefix, cleanedPrefix, SegmentKind.PREFIX)?.let {
-            return it
-        }
+        if (modifiers.none { it.match != null }) return PrefixParts(emptyList(), variant)
 
-        return arbitraryMatch(prefix) ?: arbitraryMatch(cleanedPrefix) ?: arbitraryMatch(unnamedPrefix)
+        return PrefixParts(modifiers, variant)
+    }
+
+    private fun matchScoped(
+        prefix: String,
+        scoped: String,
+    ): ThemeMatch? {
+        exactMatch(theme.prefix, scoped, SegmentKind.PREFIX)?.let { return it }
+
+        val unnamed = scoped.substringBefore('/')
+        exactMatch(theme.prefix, unnamed, SegmentKind.PREFIX)?.let { return it }
+        wildcardMatch(theme.prefix, scoped, SegmentKind.PREFIX)?.let { return it }
+
+        return arbitraryMatch(prefix) ?: arbitraryMatch(scoped) ?: arbitraryMatch(unnamed)
     }
 
     fun prefixCandidates(prefix: String): PrefixCandidates {
-        val cleanedPrefix = removeIgnoredModifiers(prefix)
+        val scoped = prefix.drop(modifierSegmentsIn(prefix).sumOf(ModifierSegment::width))
 
         return PrefixCandidates(
-            exact = listOf(prefix, cleanedPrefix, cleanedPrefix.substringBefore('/')).distinct(),
-            cleaned = cleanedPrefix,
+            exact = listOf(prefix, scoped, scoped.substringBefore('/')).distinct(),
+            cleaned = scoped,
         )
     }
 
@@ -68,16 +74,25 @@ class ThemeMatcher(
             .maxByOrNull { (pattern) -> pattern.count { it != '*' } }
             ?.let { (pattern, style) -> ThemeMatch(pattern, style, kind) }
 
-    private fun removeIgnoredModifiers(prefix: String): String {
-        var result = prefix
+    private fun modifierSegmentsIn(prefix: String): List<ModifierSegment> =
+        buildList {
+            var rest = prefix
 
-        while (true) {
-            val modifier = ignoredPrefixModifiers.firstOrNull { result.startsWith("$it-") } ?: return result
-            result = result.removePrefix("$modifier-")
+            while (true) {
+                val name = SCOPING_MODIFIERS.firstOrNull { rest.startsWith(it + DELIMITER) } ?: return@buildList
+
+                add(
+                    ModifierSegment(
+                        match = exactMatch(theme.prefix, name, SegmentKind.PREFIX),
+                        width = name.length + DELIMITER.length,
+                    ),
+                )
+                rest = rest.removePrefix(name + DELIMITER)
+            }
         }
-    }
 
     private companion object {
+        const val DELIMITER = "-"
         const val ARBITRARY_KEY = "arbitrary"
         const val IMPORTANT_KEY = "important"
     }

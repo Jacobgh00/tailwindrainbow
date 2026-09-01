@@ -7,7 +7,6 @@ internal interface RecognitionState {
     var classIdentifiers: MutableList<String>
     var classFunctions: MutableList<String>
     var templateTags: MutableList<String>
-    var ignoredPrefixModifiers: MutableList<String>
     var supportedExtensions: MutableList<String>
     var readsClassLikeStrings: Boolean
 }
@@ -18,7 +17,6 @@ internal fun RecognitionState.toScanSettings(): ScanSettings =
         classIdentifiers = classIdentifiers.toSet(),
         classFunctions = classFunctions.toSet(),
         templateTags = templateTags.toSet(),
-        ignoredPrefixModifiers = ignoredPrefixModifiers.toSet(),
         supportedExtensions = supportedExtensions.toSet(),
         readsClassLikeStrings = readsClassLikeStrings,
     )
@@ -28,7 +26,6 @@ internal fun RecognitionState.updateFrom(scan: ScanSettings) {
     classIdentifiers = scan.classIdentifiers.sorted().toMutableList()
     classFunctions = scan.classFunctions.sorted().toMutableList()
     templateTags = scan.templateTags.sorted().toMutableList()
-    ignoredPrefixModifiers = scan.ignoredPrefixModifiers.sorted().toMutableList()
     supportedExtensions = scan.supportedExtensions.sorted().toMutableList()
     readsClassLikeStrings = scan.readsClassLikeStrings
 }

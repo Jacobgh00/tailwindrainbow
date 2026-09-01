@@ -16,6 +16,7 @@ class TailwindClassParserTest {
     private val baseStyle = TextStyle("#0000ff", FontWeight.NORMAL)
     private val importantStyle = TextStyle("#ff0000", FontWeight.BOLD)
     private val arbitraryStyle = TextStyle("#ffaa00", FontWeight.BOLD)
+    private val scopeStyle = TextStyle("#00aaff", FontWeight.BOLD)
 
     private fun parser(base: Map<String, TextStyle> = emptyMap()) =
         TailwindClassParser(
@@ -26,7 +27,6 @@ class TailwindClassParserTest {
                     arbitrary = arbitraryStyle,
                     important = importantStyle,
                 ),
-                ignoredPrefixModifiers = setOf("group", "peer"),
             ),
         )
 
@@ -118,6 +118,80 @@ class TailwindClassParserTest {
     fun `malformed class chains are ignored`() {
         assertTrue(parser().parse(":hover:bg-blue-500 hover::text-white lg:").isEmpty())
     }
+
+    @Test
+    fun `a scoped variant paints the modifier apart from the variant it scopes`() {
+        val source = "group-hover:bg-blue-500"
+        val segments = scopedParser().parse(source)
+
+        assertEquals(listOf("group-", "hover:bg-blue-500"), segments.map { it.sliceOf(source) })
+        assertEquals(listOf(scopeStyle, prefixStyle), segments.map(HighlightSegment::style))
+    }
+
+    @Test
+    fun `a plain variant is still painted as one segment`() {
+        val source = "hover:bg-blue-500"
+
+        assertEquals(listOf(source), scopedParser().parse(source).map { it.sliceOf(source) })
+    }
+
+    @Test
+    fun `stacked modifiers each keep their own segment`() {
+        val source = "peer-group-hover:bg-blue-500"
+        val segments = scopedParser().parse(source)
+
+        assertEquals(listOf("peer-", "group-", "hover:bg-blue-500"), segments.map { it.sliceOf(source) })
+    }
+
+    @Test
+    fun `a theme with no colour for the modifier keeps the single segment it had before`() {
+        val source = "group-hover:bg-blue-500"
+
+        assertEquals(listOf(source), parser().parse(source).map { it.sliceOf(source) })
+    }
+
+    @Test
+    fun `a scoped variant the theme does not otherwise know still shows its scope`() {
+        val source = "group-unknown:bg-blue-500"
+
+        assertEquals(listOf("group-"), scopedParser().parse(source).map { it.sliceOf(source) })
+    }
+
+    @Test
+    fun `an important marker still splits a scoped variant without overlapping`() {
+        val source = "!group-hover:bg-blue-500"
+        val segments = scopedParser().parse(source)
+
+        assertEquals(listOf("!", "group-", "hover:bg-blue-500"), segments.map { it.sliceOf(source) })
+    }
+
+    @Test
+    fun `a variant that merely starts like a modifier keeps its own entry whole`() {
+        val source = "in-range:bg-blue-500"
+
+        assertEquals(listOf(source), scopedParser().parse(source).map { it.sliceOf(source) })
+    }
+
+    @Test
+    fun `a modifier the theme has no colour for still takes up its room`() {
+        val source = "peer-group-hover:bg-blue-500"
+        val segments = scopedParser(coloured = setOf("group")).parse(source)
+
+        assertEquals(listOf("group-", "hover:bg-blue-500"), segments.map { it.sliceOf(source) })
+    }
+
+    private fun scopedParser(coloured: Set<String> = setOf("group", "peer", "in")) =
+        TailwindClassParser(
+            ThemeMatcher(
+                RainbowTheme(
+                    prefix =
+                        mapOf("hover" to prefixStyle, "lg" to responsiveStyle, "in-range" to responsiveStyle) +
+                            coloured.associateWith { scopeStyle },
+                    arbitrary = arbitraryStyle,
+                    important = importantStyle,
+                ),
+            ),
+        )
 }
 
 private fun HighlightSegment.sliceOf(source: String): String = source.substring(start, end)

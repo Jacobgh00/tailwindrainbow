@@ -20,7 +20,6 @@ class SettingsPanelTest {
             classIdentifiers = "class, className",
             classFunctions = "cn, clsx",
             templateTags = "tw",
-            ignoredPrefixModifiers = "group, peer",
             supportedExtensions = "html, vue",
             readsClassLikeStrings = true,
         )

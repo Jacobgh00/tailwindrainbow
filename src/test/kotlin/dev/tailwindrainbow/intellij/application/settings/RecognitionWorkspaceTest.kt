@@ -96,7 +96,6 @@ class RecognitionWorkspaceTest {
         classIdentifiers = "class",
         classFunctions = classFunctions,
         templateTags = "tw",
-        ignoredPrefixModifiers = "group",
         supportedExtensions = supportedExtensions,
         readsClassLikeStrings = true,
     )

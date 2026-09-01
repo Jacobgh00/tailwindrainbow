@@ -1,6 +1,5 @@
 package dev.tailwindrainbow.intellij.application.settings
 
-import dev.tailwindrainbow.intellij.application.highlight.ScanSettings
 import dev.tailwindrainbow.intellij.application.highlight.TailwindClassParser
 import dev.tailwindrainbow.intellij.domain.highlight.HighlightSegment
 import dev.tailwindrainbow.intellij.domain.theme.RainbowTheme
@@ -12,7 +11,7 @@ fun previewSegments(
     theme: RainbowTheme,
     sample: String = PREVIEW_SAMPLE,
 ): List<HighlightSegment> {
-    val matcher = ThemeMatcher(theme, ScanSettings().ignoredPrefixModifiers)
+    val matcher = ThemeMatcher(theme)
 
     return TailwindClassParser(matcher).parse(sample)
 }

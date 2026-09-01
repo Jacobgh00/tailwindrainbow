@@ -9,7 +9,6 @@ data class RecognitionForm(
     val classIdentifiers: String,
     val classFunctions: String,
     val templateTags: String,
-    val ignoredPrefixModifiers: String,
     val supportedExtensions: String,
     val readsClassLikeStrings: Boolean,
 )
@@ -78,7 +77,6 @@ object SettingsFormMapper {
             classIdentifiers = classIdentifiers.toValues(),
             classFunctions = classFunctions.toValues(),
             templateTags = templateTags.toValues(),
-            ignoredPrefixModifiers = ignoredPrefixModifiers.toValues(),
             supportedExtensions = supportedExtensions.toValues().map { it.toFileExtension() }.toSet(),
             readsClassLikeStrings = readsClassLikeStrings,
         )
@@ -90,7 +88,6 @@ object SettingsFormMapper {
             classIdentifiers = classIdentifiers.toText(),
             classFunctions = classFunctions.toText(),
             templateTags = templateTags.toText(),
-            ignoredPrefixModifiers = ignoredPrefixModifiers.toText(),
             supportedExtensions = supportedExtensions.toText(),
             readsClassLikeStrings = readsClassLikeStrings,
         )

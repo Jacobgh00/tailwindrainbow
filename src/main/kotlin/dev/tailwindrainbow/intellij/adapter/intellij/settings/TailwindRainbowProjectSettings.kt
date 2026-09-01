@@ -51,9 +51,6 @@ class TailwindRainbowProjectSettings : PersistentStateComponent<TailwindRainbowP
 
         override var templateTags: MutableList<String> = DEFAULTS.templateTags.sorted().toMutableList()
 
-        override var ignoredPrefixModifiers: MutableList<String> =
-            DEFAULTS.ignoredPrefixModifiers.sorted().toMutableList()
-
         override var supportedExtensions: MutableList<String> =
             DEFAULTS.supportedExtensions.sorted().toMutableList()
 

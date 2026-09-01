@@ -1,6 +1,7 @@
 package dev.tailwindrainbow.intellij.application.highlight
 
 import dev.tailwindrainbow.intellij.domain.highlight.HighlightSegment
+import dev.tailwindrainbow.intellij.domain.theme.ModifierSegment
 import dev.tailwindrainbow.intellij.domain.theme.ThemeMatch
 import dev.tailwindrainbow.intellij.domain.theme.ThemeMatcher
 
@@ -54,11 +55,14 @@ class TailwindClassParser(private val themeMatcher: ThemeMatcher) {
         val baseMatch = themeMatcher.matchBase(baseClass.value)
 
         prefixes.forEachIndexed { index, prefix ->
-            themeMatcher.matchPrefix(prefix.value)?.let { match ->
+            val parts = themeMatcher.matchPrefixParts(prefix.value)
+            val variantStart = addModifierSegments(importantAt, parts.modifiers, prefix.offset)
+
+            parts.variant?.let { match ->
                 val hasFollowingStyledSegment = index < prefixes.lastIndex || baseMatch != null
                 val end = if (hasFollowingStyledSegment) prefix.end + 1 else baseClass.end
 
-                addSegmentAround(importantAt, match, prefix.offset, end)
+                addSegmentAround(importantAt, match, variantStart, end)
             }
         }
 
@@ -66,6 +70,16 @@ class TailwindClassParser(private val themeMatcher: ThemeMatcher) {
             add(match.toSegment(baseClass.offset, baseClass.end))
         }
     }
+
+    private fun MutableList<HighlightSegment>.addModifierSegments(
+        importantAt: Int?,
+        modifiers: List<ModifierSegment>,
+        offset: Int,
+    ): Int =
+        modifiers.fold(offset) { start, modifier ->
+            modifier.match?.let { addSegmentAround(importantAt, it, start, start + modifier.width) }
+            start + modifier.width
+        }
 
     private fun MutableList<HighlightSegment>.addSegmentAround(
         importantAt: Int?,

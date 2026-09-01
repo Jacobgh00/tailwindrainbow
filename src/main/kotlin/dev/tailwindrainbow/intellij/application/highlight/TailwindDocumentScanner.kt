@@ -21,7 +21,7 @@ class TailwindDocumentScanner {
 
         val profile = SyntaxProfile.of(extension)
         val tokens = DocumentLexer(profile).tokenize(text)
-        val matcher = ThemeMatcher(theme, settings.ignoredPrefixModifiers)
+        val matcher = ThemeMatcher(theme)
         val parser = TailwindClassParser(matcher)
         val detector = ClassContextDetector(settings)
         val shape = ClassListShape(matcher)

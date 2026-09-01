@@ -20,7 +20,6 @@ internal class RecognitionPanel {
     private val classIdentifiers = listField()
     private val classFunctions = listField()
     private val templateTags = listField()
-    private val ignoredModifiers = listField()
     private val supportedExtensions = listField()
     private val readsClassLikeStrings = JBCheckBox(message("settings.recognition.classLikeStrings"))
 
@@ -44,7 +43,6 @@ internal class RecognitionPanel {
             }
             row(message("settings.recognition.classFunctions")) { cell(classFunctions).align(AlignX.FILL) }
             row(message("settings.recognition.templateTags")) { cell(templateTags).align(AlignX.FILL) }
-            row(message("settings.recognition.ignoredModifiers")) { cell(ignoredModifiers).align(AlignX.FILL) }
             row(message("settings.recognition.extensions")) {
                 cell(supportedExtensions)
                     .align(AlignX.FILL)
@@ -93,7 +91,6 @@ internal class RecognitionPanel {
             classIdentifiers = classIdentifiers.text,
             classFunctions = classFunctions.text,
             templateTags = templateTags.text,
-            ignoredPrefixModifiers = ignoredModifiers.text,
             supportedExtensions = supportedExtensions.text,
             readsClassLikeStrings = readsClassLikeStrings.isSelected,
         )
@@ -107,7 +104,6 @@ internal class RecognitionPanel {
         classIdentifiers.text = rules.classIdentifiers
         classFunctions.text = rules.classFunctions
         templateTags.text = rules.templateTags
-        ignoredModifiers.text = rules.ignoredPrefixModifiers
         supportedExtensions.text = rules.supportedExtensions
         readsClassLikeStrings.isSelected = rules.readsClassLikeStrings
     }

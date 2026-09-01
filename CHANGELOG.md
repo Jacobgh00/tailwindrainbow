@@ -7,9 +7,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-- Add **Open Tailwind Rainbow Variant Health**, a cancellable project report for declared variants,
+## [0.2.0] - 2026-09-01
+
+### Added
+
+- **Open Tailwind Rainbow Variant Health**, a cancellable project report for declared variants,
   theme matches, missing/disabled/malformed entries, wildcard coverage and duplicate declarations,
   with actions to add a colour, open a declaration and refresh the report.
+- A colour for a scoping modifier, painted apart from the variant it scopes, so `group-hover:`
+  reads as both a hover and an ancestor-scoped one instead of looking identical to a plain
+  `hover:`. Covers `group`, `peer`, `has`, `in` and `not`, which share one colour per built-in
+  theme and appear in the theme editor as ordinary tokens.
+
+### Removed
+
+- The **Ignored prefix modifiers** setting. `group`, `peer`, `has`, `in` and `not` are Tailwind's
+  own syntax rather than a preference, so they are now fixed in the plugin.
 
 ## [0.1.0] - 2026-08-30
 
@@ -69,5 +82,6 @@ First release.
   which keeps prose and non-variant colons such as `'10:30'` or a URL out of it. **Colour strings that
   read as a class list**, under *Settings | Editor | Tailwind Rainbow*, switches it off.
 
-[Unreleased]: https://github.com/Jacobgh00/tailwindrainbow/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/Jacobgh00/tailwindrainbow/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/Jacobgh00/tailwindrainbow/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Jacobgh00/tailwindrainbow/commits/v0.1.0
