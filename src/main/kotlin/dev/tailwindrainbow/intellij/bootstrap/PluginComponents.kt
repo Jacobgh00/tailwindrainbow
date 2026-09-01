@@ -12,10 +12,13 @@ import dev.tailwindrainbow.intellij.adapter.intellij.variants.ProjectVariants
 import dev.tailwindrainbow.intellij.application.diagnostics.Diagnostics
 import dev.tailwindrainbow.intellij.application.diagnostics.ScannedFile
 import dev.tailwindrainbow.intellij.application.highlight.HighlightDocumentService
+import dev.tailwindrainbow.intellij.application.highlight.HighlightingSnapshot
 import dev.tailwindrainbow.intellij.application.highlight.statusFor
 import dev.tailwindrainbow.intellij.application.port.Cancellation
 import dev.tailwindrainbow.intellij.application.port.HighlightDocument
 import dev.tailwindrainbow.intellij.application.port.HighlightSettings
+import dev.tailwindrainbow.intellij.application.port.SettingsProvider
+import dev.tailwindrainbow.intellij.application.port.ThemeCatalog
 import dev.tailwindrainbow.intellij.application.settings.withProjectRecognition
 import dev.tailwindrainbow.intellij.application.variants.VariantHealthAnalyzer
 import dev.tailwindrainbow.intellij.application.variants.VariantHealthReport
@@ -24,9 +27,33 @@ object PluginComponents {
     private const val VERSION_RESOURCE = "/tailwind-rainbow-version.txt"
 
     fun highlightDocument(project: Project): HighlightDocument =
-        HighlightDocumentService(
+        highlightDocument(
             settings = { effectiveSettings(project) },
             themes = TailwindRainbowSettings.getInstance(),
+        )
+
+    internal fun highlightingSnapshot(project: Project): HighlightingSnapshot {
+        val settings = effectiveSettings(project)
+
+        return HighlightingSnapshot(
+            settings = settings,
+            theme = TailwindRainbowSettings.getInstance().themeNamed(settings.themeName),
+        )
+    }
+
+    internal fun highlightDocument(snapshot: HighlightingSnapshot): HighlightDocument =
+        highlightDocument(
+            settings = { snapshot.settings },
+            themes = { snapshot.theme },
+        )
+
+    private fun highlightDocument(
+        settings: SettingsProvider,
+        themes: ThemeCatalog,
+    ): HighlightDocument =
+        HighlightDocumentService(
+            settings = settings,
+            themes = themes,
             cancellation = { ProgressManager.checkCanceled() },
             log = { extension, status -> thisLogger().debug("A .$extension file went unpainted: $status") },
         )
