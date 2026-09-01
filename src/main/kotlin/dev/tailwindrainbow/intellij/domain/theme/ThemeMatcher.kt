@@ -8,15 +8,20 @@ class ThemeMatcher(private val theme: RainbowTheme) {
      * variant like `in-range` is never mistaken for `in-` scoping a `range`.
      */
     fun matchPrefixParts(prefix: String): PrefixParts {
-        exactMatch(theme.prefix, prefix, SegmentKind.PREFIX)?.let { return PrefixParts(emptyList(), it) }
+        exactMatch(theme.prefix, prefix, SegmentKind.PREFIX)?.let {
+            return PrefixParts(emptyList(), it, scopingModifierWidth = 0)
+        }
 
         val modifiers = modifierSegmentsIn(prefix)
-        val scoped = prefix.drop(modifiers.sumOf(ModifierSegment::width))
+        val scopingModifierWidth = modifiers.sumOf(ModifierSegment::width)
+        val scoped = prefix.drop(scopingModifierWidth)
         val variant = matchScoped(prefix, scoped)
 
-        if (modifiers.none { it.match != null }) return PrefixParts(emptyList(), variant)
+        if (modifiers.none { it.match != null }) {
+            return PrefixParts(emptyList(), variant, scopingModifierWidth)
+        }
 
-        return PrefixParts(modifiers, variant)
+        return PrefixParts(modifiers, variant, scopingModifierWidth)
     }
 
     private fun matchScoped(

@@ -35,6 +35,25 @@ class UncolouredVariantInspectionTest : PaintedFileTest() {
     }
 
     @Test
+    fun `a scoped custom variant warning selects the custom variant rather than its scope`() {
+        file("scoped.css", "@custom-variant custom (&:where(.custom *));")
+        val source = """<div class="group-custom:bg-blue-500"></div>"""
+        val page = file("scoped.html", source)
+
+        assertTrue("custom" in ProjectVariants.getInstance(project.get()).refresh(), "declared")
+
+        val problems =
+            runInEdtAndGet {
+                UncolouredVariantInspection().checkFile(page, InspectionManager.getInstance(project.get()), false)
+            }
+
+        assertEquals(1, problems?.size)
+        val range = problems!!.single().textRangeInElement
+
+        assertEquals("custom", source.substring(range.startOffset, range.endOffset))
+    }
+
+    @Test
     fun `once the quick fix has run, the variant has a colour and nothing is reported`() {
         file("fixed.css", "@custom-variant theme-midnight (&:where([data-theme=midnight] *));")
         val page = file("fixed.html", """<div class="theme-midnight:bg-black"></div>""")

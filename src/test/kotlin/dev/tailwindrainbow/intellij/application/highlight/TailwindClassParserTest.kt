@@ -35,7 +35,7 @@ class TailwindClassParserTest {
         val segments = parser().parse("hover:bg-blue-500", startOffset = 10)
 
         assertEquals(
-            listOf(HighlightSegment(10, 27, "hover", prefixStyle, SegmentKind.PREFIX)),
+            listOf(HighlightSegment(10, 27, 10, 15, "hover", prefixStyle, SegmentKind.PREFIX)),
             segments,
         )
     }
@@ -88,6 +88,7 @@ class TailwindClassParserTest {
     fun `an important modifier written before the utility is recognised`() {
         val source = "hover:!bg-blue-500"
         val segments = parser().parse(source)
+        val prefixSegments = segments.filter { it.themeKey == "hover" }
 
         assertEquals(
             listOf("!", "hover:", "bg-blue-500"),
@@ -95,6 +96,7 @@ class TailwindClassParserTest {
             "the prefix colours both sides of the marker rather than painting over it",
         )
         assertEquals(SegmentKind.IMPORTANT, segments.first().kind)
+        assertEquals(listOf("hover", "hover"), prefixSegments.map { it.matchSliceOf(source) })
     }
 
     @Test
@@ -146,8 +148,10 @@ class TailwindClassParserTest {
     @Test
     fun `a theme with no colour for the modifier keeps the single segment it had before`() {
         val source = "group-hover:bg-blue-500"
+        val segments = parser().parse(source)
 
-        assertEquals(listOf(source), parser().parse(source).map { it.sliceOf(source) })
+        assertEquals(listOf(source), segments.map { it.sliceOf(source) })
+        assertEquals("hover", segments.single().matchSliceOf(source))
     }
 
     @Test
@@ -195,3 +199,5 @@ class TailwindClassParserTest {
 }
 
 private fun HighlightSegment.sliceOf(source: String): String = source.substring(start, end)
+
+private fun HighlightSegment.matchSliceOf(source: String): String = source.substring(matchStart, matchEnd)
